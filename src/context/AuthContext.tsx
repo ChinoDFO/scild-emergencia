@@ -13,6 +13,7 @@ import {
   type User,
 } from "firebase/auth";
 import { auth } from "../firebase/config";
+import { desactivarNotificaciones } from "../services/notificaciones";
 
 interface AuthContextValue {
   usuario: User | null;
@@ -43,7 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await createUserWithEmailAndPassword(auth, email, password);
   };
 
-  const cerrarSesion = () => signOut(auth);
+  // El token de push se borra ANTES de cerrar la sesión: desregistrarlo
+  // requiere el token de Firebase del usuario actual, y en un equipo
+  // compartido el siguiente en entrar no debe heredar sus alertas.
+  const cerrarSesion = async () => {
+    await desactivarNotificaciones();
+    await signOut(auth);
+  };
 
   return (
     <AuthContext.Provider

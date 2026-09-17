@@ -56,3 +56,19 @@ export function unirseAGrupo(inviteCode: string) {
     body: JSON.stringify({ inviteCode }),
   });
 }
+
+// Token de FCM de este navegador, para que el backend sepa a dónde mandarle
+// las alertas de los grupos del usuario.
+export function registrarTokenPush(token: string) {
+  return llamarBackend("/api/notifications/token", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+export function borrarTokenPush(token: string) {
+  return llamarBackend("/api/notifications/token", {
+    method: "DELETE",
+    body: JSON.stringify({ token }),
+  });
+}

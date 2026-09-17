@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import Notificaciones from "../components/Notificaciones";
 import { obtenerPerfil, type Perfil } from "../services/api";
 
 export default function Inicio() {
@@ -64,6 +65,8 @@ export default function Inicio() {
             </div>
           </div>
         )}
+
+        <Notificaciones />
       </div>
     </div>
   );
