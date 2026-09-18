@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Apodo from "../components/Apodo";
+import GestionGrupos from "../components/GestionGrupos";
+import ListaAlertas from "../components/ListaAlertas";
 import Notificaciones from "../components/Notificaciones";
 import { obtenerPerfil, type Perfil } from "../services/api";
 
@@ -39,9 +43,10 @@ export default function Inicio() {
 
         {perfil && (
           <div className="mt-4 space-y-3">
-            <p className="text-sm text-slate-500">
-              Perfil sincronizado en el backend (id: {perfil.id}).
-            </p>
+            <Apodo
+              apodo={perfil.displayName}
+              alCambiar={(displayName) => setPerfil({ ...perfil, displayName })}
+            />
 
             <div>
               <h2 className="text-sm font-medium text-slate-700">Tus grupos</h2>
@@ -52,17 +57,27 @@ export default function Inicio() {
               ) : (
                 <ul className="mt-1 space-y-1">
                   {perfil.groups.map((g) => (
-                    <li
-                      key={g.id}
-                      className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm"
-                    >
-                      <span>{g.name}</span>
-                      <span className="text-xs uppercase text-slate-400">{g.role}</span>
+                    <li key={g.id}>
+                      <Link
+                        to={`/grupos/${g.id}`}
+                        className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm hover:bg-slate-100"
+                      >
+                        <span>{g.name}</span>
+                        <span className="text-xs uppercase text-slate-400">{g.role} →</span>
+                      </Link>
                     </li>
                   ))}
                 </ul>
               )}
+              <GestionGrupos />
             </div>
+
+            {perfil.groups.length > 0 && (
+              <div className="border-t border-slate-100 pt-4">
+                <h2 className="text-sm font-medium text-slate-700">Alertas abiertas</h2>
+                <ListaAlertas soloAbiertas mostrarGrupo vacio="Todo en calma: no hay alertas abiertas." />
+              </div>
+            )}
           </div>
         )}
 

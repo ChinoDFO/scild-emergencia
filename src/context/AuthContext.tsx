@@ -13,13 +13,15 @@ import {
   type User,
 } from "firebase/auth";
 import { auth } from "../firebase/config";
+import { actualizarApodo } from "../services/api";
 import { desactivarNotificaciones } from "../services/notificaciones";
+import { desconectarTiempoReal } from "../services/tiempoReal";
 
 interface AuthContextValue {
   usuario: User | null;
   cargando: boolean;
   iniciarSesion: (email: string, password: string) => Promise<void>;
-  registrarse: (email: string, password: string) => Promise<void>;
+  registrarse: (email: string, password: string, apodo: string) => Promise<void>;
   cerrarSesion: () => Promise<void>;
 }
 
@@ -40,8 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithEmailAndPassword(auth, email, password);
   };
 
-  const registrarse = async (email: string, password: string) => {
+  const registrarse = async (email: string, password: string, apodo: string) => {
     await createUserWithEmailAndPassword(auth, email, password);
+    // La cuenta ya existe aunque esto falle: no se le bloquea la entrada, y
+    // Inicio le vuelve a pedir el apodo si se quedó sin él.
+    try {
+      await actualizarApodo(apodo);
+    } catch (e) {
+      console.warn("No se pudo guardar el apodo al registrarse:", e);
+    }
   };
 
   // El token de push se borra ANTES de cerrar la sesión: desregistrarlo
@@ -49,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // compartido el siguiente en entrar no debe heredar sus alertas.
   const cerrarSesion = async () => {
     await desactivarNotificaciones();
+    desconectarTiempoReal();
     await signOut(auth);
   };
 

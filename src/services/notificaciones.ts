@@ -17,19 +17,19 @@ export type EstadoNotificaciones =
   | "bloqueadas"
   | "activadas";
 
-// La config no puede viajar por import.meta.env hasta el service worker
-// (public/ no pasa por Vite), así que se le manda en la query string del
-// registro. Firebase respeta estos parámetros al buscar el SW.
-function urlDelServiceWorker() {
-  const parametros = new URLSearchParams({
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  });
-
-  return `/firebase-messaging-sw.js?${parametros.toString()}`;
+// El token de FCM pertenece a la suscripción push de UN service worker: el
+// único de la app (src/sw/sw.ts, registrado en main.tsx). Tanto al sacar el
+// token como al borrarlo hay que pasar ese mismo registro: si getToken se
+// llama sin él, Firebase registra otro SW por su cuenta y devuelve un token
+// distinto al que tiene el backend.
+async function registroDelServiceWorker() {
+  const limite = new Promise<never>((_, rechazar) =>
+    setTimeout(
+      () => rechazar(new Error("El service worker de la app no se activó. Recarga la página.")),
+      10_000
+    )
+  );
+  return Promise.race([navigator.serviceWorker.ready, limite]);
 }
 
 // Safari en iOS solo permite push si la PWA está instalada en la pantalla de
@@ -87,7 +87,7 @@ async function registrarEsteNavegador(): Promise<string> {
     throw new Error("No se concedió el permiso de notificaciones");
   }
 
-  const registro = await navigator.serviceWorker.register(urlDelServiceWorker());
+  const registro = await registroDelServiceWorker();
 
   const token = await getToken(getMessaging(app), {
     vapidKey: VAPID_KEY,
@@ -114,7 +114,10 @@ export async function desactivarNotificaciones() {
     const mensajeria = getMessaging(app);
     // Ya hay permiso, así que esto no abre ningún diálogo: solo recupera el
     // token vigente para poder decirle al backend cuál borrar.
-    const token = await getToken(mensajeria, { vapidKey: VAPID_KEY });
+    const token = await getToken(mensajeria, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: await registroDelServiceWorker(),
+    });
 
     if (token) {
       await borrarTokenPush(token);
@@ -127,16 +130,27 @@ export async function desactivarNotificaciones() {
 
 // Con la PWA abierta y en primer plano el navegador NO dibuja el aviso del
 // sistema: llega por aquí y le toca a la app mostrarlo en pantalla.
-export function escucharAlertasEnPrimerPlano(
-  alRecibir: (payload: MessagePayload) => void
-) {
-  let cancelar = () => {};
+//
+// onMessage de Firebase guarda UN solo handler (llamarlo otra vez reemplaza
+// al anterior), así que se registra una vez y se reparte a todos los que
+// escuchan: el aviso en pantalla y las listas de alertas que se refrescan.
+type Oyente = (payload: MessagePayload) => void;
+const oyentes = new Set<Oyente>();
+let escuchando = false;
 
-  soportaNotificaciones().then((soportado) => {
-    if (soportado) {
-      cancelar = onMessage(getMessaging(app), alRecibir);
-    }
-  });
+export function escucharAlertasEnPrimerPlano(alRecibir: Oyente) {
+  oyentes.add(alRecibir);
 
-  return () => cancelar();
+  if (!escuchando) {
+    escuchando = true;
+    soportaNotificaciones().then((soportado) => {
+      if (soportado) {
+        onMessage(getMessaging(app), (payload) => oyentes.forEach((o) => o(payload)));
+      }
+    });
+  }
+
+  return () => {
+    oyentes.delete(alRecibir);
+  };
 }

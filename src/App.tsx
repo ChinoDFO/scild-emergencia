@@ -4,6 +4,7 @@ import RutaProtegida from "./components/RutaProtegida";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 import Inicio from "./pages/Inicio";
+import Grupo from "./pages/Grupo";
 
 export default function App() {
   return (
@@ -17,6 +18,14 @@ export default function App() {
             element={
               <RutaProtegida>
                 <Inicio />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/grupos/:id"
+            element={
+              <RutaProtegida>
+                <Grupo />
               </RutaProtegida>
             }
           />

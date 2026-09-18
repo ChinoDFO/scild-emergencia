@@ -18,6 +18,7 @@ function mensajeError(codigo: string): string {
 export default function Registro() {
   const { registrarse } = useAuth();
   const navigate = useNavigate();
+  const [apodo, setApodo] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmacion, setConfirmacion] = useState("");
@@ -35,7 +36,7 @@ export default function Registro() {
 
     setEnviando(true);
     try {
-      await registrarse(email, password);
+      await registrarse(email, password, apodo.trim());
       navigate("/", { replace: true });
     } catch (err) {
       const codigo = (err as { code?: string }).code ?? "";
@@ -54,6 +55,26 @@ export default function Registro() {
         </p>
 
         <form onSubmit={manejarEnvio} className="mt-6 space-y-4">
+          <div>
+            <label htmlFor="apodo" className="block text-sm font-medium text-slate-700">
+              ¿Cómo te van a ver en tu grupo?
+            </label>
+            <input
+              id="apodo"
+              type="text"
+              required
+              maxLength={40}
+              autoComplete="nickname"
+              placeholder="Ej. Mamá, Papá, Juan, Cajero"
+              value={apodo}
+              onChange={(e) => setApodo(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              Aparece en el chat y en las alertas que envíes. Lo puedes cambiar después.
+            </p>
+          </div>
+
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-slate-700">
               Correo
