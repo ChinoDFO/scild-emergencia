@@ -1,83 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
-import { cambiarEstadoAlerta, listarAlertas, type Alerta } from "../services/api";
-import { escucharAlertasEnPrimerPlano } from "../services/notificaciones";
-import { useAlReconectar, useEventoTiempoReal } from "../services/tiempoReal";
-
-// Los cambios llegan al instante por Socket.IO. Esto es solo el respaldo por
-// si la conexión en tiempo real está caída sin que nadie lo note.
-const REFRESCO_MS = 60_000;
-
-const ETIQUETA_ESTADO: Record<Alerta["status"], { texto: string; clase: string }> = {
-  ACTIVE: { texto: "Activa", clase: "bg-red-600 text-white" },
-  ACKNOWLEDGED: { texto: "Atendiendo", clase: "bg-amber-100 text-amber-800" },
-  RESOLVED: { texto: "Resuelta", clase: "bg-slate-100 text-slate-500" },
-};
-
-function origen(alerta: Alerta) {
-  if (alerta.source === "DEVICE") {
-    return `Botón ${alerta.device?.name || alerta.device?.deviceCode || ""}`.trim();
-  }
-  const quien = alerta.createdBy?.displayName || alerta.createdBy?.email;
-  return quien ? `Reportó ${quien}` : "Desde la app";
-}
+import { useAlertas } from "../hooks/useAlertas";
+import { ETIQUETA_ESTADO, origen } from "../services/formatoAlertas";
 
 interface Props {
   groupId?: string;
   soloAbiertas?: boolean;
   mostrarGrupo?: boolean;
   vacio: string;
-  // Cambiarlo fuerza a recargar (p. ej. justo después de generar una alerta).
-  version?: number;
 }
 
-export default function ListaAlertas({ groupId, soloAbiertas, mostrarGrupo, vacio, version }: Props) {
-  const [alertas, setAlertas] = useState<Alerta[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [cambiando, setCambiando] = useState<string | null>(null);
-
-  const cargar = useCallback(async () => {
-    try {
-      setAlertas(await listarAlertas({ groupId, soloAbiertas }));
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudieron cargar las alertas");
-    }
-  }, [groupId, soloAbiertas]);
-
-  useEffect(() => {
-    cargar();
-  }, [cargar, version]);
-
-  useEventoTiempoReal("alertas:cambio", ({ groupId: grupoDelCambio }) => {
-    if (!groupId || groupId === grupoDelCambio) cargar();
-  });
-  useAlReconectar(cargar);
-
-  useEffect(() => {
-    const intervalo = setInterval(cargar, REFRESCO_MS);
-    const alVolver = () => document.visibilityState === "visible" && cargar();
-    document.addEventListener("visibilitychange", alVolver);
-    const dejarDeEscuchar = escucharAlertasEnPrimerPlano(() => cargar());
-
-    return () => {
-      clearInterval(intervalo);
-      document.removeEventListener("visibilitychange", alVolver);
-      dejarDeEscuchar();
-    };
-  }, [cargar]);
-
-  const cambiar = async (alerta: Alerta, accion: "atender" | "resolver") => {
-    setCambiando(alerta.id);
-    try {
-      await cambiarEstadoAlerta(alerta.id, accion);
-    } catch (e) {
-      // Un 409 significa que alguien más ya la movió: basta con recargar.
-      setError(e instanceof Error ? e.message : "No se pudo actualizar la alerta");
-    } finally {
-      await cargar();
-      setCambiando(null);
-    }
-  };
+export default function ListaAlertas({ groupId, soloAbiertas, mostrarGrupo, vacio }: Props) {
+  const { alertas, error, cambiar, cambiando } = useAlertas({ groupId, soloAbiertas });
 
   if (alertas === null) {
     return error ? (

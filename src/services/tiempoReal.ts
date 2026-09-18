@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import { auth } from "../firebase/config";
 import type { Mensaje } from "./api";
@@ -110,4 +110,39 @@ export function useAlReconectar(alReconectar: () => void) {
       s.off("connect", alConectar);
     };
   }, []);
+}
+
+// ¿Hay conexión en tiempo real con el backend? Para mostrar "Conectando…"
+// (como en las apps de mensajería) en vez de fallar en silencio cuando el
+// servidor está caído. Espera un momento antes de avisar para no parpadear
+// en cada carga normal de la página.
+export function useConexionTiempoReal(esperaMs = 2_000) {
+  const [conectado, setConectado] = useState(true);
+
+  useEffect(() => {
+    const s = obtenerSocket();
+    let temporizador: ReturnType<typeof setTimeout> | undefined;
+
+    const alConectar = () => {
+      clearTimeout(temporizador);
+      setConectado(true);
+    };
+    const alPerder = () => {
+      clearTimeout(temporizador);
+      temporizador = setTimeout(() => setConectado(s.connected), esperaMs);
+    };
+
+    if (!s.connected) alPerder();
+    s.on("connect", alConectar);
+    s.on("disconnect", alPerder);
+    s.on("connect_error", alPerder);
+    return () => {
+      clearTimeout(temporizador);
+      s.off("connect", alConectar);
+      s.off("disconnect", alPerder);
+      s.off("connect_error", alPerder);
+    };
+  }, [esperaMs]);
+
+  return conectado;
 }
