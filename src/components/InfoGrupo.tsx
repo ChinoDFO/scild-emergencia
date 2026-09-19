@@ -1,7 +1,11 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   actualizarGrupo,
+  cambiarRolMiembro,
+  eliminarGrupo,
   regenerarCodigoInvitacion,
+  salirDelGrupo,
   type DetalleGrupo,
   type EstadoBoton,
 } from "../services/api";
@@ -23,6 +27,7 @@ interface Props {
 }
 
 export default function InfoGrupo({ grupo, alCambiar }: Props) {
+  const navigate = useNavigate();
   const esAdmin = grupo.role === "ADMIN";
   const [editando, setEditando] = useState(false);
   const [nombre, setNombre] = useState(grupo.name);
@@ -31,6 +36,12 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
   const [regenerando, setRegenerando] = useState(false);
+  const [cambiandoRol, setCambiandoRol] = useState<string | null>(null);
+  const [saliendo, setSaliendo] = useState(false);
+  const [confirmarEliminar, setConfirmarEliminar] = useState(false);
+  const [nombreEscrito, setNombreEscrito] = useState("");
+  const [eliminando, setEliminando] = useState(false);
+  const [errorSalida, setErrorSalida] = useState<string | null>(null);
 
   const abrirEdicion = () => {
     setNombre(grupo.name);
@@ -75,6 +86,47 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
       setError(err instanceof Error ? err.message : "No se pudo generar el código");
     } finally {
       setRegenerando(false);
+    }
+  };
+
+  const hacerAdmin = async (userId: string, role: "ADMIN" | "MEMBER") => {
+    setCambiandoRol(userId);
+    setError(null);
+    try {
+      await cambiarRolMiembro(grupo.id, userId, role);
+      alCambiar();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo cambiar el rol");
+    } finally {
+      setCambiandoRol(null);
+    }
+  };
+
+  const salir = async () => {
+    if (!confirm(`Vas a salir de ${grupo.name} y dejarás de recibir sus alertas. ¿Seguro?`)) return;
+    setSaliendo(true);
+    setErrorSalida(null);
+    try {
+      await salirDelGrupo(grupo.id);
+      navigate("/", { replace: true });
+    } catch (err) {
+      setErrorSalida(err instanceof Error ? err.message : "No se pudo salir del grupo");
+    } finally {
+      setSaliendo(false);
+    }
+  };
+
+  const eliminar = async (e: FormEvent) => {
+    e.preventDefault();
+    setEliminando(true);
+    setErrorSalida(null);
+    try {
+      await eliminarGrupo(grupo.id, nombreEscrito);
+      navigate("/", { replace: true });
+    } catch (err) {
+      setErrorSalida(err instanceof Error ? err.message : "No se pudo eliminar el grupo");
+    } finally {
+      setEliminando(false);
     }
   };
 
@@ -198,13 +250,24 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
         <h2 className="text-sm font-medium text-slate-700">Miembros ({grupo.members.length})</h2>
         <ul className="mt-1 space-y-1">
           {grupo.members.map((m) => (
-            <li key={m.userId} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm">
-              <span>
+            <li key={m.userId} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm">
+              <span className="min-w-0">
                 <span className="font-medium text-slate-800">{m.displayName || m.email}</span>
                 {m.userId === grupo.myUserId && <span className="text-slate-400"> (tú)</span>}
-                {m.displayName && <span className="block text-xs text-slate-400">{m.email}</span>}
+                {m.displayName && <span className="block truncate text-xs text-slate-400">{m.email}</span>}
               </span>
-              <span className="text-xs uppercase text-slate-400">{m.role}</span>
+              <span className="flex shrink-0 items-center gap-3">
+                {esAdmin && m.userId !== grupo.myUserId && (
+                  <button
+                    onClick={() => hacerAdmin(m.userId, m.role === "ADMIN" ? "MEMBER" : "ADMIN")}
+                    disabled={cambiandoRol === m.userId}
+                    className="text-xs font-medium text-red-600 hover:underline disabled:opacity-60"
+                  >
+                    {m.role === "ADMIN" ? "Quitar admin" : "Hacer admin"}
+                  </button>
+                )}
+                <span className="text-xs uppercase text-slate-400">{m.role}</span>
+              </span>
             </li>
           ))}
         </ul>
@@ -229,6 +292,67 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
             </div>
           </div>
         )}
+      </section>
+
+      <section className="border-t border-slate-200 pt-4">
+        {errorSalida && (
+          <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{errorSalida}</p>
+        )}
+
+        <button
+          onClick={salir}
+          disabled={saliendo}
+          className="w-full rounded-lg bg-white py-2 text-sm font-medium text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-60"
+        >
+          {saliendo ? "Saliendo…" : "Salir del grupo"}
+        </button>
+
+        {esAdmin &&
+          (confirmarEliminar ? (
+            <form onSubmit={eliminar} className="mt-3 rounded-lg bg-red-50 p-3 text-sm ring-1 ring-red-200">
+              <p className="text-red-900">
+                Se borrarán el chat y el historial de alertas de <strong>{grupo.name}</strong>, y todos
+                quedarán fuera. No se puede deshacer.
+              </p>
+              <label className="mt-2 block text-red-900">
+                Escribe el nombre del grupo para confirmar:
+                <input
+                  required
+                  value={nombreEscrito}
+                  onChange={(e) => setNombreEscrito(e.target.value)}
+                  placeholder={grupo.name}
+                  className="mt-1 w-full rounded-lg border border-red-300 px-3 py-2 focus:border-red-500 focus:outline-none"
+                />
+              </label>
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="submit"
+                  disabled={eliminando || nombreEscrito.trim() !== grupo.name}
+                  className="flex-1 rounded-lg bg-red-600 py-2 font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {eliminando ? "Eliminando…" : "Eliminar para siempre"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmarEliminar(false)}
+                  className="flex-1 rounded-lg bg-white py-2 font-medium text-slate-700 ring-1 ring-slate-300"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button
+              onClick={() => {
+                setNombreEscrito("");
+                setErrorSalida(null);
+                setConfirmarEliminar(true);
+              }}
+              className="mt-2 w-full rounded-lg py-2 text-sm font-medium text-slate-500 hover:text-red-700"
+            >
+              Eliminar grupo
+            </button>
+          ))}
       </section>
     </div>
   );

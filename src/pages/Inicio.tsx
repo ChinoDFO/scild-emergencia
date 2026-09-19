@@ -23,12 +23,17 @@ export default function Inicio() {
       <div className="mx-auto max-w-lg rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-slate-900">Tu cuenta</h1>
-          <button
-            onClick={cerrarSesion}
-            className="text-sm font-medium text-slate-500 hover:text-red-600"
-          >
-            Cerrar sesión
-          </button>
+          <div className="flex items-center gap-4">
+            <Link to="/ayuda" className="text-sm font-medium text-slate-500 hover:text-red-600">
+              Ayuda
+            </Link>
+            <button
+              onClick={cerrarSesion}
+              className="text-sm font-medium text-slate-500 hover:text-red-600"
+            >
+              Cerrar sesión
+            </button>
+          </div>
         </div>
 
         <p className="mt-4 text-sm text-slate-500">
@@ -60,10 +65,20 @@ export default function Inicio() {
                     <li key={g.id}>
                       <Link
                         to={`/grupos/${g.id}`}
-                        className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-sm hover:bg-slate-100"
+                        className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm hover:bg-slate-100"
                       >
-                        <span>{g.name}</span>
-                        <span className="text-xs uppercase text-slate-400">{g.role} →</span>
+                        <span className="truncate">{g.name}</span>
+                        <span className="flex shrink-0 items-center gap-2">
+                          {g.sinLeer > 0 && (
+                            <span
+                              className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white"
+                              aria-label={`${g.sinLeer} mensajes sin leer`}
+                            >
+                              {g.sinLeer > 99 ? "99+" : g.sinLeer}
+                            </span>
+                          )}
+                          <span className="text-xs uppercase text-slate-400">{g.role} →</span>
+                        </span>
                       </Link>
                     </li>
                   ))}

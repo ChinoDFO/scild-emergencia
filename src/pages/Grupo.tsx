@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import BotonPanico from "../components/BotonPanico";
 import Conversacion from "../components/Conversacion";
 import InfoGrupo from "../components/InfoGrupo";
 import { useAlertas } from "../hooks/useAlertas";
 import { obtenerGrupo, type DetalleGrupo } from "../services/api";
 import { origen } from "../services/formatoAlertas";
-import { entrarASalaDeGrupo, useConexionTiempoReal, useEventoTiempoReal } from "../services/tiempoReal";
+import {
+  avisarGrupoAbierto,
+  entrarASalaDeGrupo,
+  useConexionTiempoReal,
+  useEventoTiempoReal,
+} from "../services/tiempoReal";
 
 function iniciales(nombre: string) {
   return nombre
@@ -25,6 +30,7 @@ function iniciales(nombre: string) {
 //   caja de mensaje con el botón "!" que abre el menú de tipos de alerta
 export default function Grupo() {
   const { id = "" } = useParams();
+  const navigate = useNavigate();
   const [grupo, setGrupo] = useState<DetalleGrupo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [infoAbierta, setInfoAbierta] = useState(false);
@@ -41,6 +47,15 @@ export default function Grupo() {
 
   // Por si se unió al grupo después de abrir la conexión en tiempo real.
   useEffect(() => entrarASalaDeGrupo(id), [id]);
+
+  // Mientras esta pantalla esté abierta, el backend no manda push de los
+  // mensajes de este grupo: ya se están viendo.
+  useEffect(() => avisarGrupoAbierto(id), [id]);
+
+  // Alguien con permiso eliminó el grupo (o fue el último en salirse).
+  useEventoTiempoReal("grupo:eliminado", ({ groupId }) => {
+    if (groupId === id) navigate("/", { replace: true });
+  });
 
   // Otro miembro editó el grupo o alguien nuevo se unió.
   useEventoTiempoReal("grupo:actualizado", ({ groupId }) => {

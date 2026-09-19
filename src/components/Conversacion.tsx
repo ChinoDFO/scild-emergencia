@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useMensajes } from "../hooks/useMensajes";
+import { marcarChatLeido } from "../services/api";
 import type { Alerta, Mensaje } from "../services/api";
 import { ETIQUETA_ESTADO, origen } from "../services/formatoAlertas";
 import MenuAlertas from "./MenuAlertas";
@@ -129,6 +130,19 @@ export default function Conversacion({ groupId, groupName, myUserId, alertas, al
     observador.observe(el);
     return () => observador.disconnect();
   }, []);
+
+  // Con el chat abierto, lo que llega ya se está leyendo: se pone el
+  // contador en cero para que el globito de Inicio y el próximo aviso push
+  // reflejen la realidad.
+  useEffect(() => {
+    if (!mensajes) return;
+    const id = setTimeout(() => {
+      marcarChatLeido(groupId).catch(() => {
+        // Si falla, el contador se corrige en la siguiente visita.
+      });
+    }, 800);
+    return () => clearTimeout(id);
+  }, [groupId, mensajes]);
 
   const alDesplazar = () => {
     const el = lista.current;

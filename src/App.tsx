@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 import Inicio from "./pages/Inicio";
 import Grupo from "./pages/Grupo";
+import Ayuda from "./pages/Ayuda";
 
 export default function App() {
   return (
@@ -18,6 +19,14 @@ export default function App() {
             element={
               <RutaProtegida>
                 <Inicio />
+              </RutaProtegida>
+            }
+          />
+          <Route
+            path="/ayuda"
+            element={
+              <RutaProtegida>
+                <Ayuda />
               </RutaProtegida>
             }
           />

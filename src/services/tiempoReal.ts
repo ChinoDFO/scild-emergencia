@@ -14,6 +14,7 @@ export interface EventosTiempoReal {
   "mensaje:nuevo": Mensaje;
   "alertas:cambio": { groupId: string; alertId: string };
   "grupo:actualizado": { groupId: string };
+  "grupo:eliminado": { groupId: string };
 }
 
 let socket: Socket | null = null;
@@ -56,6 +57,19 @@ export function entrarASalaDeGrupo(groupId: string) {
   s.on("connect", entrar);
   return () => {
     s.off("connect", entrar);
+  };
+}
+
+// Le avisa al backend qué grupo trae abierto en pantalla, para que no le
+// mande push de los mensajes que ya está viendo. Se limpia al salir.
+export function avisarGrupoAbierto(groupId: string | null) {
+  const s = obtenerSocket();
+  const avisar = () => s.emit("grupo:viendo", groupId);
+  if (s.connected) avisar();
+  s.on("connect", avisar);
+  return () => {
+    s.off("connect", avisar);
+    if (s.connected) s.emit("grupo:viendo", null);
   };
 }
 

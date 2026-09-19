@@ -107,7 +107,7 @@ export default function BotonPanico({ groupId, alEnviar }: Props) {
 
   return (
     <div className="flex flex-col items-center gap-2 py-3">
-      <div className="relative size-32">
+      <div className="relative size-28">
         {/* Halo que late mientras está en reposo, para que se note que es EL botón. */}
         {estado === "listo" && (
           <span className="absolute inset-3 rounded-full bg-red-500/40 motion-safe:animate-[latido_2.4s_ease-out_infinite]" />
@@ -153,7 +153,7 @@ export default function BotonPanico({ groupId, alEnviar }: Props) {
             estado === "enviada" ? "bg-emerald-600" : "bg-red-600"
           } ${estado === "presionando" ? "scale-95 bg-red-700" : ""}`}
         >
-          <span className="text-3xl font-black tracking-wider">{estado === "enviada" ? "✓" : "SOS"}</span>
+          <span className="text-2xl font-black tracking-wider">{estado === "enviada" ? "✓" : "SOS"}</span>
         </button>
       </div>
 

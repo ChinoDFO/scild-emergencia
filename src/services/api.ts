@@ -6,6 +6,8 @@ export interface Grupo {
   id: string;
   name: string;
   role: "ADMIN" | "MEMBER";
+  // Mensajes del chat que esta persona no ha leído.
+  sinLeer: number;
 }
 
 export interface Perfil {
@@ -193,4 +195,29 @@ export function enviarMensaje(groupId: string, content: string): Promise<Mensaje
     method: "POST",
     body: JSON.stringify({ content }),
   });
+}
+
+// Marca el chat como leído hasta ahora: pone el contador en cero y hace que
+// el próximo aviso push traiga el mensaje en vez de "N mensajes nuevos".
+export function marcarChatLeido(groupId: string) {
+  return llamarBackend(`/api/groups/${encodeURIComponent(groupId)}/read`, { method: "POST" });
+}
+
+export function salirDelGrupo(groupId: string): Promise<{ ok: boolean; grupoBorrado: boolean }> {
+  return llamarBackend(`/api/groups/${encodeURIComponent(groupId)}/members/me`, { method: "DELETE" });
+}
+
+// Pide el nombre del grupo escrito igual, como confirmación.
+export function eliminarGrupo(groupId: string, confirmarNombre: string) {
+  return llamarBackend(`/api/groups/${encodeURIComponent(groupId)}`, {
+    method: "DELETE",
+    body: JSON.stringify({ confirmarNombre }),
+  });
+}
+
+export function cambiarRolMiembro(groupId: string, userId: string, role: "ADMIN" | "MEMBER") {
+  return llamarBackend(
+    `/api/groups/${encodeURIComponent(groupId)}/members/${encodeURIComponent(userId)}`,
+    { method: "PATCH", body: JSON.stringify({ role }) }
+  );
 }

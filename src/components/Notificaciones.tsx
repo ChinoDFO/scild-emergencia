@@ -46,6 +46,10 @@ export default function Notificaciones() {
   // alerta se muestra aquí dentro.
   useEffect(() => {
     return escucharAlertasEnPrimerPlano((payload) => {
+      // Los mensajes del chat también llegan por aquí, pero no son una
+      // emergencia: el chat ya los muestra solo.
+      if (payload.data?.kind === "chat") return;
+
       setUltimaAlerta({
         titulo: payload.notification?.title ?? "🚨 Emergencia",
         cuerpo: payload.notification?.body ?? "Se activó una alerta en tu grupo",
