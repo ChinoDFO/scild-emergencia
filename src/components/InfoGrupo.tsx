@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import {
   actualizarGrupo,
   cambiarRolMiembro,
+  desvincularBoton,
   eliminarGrupo,
   regenerarCodigoInvitacion,
   salirDelGrupo,
+  vincularBoton,
   type DetalleGrupo,
   type EstadoBoton,
 } from "../services/api";
@@ -42,6 +44,12 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
   const [nombreEscrito, setNombreEscrito] = useState("");
   const [eliminando, setEliminando] = useState(false);
   const [errorSalida, setErrorSalida] = useState<string | null>(null);
+  const [vinculando, setVinculando] = useState(false);
+  const [formularioBoton, setFormularioBoton] = useState(false);
+  const [codigoBoton, setCodigoBoton] = useState("");
+  const [nombreBoton, setNombreBoton] = useState("");
+  const [errorBoton, setErrorBoton] = useState<string | null>(null);
+  const [desvinculando, setDesvinculando] = useState<string | null>(null);
 
   const abrirEdicion = () => {
     setNombre(grupo.name);
@@ -86,6 +94,38 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
       setError(err instanceof Error ? err.message : "No se pudo generar el código");
     } finally {
       setRegenerando(false);
+    }
+  };
+
+  const vincular = async (e: FormEvent) => {
+    e.preventDefault();
+    setVinculando(true);
+    setErrorBoton(null);
+    try {
+      await vincularBoton(grupo.id, codigoBoton, nombreBoton.trim() || undefined);
+      setCodigoBoton("");
+      setNombreBoton("");
+      setFormularioBoton(false);
+      alCambiar();
+    } catch (err) {
+      setErrorBoton(err instanceof Error ? err.message : "No se pudo vincular");
+    } finally {
+      setVinculando(false);
+    }
+  };
+
+  const desvincular = async (deviceId: string, comoSeLlama: string) => {
+    const aviso = `${comoSeLlama} dejará de avisar a este grupo. Puedes volver a vincularlo con el código de su caja. ¿Continuar?`;
+    if (!confirm(aviso)) return;
+    setDesvinculando(deviceId);
+    setErrorBoton(null);
+    try {
+      await desvincularBoton(grupo.id, deviceId);
+      alCambiar();
+    } catch (err) {
+      setErrorBoton(err instanceof Error ? err.message : "No se pudo desvincular");
+    } finally {
+      setDesvinculando(null);
     }
   };
 
@@ -225,24 +265,103 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
           <ul className="mt-1 space-y-1">
             {grupo.devices.map((d) => {
               const estado = ESTADO_BOTON[d.status];
+              const comoSeLlama = d.name || d.deviceCode;
               return (
                 <li key={d.id} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-slate-800">{d.name || d.deviceCode}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${estado.clase}`}>
+                    <span className="min-w-0 font-medium text-slate-800">
+                      <span className="block truncate">{comoSeLlama}</span>
+                      {d.owner && (
+                        <span className="block truncate text-xs font-normal text-slate-500">
+                          de {d.owner.nombre}
+                        </span>
+                      )}
+                    </span>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${estado.clase}`}>
                       {estado.texto}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    {d.lastSeenAt
-                      ? `Última señal: ${new Date(d.lastSeenAt).toLocaleString("es-MX")}`
-                      : "Nunca se ha conectado"}
-                    {d.batteryLevel != null && ` · Batería ${d.batteryLevel}%`}
+                  <p className="mt-0.5 flex items-center justify-between gap-2 text-xs text-slate-500">
+                    <span className="min-w-0 truncate">
+                      {d.lastSeenAt
+                        ? `Última señal: ${new Date(d.lastSeenAt).toLocaleString("es-MX")}`
+                        : "Nunca se ha conectado"}
+                      {d.batteryLevel != null && ` · Batería ${d.batteryLevel}%`}
+                    </span>
+                    {d.puedoDesvincular && (
+                      <button
+                        onClick={() => desvincular(d.id, comoSeLlama)}
+                        disabled={desvinculando === d.id}
+                        className="shrink-0 font-medium text-slate-500 hover:text-red-600 disabled:opacity-60"
+                      >
+                        {desvinculando === d.id ? "…" : "Desvincular"}
+                      </button>
+                    )}
                   </p>
                 </li>
               );
             })}
           </ul>
+        )}
+
+        {formularioBoton ? (
+          <form onSubmit={vincular} className="mt-2 space-y-2 rounded-lg bg-slate-50 p-3 text-sm">
+            <label className="block text-slate-700">
+              Código de vinculación
+              <input
+                required
+                autoFocus
+                value={codigoBoton}
+                onChange={(e) => setCodigoBoton(e.target.value)}
+                placeholder="ABC-DEF-GHJ"
+                autoCapitalize="characters"
+                className={`${CLASE_INPUT} font-mono uppercase tracking-wider`}
+              />
+              <span className="mt-1 block text-xs text-slate-500">Viene impreso en la caja del botón.</span>
+            </label>
+            <label className="block text-slate-700">
+              ¿Cómo le llamamos? (opcional)
+              <input
+                maxLength={60}
+                value={nombreBoton}
+                onChange={(e) => setNombreBoton(e.target.value)}
+                placeholder="Caja 1, Recámara, Casa de Juan…"
+                className={CLASE_INPUT}
+              />
+            </label>
+            {errorBoton && <p className="rounded-lg bg-red-50 px-3 py-2 text-red-700">{errorBoton}</p>}
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={vinculando}
+                className="flex-1 rounded-lg bg-slate-900 py-2 font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+              >
+                {vinculando ? "Vinculando…" : "Vincular"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormularioBoton(false)}
+                className="flex-1 rounded-lg bg-white py-2 font-medium text-slate-700 ring-1 ring-slate-300"
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            {errorBoton && (
+              <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{errorBoton}</p>
+            )}
+            <button
+              onClick={() => {
+                setErrorBoton(null);
+                setFormularioBoton(true);
+              }}
+              className="mt-2 w-full rounded-lg bg-white py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50"
+            >
+              Vincular un botón
+            </button>
+          </>
         )}
       </section>
 

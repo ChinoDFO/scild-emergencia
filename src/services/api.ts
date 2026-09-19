@@ -102,6 +102,9 @@ export interface DetalleGrupo {
     batteryLevel: number | null;
     firmwareVersion: string | null;
     lastSeenAt: string | null;
+    // Quién lo vinculó: en un coto, de qué casa es el botón.
+    owner: { userId: string; nombre: string } | null;
+    puedoDesvincular: boolean;
   }[];
 }
 
@@ -219,5 +222,22 @@ export function cambiarRolMiembro(groupId: string, userId: string, role: "ADMIN"
   return llamarBackend(
     `/api/groups/${encodeURIComponent(groupId)}/members/${encodeURIComponent(userId)}`,
     { method: "PATCH", body: JSON.stringify({ role }) }
+  );
+}
+
+// Vincula un botón al grupo con el código impreso en su caja.
+export function vincularBoton(groupId: string, claimCode: string, name?: string) {
+  return llamarBackend(`/api/groups/${encodeURIComponent(groupId)}/devices/claim`, {
+    method: "POST",
+    body: JSON.stringify({ claimCode, ...(name ? { name } : {}) }),
+  });
+}
+
+// Lo suelta del grupo. El código de la caja sigue sirviendo para volver a
+// vincularlo, aquí o en otro grupo.
+export function desvincularBoton(groupId: string, deviceId: string) {
+  return llamarBackend(
+    `/api/groups/${encodeURIComponent(groupId)}/devices/${encodeURIComponent(deviceId)}`,
+    { method: "DELETE" }
   );
 }

@@ -39,6 +39,15 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         ],
       },
       {
+        id: "vincular",
+        pregunta: "¿Cómo vinculo mi botón a mi grupo?",
+        respuesta: [
+          "En la caja del botón viene un código de vinculación, tipo ABC-DEF-GHJ.",
+          "Abre tu grupo, toca su nombre arriba para ver la información y, en la sección de Botones, usa “Vincular un botón”. Captura el código y ponle un nombre para reconocerlo.",
+          "Si te dice que ese botón ya está vinculado, es que sigue ligado a otro grupo: desvincúlalo primero desde ahí.",
+        ],
+      },
+      {
         id: "instalar",
         pregunta: "¿Cómo instalo o cambio de lugar el botón?",
         respuesta: [],
