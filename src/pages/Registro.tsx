@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { vincularCodigo } from "../services/api";
 
 function mensajeError(codigo: string): string {
   switch (codigo) {
@@ -22,6 +23,7 @@ export default function Registro() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmacion, setConfirmacion] = useState("");
+  const [codigo, setCodigo] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -37,13 +39,30 @@ export default function Registro() {
     setEnviando(true);
     try {
       await registrarse(email, password, apodo.trim());
-      navigate("/", { replace: true });
     } catch (err) {
-      const codigo = (err as { code?: string }).code ?? "";
-      setError(mensajeError(codigo));
-    } finally {
+      setError(mensajeError((err as { code?: string }).code ?? ""));
       setEnviando(false);
+      return;
     }
+
+    // La cuenta ya existe y la sesión está abierta. Si el código falla (mal
+    // tecleado, ya usado dos veces), la cuenta NO se deshace: se manda a
+    // Códigos con el motivo, para que lo intente ahí sin volver a
+    // registrarse. Sin código, la cuenta entra como invitada.
+    if (codigo.trim()) {
+      try {
+        await vincularCodigo(codigo);
+      } catch (err) {
+        navigate("/codigos", {
+          replace: true,
+          state: { error: err instanceof Error ? err.message : "No se pudo vincular el código" },
+        });
+        return;
+      }
+    }
+
+    navigate("/", { replace: true });
+    setEnviando(false);
   }
 
   return (
@@ -120,6 +139,27 @@ export default function Registro() {
               onChange={(e) => setConfirmacion(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
             />
+          </div>
+
+          <div>
+            <label htmlFor="codigo" className="block text-sm font-medium text-slate-700">
+              Código del botón <span className="font-normal text-slate-400">(opcional)</span>
+            </label>
+            <input
+              id="codigo"
+              type="text"
+              autoCapitalize="characters"
+              autoComplete="off"
+              placeholder="ABC-DEF-GHJ"
+              value={codigo}
+              onChange={(e) => setCodigo(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm uppercase tracking-wider focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              Viene impreso en la caja de tu botón y sirve para dos personas. Sin él puedes
+              entrar a grupos y escribir en el chat, pero no enviar alertas. Lo puedes capturar
+              después en Códigos.
+            </p>
           </div>
 
           {error && (

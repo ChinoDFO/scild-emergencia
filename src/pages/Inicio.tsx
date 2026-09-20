@@ -24,6 +24,14 @@ export default function Inicio() {
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-slate-900">Tu cuenta</h1>
           <div className="flex items-center gap-4">
+            {perfil?.esAdminPlataforma && (
+              <Link to="/admin" className="text-sm font-medium text-red-600 hover:underline">
+                Admin
+              </Link>
+            )}
+            <Link to="/codigos" className="text-sm font-medium text-slate-500 hover:text-red-600">
+              Códigos
+            </Link>
             <Link to="/ayuda" className="text-sm font-medium text-slate-500 hover:text-red-600">
               Ayuda
             </Link>
@@ -43,6 +51,17 @@ export default function Inicio() {
         {error && (
           <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
             No se pudo cargar tu perfil del servidor: {error}
+          </p>
+        )}
+
+        {perfil && !perfil.accesoCompleto && (
+          <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            Tu cuenta es de invitado: puedes escribir en el chat de tus grupos, pero no enviar
+            alertas.{" "}
+            <Link to="/codigos" className="font-medium underline">
+              Captura el código de tu botón
+            </Link>
+            .
           </p>
         )}
 

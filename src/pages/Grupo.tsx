@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import BotonPanico from "../components/BotonPanico";
 import Conversacion from "../components/Conversacion";
 import InfoGrupo from "../components/InfoGrupo";
@@ -36,6 +36,7 @@ export default function Grupo() {
   const [infoAbierta, setInfoAbierta] = useState(false);
   const conectado = useConexionTiempoReal();
   const { alertas, cargar: recargarAlertas, cambiar, cambiando } = useAlertas({ groupId: id });
+  const [parametros, setParametros] = useSearchParams();
 
   const cargar = useCallback(() => {
     obtenerGrupo(id)
@@ -51,6 +52,19 @@ export default function Grupo() {
   // Mientras esta pantalla esté abierta, el backend no manda push de los
   // mensajes de este grupo: ya se están viendo.
   useEffect(() => avisarGrupoAbierto(id), [id]);
+
+  // Llega del botón "Ya voy" de la notificación: el service worker no puede
+  // llamar a la API (no tiene la sesión de la persona), así que abre la app
+  // con la alerta en la dirección y se atiende aquí. El parámetro se limpia
+  // de inmediato para que recargar la página no vuelva a dispararlo.
+  const porAtender = parametros.get("atender");
+  useEffect(() => {
+    if (!porAtender || !alertas) return;
+    setParametros({}, { replace: true });
+    const alerta = alertas.find((a) => a.id === porAtender);
+    if (alerta?.status === "ACTIVE") cambiar(alerta, "atender");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [porAtender, alertas]);
 
   // Alguien con permiso eliminó el grupo (o fue el último en salirse).
   useEventoTiempoReal("grupo:eliminado", ({ groupId }) => {
@@ -130,7 +144,18 @@ export default function Grupo() {
 
         {/* --- Emergencia --- */}
         <section className="border-b border-slate-200 bg-white" aria-label="Emergencia">
-          <BotonPanico groupId={grupo.id} alEnviar={recargarAlertas} />
+          {grupo.puedoAlertar ? (
+            <BotonPanico groupId={grupo.id} alEnviar={recargarAlertas} />
+          ) : (
+            // Sin el permiso no se esconde y ya: quien no ve el botón SOS
+            // tiene que entender por qué, o va a creer que la app falla justo
+            // cuando más la necesita.
+            <p className="px-5 py-3 text-center text-xs leading-relaxed text-slate-500">
+              Aquí recibes las alertas del grupo y participas en el chat. Para poder{" "}
+              <span className="font-medium text-slate-600">enviarlas</span>, vincula tu botón
+              desde la info del grupo o pídele al administrador que te habilite.
+            </p>
+          )}
 
           {abiertas.length > 0 && (
             <ul className="max-h-36 space-y-1 overflow-y-auto px-3 pb-3" aria-label="Alertas abiertas">
@@ -179,6 +204,7 @@ export default function Grupo() {
           groupId={grupo.id}
           groupName={grupo.name}
           myUserId={grupo.myUserId}
+          puedoAlertar={grupo.puedoAlertar}
           alertas={alertas ?? []}
           alEnviarAlerta={recargarAlertas}
         />

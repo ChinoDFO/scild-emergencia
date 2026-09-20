@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   actualizarGrupo,
   cambiarRolMiembro,
   desvincularBoton,
   eliminarGrupo,
+  otorgarAcceso,
   regenerarCodigoInvitacion,
   salirDelGrupo,
   vincularBoton,
@@ -39,6 +40,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
   const [copiado, setCopiado] = useState(false);
   const [regenerando, setRegenerando] = useState(false);
   const [cambiandoRol, setCambiandoRol] = useState<string | null>(null);
+  const [cambiandoPermiso, setCambiandoPermiso] = useState<string | null>(null);
   const [saliendo, setSaliendo] = useState(false);
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [nombreEscrito, setNombreEscrito] = useState("");
@@ -142,6 +144,24 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
     }
   };
 
+  // El titular le regala a alguien uno de los accesos completos que compró.
+  // Quitarlos se hace desde Códigos, que es donde se ve de qué botón salió
+  // cada acceso; aquí solo se sabe si la persona lo tiene o no.
+  const darAcceso = async (userId: string, nombre: string) => {
+    if (!miBoton) return;
+    if (!confirm(`${nombre} podrá enviar alertas en todos sus grupos. ¿Continuar?`)) return;
+    setCambiandoPermiso(userId);
+    setError(null);
+    try {
+      await otorgarAcceso(miBoton.id, userId);
+      alCambiar();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo dar el acceso");
+    } finally {
+      setCambiandoPermiso(null);
+    }
+  };
+
   const salir = async () => {
     if (!confirm(`Vas a salir de ${grupo.name} y dejarás de recibir sus alertas. ¿Seguro?`)) return;
     setSaliendo(true);
@@ -169,6 +189,12 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
       setEliminando(false);
     }
   };
+
+  // Si soy titular de alguno de los botones de este grupo, de ahí salen los
+  // accesos que puedo repartir.
+  const miBoton = grupo.devices.find((d) =>
+    d.titulares.some((t) => t.userId === grupo.myUserId)
+  );
 
   const mapa =
     grupo.latitude != null && grupo.longitude != null
@@ -259,6 +285,14 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
             Actualizar
           </button>
         </div>
+        <p className="mt-0.5 text-xs text-slate-500">
+          Cada botón da cupo para 10 personas en el grupo.{" "}
+          {grupo.cupos.total === 0
+            ? "Sin botones no se puede meter a nadie más."
+            : `Van ${grupo.cupos.ocupados} de ${grupo.cupos.total} lugares.`}
+          {grupo.cupos.sinRespaldo > 0 &&
+            ` ${grupo.cupos.sinRespaldo} sin botón que los respalde.`}
+        </p>
         {grupo.devices.length === 0 ? (
           <p className="mt-1 text-sm text-slate-400">Aún no hay botones vinculados a este grupo.</p>
         ) : (
@@ -271,9 +305,9 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                   <div className="flex items-center justify-between gap-2">
                     <span className="min-w-0 font-medium text-slate-800">
                       <span className="block truncate">{comoSeLlama}</span>
-                      {d.owner && (
+                      {d.titulares.length > 0 && (
                         <span className="block truncate text-xs font-normal text-slate-500">
-                          de {d.owner.nombre}
+                          de {d.titulares.map((t) => t.nombre).join(" y ")}
                         </span>
                       )}
                     </span>
@@ -367,29 +401,67 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
 
       <section>
         <h2 className="text-sm font-medium text-slate-700">Miembros ({grupo.members.length})</h2>
+        <p className="mt-0.5 text-xs text-slate-500">
+          Quien tiene un botón vinculado a su cuenta puede enviar alertas. Los demás participan
+          en el chat como invitados.
+        </p>
         <ul className="mt-1 space-y-1">
           {grupo.members.map((m) => (
-            <li key={m.userId} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm">
-              <span className="min-w-0">
-                <span className="font-medium text-slate-800">{m.displayName || m.email}</span>
-                {m.userId === grupo.myUserId && <span className="text-slate-400"> (tú)</span>}
-                {m.displayName && <span className="block truncate text-xs text-slate-400">{m.email}</span>}
-              </span>
-              <span className="flex shrink-0 items-center gap-3">
-                {esAdmin && m.userId !== grupo.myUserId && (
-                  <button
-                    onClick={() => hacerAdmin(m.userId, m.role === "ADMIN" ? "MEMBER" : "ADMIN")}
-                    disabled={cambiandoRol === m.userId}
-                    className="text-xs font-medium text-red-600 hover:underline disabled:opacity-60"
+            <li key={m.userId} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="min-w-0">
+                  <span className="font-medium text-slate-800">{m.displayName || m.email}</span>
+                  {m.userId === grupo.myUserId && <span className="text-slate-400"> (tú)</span>}
+                  {m.displayName && <span className="block truncate text-xs text-slate-400">{m.email}</span>}
+                </span>
+                <span className="flex shrink-0 items-center gap-2">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      m.accesoCompleto ? "bg-red-100 text-red-700" : "bg-slate-200 text-slate-600"
+                    }`}
                   >
-                    {m.role === "ADMIN" ? "Quitar admin" : "Hacer admin"}
-                  </button>
-                )}
-                <span className="text-xs uppercase text-slate-400">{m.role}</span>
-              </span>
+                    {m.accesoCompleto ? "Puede alertar" : "Invitado"}
+                  </span>
+                  <span className="text-xs uppercase text-slate-400">{m.role}</span>
+                </span>
+              </div>
+
+              {(esAdmin || miBoton) && (
+                <div className="mt-1 flex justify-end gap-3">
+                  {/* Regalar uno de los accesos comprados del botón propio. */}
+                  {miBoton && !m.accesoCompleto && m.userId !== grupo.myUserId && (
+                    <button
+                      onClick={() => darAcceso(m.userId, m.displayName || m.email)}
+                      disabled={cambiandoPermiso === m.userId}
+                      className="text-xs font-medium text-red-600 hover:underline disabled:opacity-60"
+                    >
+                      {cambiandoPermiso === m.userId ? "…" : "Dar acceso"}
+                    </button>
+                  )}
+                  {esAdmin && m.userId !== grupo.myUserId && (
+                    <button
+                      onClick={() => hacerAdmin(m.userId, m.role === "ADMIN" ? "MEMBER" : "ADMIN")}
+                      disabled={cambiandoRol === m.userId}
+                      className="text-xs font-medium text-slate-500 hover:text-red-600 disabled:opacity-60"
+                    >
+                      {m.role === "ADMIN" ? "Quitar admin" : "Hacer admin"}
+                    </button>
+                  )}
+                </div>
+              )}
             </li>
           ))}
         </ul>
+
+        {miBoton && (
+          <p className="mt-2 text-xs text-slate-500">
+            Los accesos que reparte tu botón se administran en{" "}
+            <Link to="/codigos" className="font-medium text-red-600 hover:underline">
+              Códigos
+            </Link>
+            .
+          </p>
+        )}
 
         {grupo.inviteCode && (
           <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm">

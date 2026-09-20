@@ -15,7 +15,64 @@ export interface Perfil {
   email: string;
   displayName: string | null;
   phone: string | null;
+  // Si la cuenta puede disparar alertas: es titular de un botón o un titular
+  // le regaló uno de sus accesos. Sin esto solo se participa en el chat.
+  accesoCompleto: boolean;
+  esTitular: boolean;
+  // Administrador de la plataforma (nosotros): ve el panel de solicitudes.
+  esAdminPlataforma: boolean;
   groups: Grupo[];
+}
+
+// --- Acceso de la cuenta (apartado de Códigos) ------------------------------
+
+export interface BotonDeAcceso {
+  id: string;
+  nombre: string;
+  deviceCode: string;
+  // A qué grupo le avisa este botón, si ya se vinculó a uno.
+  grupo: { id: string; name: string } | null;
+  // Las dos personas que comparten el botón.
+  titulares: { userId: string; nombre: string }[];
+  // Accesos comprados para repartir entre los invitados del grupo.
+  accesos: { comprados: number; repartidos: number; libres: number };
+  repartidosA: { userId: string; nombre: string; email: string }[];
+}
+
+export interface Acceso {
+  completo: boolean;
+  esTitular: boolean;
+  accesoDe: string | null;
+  botones: BotonDeAcceso[];
+}
+
+export function obtenerAcceso(): Promise<Acceso> {
+  return llamarBackend("/api/acceso");
+}
+
+// Vincula la cuenta a un botón con el código impreso en su caja. El mismo
+// código sirve para dos personas.
+export function vincularCodigo(claimCode: string) {
+  return llamarBackend("/api/acceso/vincular", {
+    method: "POST",
+    body: JSON.stringify({ claimCode }),
+  });
+}
+
+// El titular reparte uno de los accesos que compró: esa persona pasa de
+// invitada a tener las funciones completas.
+export function otorgarAcceso(deviceId: string, userId: string) {
+  return llamarBackend("/api/acceso/otorgar", {
+    method: "POST",
+    body: JSON.stringify({ deviceId, userId }),
+  });
+}
+
+export function retirarAcceso(deviceId: string, userId: string) {
+  return llamarBackend("/api/acceso/otorgar", {
+    method: "DELETE",
+    body: JSON.stringify({ deviceId, userId }),
+  });
 }
 
 async function llamarBackend(ruta: string, opciones: RequestInit = {}) {
@@ -29,9 +86,11 @@ async function llamarBackend(ruta: string, opciones: RequestInit = {}) {
   const respuesta = await fetch(`${API_URL}${ruta}`, {
     ...opciones,
     headers: {
-      ...opciones.headers,
       Authorization: `Bearer ${idToken}`,
+      // JSON por defecto, pero quien llama lo puede cambiar: el comprobante
+      // de pago se manda como imagen cruda, no como JSON.
       "Content-Type": "application/json",
+      ...opciones.headers,
     },
   });
 
@@ -92,7 +151,27 @@ export interface DetalleGrupo {
   myUserId: string;
   // Solo viene para el ADMIN del grupo.
   inviteCode: string | null;
-  members: { userId: string; email: string; displayName: string | null; role: "ADMIN" | "MEMBER" }[];
+  // Si puedes disparar alertas. Es propiedad de tu cuenta, no de este grupo:
+  // sin esto solo se participa en el chat y el botón SOS ni aparece.
+  puedoAlertar: boolean;
+  // Diez lugares por cada botón vinculado al grupo.
+  cupos: {
+    total: number;
+    ocupados: number;
+    libres: number;
+    // Miembros cuyo botón se desvinculó (siguen en el grupo, sin respaldo).
+    sinRespaldo: number;
+    porBoton: { deviceId: string; nombre: string; ocupados: number; libres: number }[];
+  };
+  members: {
+    userId: string;
+    email: string;
+    displayName: string | null;
+    role: "ADMIN" | "MEMBER";
+    // Titular de un botón o con un acceso regalado; si no, es invitado.
+    accesoCompleto: boolean;
+    seatDeviceId: string | null;
+  }[];
   devices: {
     id: string;
     deviceCode: string;
@@ -104,6 +183,8 @@ export interface DetalleGrupo {
     lastSeenAt: string | null;
     // Quién lo vinculó: en un coto, de qué casa es el botón.
     owner: { userId: string; nombre: string } | null;
+    // Las dos personas que comparten el botón.
+    titulares: { userId: string; nombre: string }[];
     puedoDesvincular: boolean;
   }[];
 }
@@ -240,4 +321,150 @@ export function desvincularBoton(groupId: string, deviceId: string) {
     `/api/groups/${encodeURIComponent(groupId)}/devices/${encodeURIComponent(deviceId)}`,
     { method: "DELETE" }
   );
+}
+
+// --- Ampliar el límite: chat con los administradores ------------------------
+
+export type EstadoPago = "ABIERTA" | "EN_REVISION" | "APROBADA" | "RECHAZADA" | "CANCELADA";
+
+export interface MensajePago {
+  id: string;
+  from: "CLIENTE" | "SOPORTE";
+  kind: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface SolicitudPago {
+  id: string;
+  deviceId: string;
+  boton: string;
+  status: EstadoPago;
+  proofAt: string | null;
+  note: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+  // Ya toca mandar la captura: dijo "Ya pagué" y todavía no manda ninguna.
+  esperaComprobante: boolean;
+  messages: MensajePago[];
+}
+
+export interface DatosDePago {
+  banco: string;
+  clabe: string;
+  titular: string;
+  monto: string;
+  contacto: string;
+  accesos: number;
+}
+
+export function obtenerPagos(): Promise<{
+  datos: DatosDePago;
+  respuestas: { id: string; texto: string }[];
+  solicitudes: SolicitudPago[];
+}> {
+  return llamarBackend("/api/pagos");
+}
+
+export function abrirSolicitudPago(deviceId: string): Promise<SolicitudPago> {
+  return llamarBackend("/api/pagos", { method: "POST", body: JSON.stringify({ deviceId }) });
+}
+
+// El cliente solo manda mensajes del catálogo; el texto lo pone el backend.
+export function responderEnPago(id: string, kind: string): Promise<SolicitudPago> {
+  return llamarBackend(`/api/pagos/${encodeURIComponent(id)}/mensajes`, {
+    method: "POST",
+    body: JSON.stringify({ kind }),
+  });
+}
+
+// La captura va como imagen cruda, no como JSON ni multipart: son unos
+// cientos de kilobytes y así el backend no necesita otra dependencia.
+export function subirComprobante(id: string, archivo: File): Promise<SolicitudPago> {
+  return llamarBackend(`/api/pagos/${encodeURIComponent(id)}/comprobante`, {
+    method: "POST",
+    headers: { "Content-Type": archivo.type },
+    body: archivo,
+  });
+}
+
+// --- Panel de administradores de la plataforma ------------------------------
+
+export interface SolicitudAdmin {
+  id: string;
+  status: EstadoPago;
+  createdAt: string;
+  proofAt: string | null;
+  reviewedAt: string | null;
+  revisadaPor: string | null;
+  note: string | null;
+  cliente: { userId: string; nombre: string; email: string; cuentaDesde: string };
+  boton: {
+    deviceId: string;
+    nombre: string;
+    deviceCode: string;
+    grupo: string | null;
+    accesosComprados: number;
+    accesosRepartidos: number;
+  };
+  // Enlace firmado que caduca; solo viene para lo que está por revisar.
+  comprobante: string | null;
+  hayComprobante: boolean;
+  messages: MensajePago[];
+}
+
+export interface ClienteAdmin {
+  deviceId: string;
+  nombre: string;
+  deviceCode: string;
+  grupo: string | null;
+  cliente: { userId: string; nombre: string; email: string; registradoEl: string };
+  acompanante: string | null;
+  ampliado: boolean;
+  accesosComprados: number;
+  accesosRepartidos: number;
+  lugaresOcupados: number;
+}
+
+export function listarSolicitudes(filtro: { estado?: string; q?: string } = {}): Promise<SolicitudAdmin[]> {
+  const parametros = new URLSearchParams();
+  if (filtro.estado) parametros.set("estado", filtro.estado);
+  if (filtro.q) parametros.set("q", filtro.q);
+  const query = parametros.toString();
+  return llamarBackend(`/api/admin/solicitudes${query ? `?${query}` : ""}`);
+}
+
+export function aprobarSolicitud(id: string): Promise<{ accesosComprados: number }> {
+  return llamarBackend(`/api/admin/solicitudes/${encodeURIComponent(id)}/aprobar`, { method: "POST" });
+}
+
+export function rechazarSolicitud(id: string, note: string) {
+  return llamarBackend(`/api/admin/solicitudes/${encodeURIComponent(id)}/rechazar`, {
+    method: "POST",
+    body: JSON.stringify({ note }),
+  });
+}
+
+// Soporte sí escribe texto libre: del otro lado estamos nosotros.
+export function responderComoSoporte(id: string, body: string): Promise<MensajePago> {
+  return llamarBackend(`/api/admin/solicitudes/${encodeURIComponent(id)}/mensajes`, {
+    method: "POST",
+    body: JSON.stringify({ body }),
+  });
+}
+
+export function listarClientes(filtro: { ampliados?: string; q?: string } = {}): Promise<ClienteAdmin[]> {
+  const parametros = new URLSearchParams();
+  if (filtro.ampliados) parametros.set("ampliados", filtro.ampliados);
+  if (filtro.q) parametros.set("q", filtro.q);
+  const query = parametros.toString();
+  return llamarBackend(`/api/admin/clientes${query ? `?${query}` : ""}`);
+}
+
+// Amplía el límite a mano, sin pasar por una solicitud.
+export function ampliarLimite(deviceId: string, accesos?: number): Promise<{ accesosComprados: number }> {
+  return llamarBackend(`/api/admin/clientes/${encodeURIComponent(deviceId)}/accesos`, {
+    method: "POST",
+    body: JSON.stringify(accesos === undefined ? {} : { accesos }),
+  });
 }

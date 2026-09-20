@@ -86,11 +86,20 @@ interface Props {
   groupId: string;
   groupName: string;
   myUserId: string;
+  // Sin esto no aparece el botón "!" de alertas: el chat funciona igual.
+  puedoAlertar: boolean;
   alertas: Alerta[];
   alEnviarAlerta: () => void;
 }
 
-export default function Conversacion({ groupId, groupName, myUserId, alertas, alEnviarAlerta }: Props) {
+export default function Conversacion({
+  groupId,
+  groupName,
+  myUserId,
+  puedoAlertar,
+  alertas,
+  alEnviarAlerta,
+}: Props) {
   const { mensajes, hayMas, cargandoAnteriores, cargarAnteriores, enviar, error } = useMensajes(groupId);
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -283,7 +292,7 @@ export default function Conversacion({ groupId, groupName, myUserId, alertas, al
       </div>
 
       <div className="border-t border-slate-200 bg-slate-100">
-        {menuAbierto && (
+        {menuAbierto && puedoAlertar && (
           <div className="pt-2">
             <MenuAlertas
               groupId={groupId}
@@ -317,12 +326,12 @@ export default function Conversacion({ groupId, groupName, myUserId, alertas, al
             className="max-h-32 min-h-12 flex-1 resize-none rounded-3xl border-0 bg-white px-4 py-3 text-[15px] leading-6 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-300"
           />
 
-          {hayTexto ? (
+          {hayTexto || !puedoAlertar ? (
             <button
               type="submit"
-              disabled={enviando}
+              disabled={enviando || !hayTexto}
               aria-label="Enviar mensaje"
-              className="flex size-12 shrink-0 items-center justify-center rounded-full bg-slate-800 text-white shadow-md hover:bg-slate-900 disabled:opacity-60"
+              className="flex size-12 shrink-0 items-center justify-center rounded-full bg-slate-800 text-white shadow-md hover:bg-slate-900 disabled:opacity-40"
             >
               <svg viewBox="0 0 24 24" className="size-5 translate-x-px" fill="currentColor" aria-hidden>
                 <path d="M3.4 20.4 21 12 3.4 3.6l-.01 6.53L15 12 3.39 13.87z" />

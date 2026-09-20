@@ -76,6 +76,24 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         ],
       },
       {
+        id: "sin-boton-sos",
+        pregunta: "No me aparece el botón SOS en mi grupo",
+        respuesta: [
+          "Las alertas las envía quien tiene un botón vinculado a su cuenta. Los demás reciben todas las alertas y participan en el chat, pero no pueden dispararlas.",
+          'Si compraste un botón, captura el código de su caja en el apartado "Códigos". Ese mismo código sirve para dos personas: tú y quien viva contigo, porque el botón es de la casa.',
+          "Si no tienes botón propio (cubres un turno, vives ahí pero el código ya se usó dos veces), pídele a un titular que te dé uno de los accesos que haya comprado: lo hace desde la información del grupo, junto a tu nombre.",
+        ],
+      },
+      {
+        id: "insistente",
+        pregunta: "¿Por qué la alerta suena varias veces?",
+        respuesta: [
+          "A propósito: una emergencia se repite un par de veces para que no se pierda entre otros avisos. Un mensaje normal del chat suena una sola vez.",
+          'Deja de repetirse en cuanto alguien del grupo toca "Ya voy" o marca la alerta como resuelta.',
+          "Si tienes la app abierta cuando llega, además suena una sirena en el celular hasta que la silencias.",
+        ],
+      },
+      {
         id: "probar",
         pregunta: "¿Puedo hacer una prueba sin que sea una emergencia real?",
         respuesta: [
@@ -97,6 +115,24 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
     id: "cuenta",
     titulo: "Cuenta y grupos",
     preguntas: [
+      {
+        id: "ampliar-limite",
+        pregunta: "¿Cómo dejo que más personas de mi grupo envíen alertas?",
+        respuesta: [
+          "De fábrica, tu botón da funciones completas a sus dos titulares: tú y quien viva contigo. Los demás entran como invitados.",
+          'Si quieres que más gente de tu grupo pueda enviar alertas, entra a "Códigos" y toca "Ampliar límite". Ahí te damos los datos para hacer la transferencia.',
+          "Cuando hayas pagado, toca \"Ya pagué\" y manda la captura de tu comprobante. Solo se puede mandar una por solicitud, así que revisa antes que se vean el monto y la fecha.",
+          "En cuanto confirmemos el depósito se te activan cinco accesos, que repartes desde la información de tu grupo, junto al nombre de cada persona.",
+        ],
+      },
+      {
+        id: "cupo-grupo",
+        pregunta: "Ya no puedo meter a más gente a mi grupo",
+        respuesta: [
+          "Cada botón da cupo para 10 personas en el grupo. Cuando se llenan, la forma de crecer es que alguien más con su propio botón se una: ese botón trae sus otros 10 lugares.",
+          "Ampliar el límite es otra cosa: eso no mete más gente, sino que deja que más de los que ya están puedan enviar alertas.",
+        ],
+      },
       {
         id: "invitar",
         pregunta: "¿Cómo invito a alguien a mi grupo?",

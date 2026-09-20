@@ -40,20 +40,42 @@ clientsClaim();
 // enfoca una ventana si su URL coincide exacto con el link, así que si
 // corriera primero este nunca se ejecutaría (le pasaba al SW anterior).
 self.addEventListener("notificationclick", (evento) => {
-  if (!evento.notification.data?.FCM_MSG) return;
+  const mensaje = evento.notification.data?.FCM_MSG;
+  if (!mensaje) return;
 
   evento.stopImmediatePropagation();
   evento.notification.close();
+
+  // Lo que el backend mandó en "data": de qué grupo y qué alerta es.
+  const datos: Record<string, string> = mensaje.data ?? {};
+
+  // A dónde llevar a la persona. Con el grupo se abre su pantalla directo;
+  // el botón "Ya voy" agrega ?atender=<alerta> y de eso se encarga la app al
+  // cargar (el service worker no puede llamar a la API: no tiene sesión).
+  let destino = self.registration.scope;
+  if (datos.groupId) {
+    destino += `grupos/${datos.groupId}`;
+    if (evento.action === "atender" && datos.alertId) {
+      destino += `?atender=${datos.alertId}`;
+    }
+  }
 
   evento.waitUntil(
     (async () => {
       const ventanas = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
       const abierta = ventanas.find((v) => v.url.startsWith(self.registration.scope));
       if (abierta) {
+        // navigate puede fallar (la pestaña está en otro origen, el
+        // navegador no lo permite); enfocarla siempre es mejor que nada.
+        try {
+          await abierta.navigate(destino);
+        } catch {
+          // Se queda donde estaba.
+        }
         await abierta.focus();
         return;
       }
-      await self.clients.openWindow(self.registration.scope);
+      await self.clients.openWindow(destino);
     })()
   );
 });
