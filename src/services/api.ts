@@ -407,8 +407,7 @@ export interface SolicitudAdmin {
     accesosComprados: number;
     accesosRepartidos: number;
   };
-  // Enlace firmado que caduca; solo viene para lo que está por revisar.
-  comprobante: string | null;
+  // La imagen no viaja en el JSON: se pide con descargarComprobante().
   hayComprobante: boolean;
   messages: MensajePago[];
 }
@@ -432,6 +431,30 @@ export function listarSolicitudes(filtro: { estado?: string; q?: string } = {}):
   if (filtro.q) parametros.set("q", filtro.q);
   const query = parametros.toString();
   return llamarBackend(`/api/admin/solicitudes${query ? `?${query}` : ""}`);
+}
+
+// Trae la captura del comprobante y devuelve una URL local para pintarla.
+// No se puede poner la ruta directo en un <img src>: pide sesión de
+// administrador y el navegador no manda la cabecera Authorization al cargar
+// una imagen. Quien la use debe soltarla después con URL.revokeObjectURL.
+export async function descargarComprobante(id: string): Promise<string> {
+  const usuario = auth.currentUser;
+  if (!usuario) {
+    throw new Error("No hay sesión activa");
+  }
+
+  const idToken = await usuario.getIdToken();
+  const respuesta = await fetch(
+    `${API_URL}/api/admin/solicitudes/${encodeURIComponent(id)}/comprobante`,
+    { headers: { Authorization: `Bearer ${idToken}` } }
+  );
+
+  if (!respuesta.ok) {
+    const datos = await respuesta.json().catch(() => null);
+    throw new Error(datos?.error ?? "No se pudo cargar el comprobante");
+  }
+
+  return URL.createObjectURL(await respuesta.blob());
 }
 
 export function aprobarSolicitud(id: string): Promise<{ accesosComprados: number }> {

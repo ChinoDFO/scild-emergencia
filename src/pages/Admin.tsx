@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ampliarLimite,
   aprobarSolicitud,
+  descargarComprobante,
   listarClientes,
   listarSolicitudes,
   rechazarSolicitud,
@@ -54,6 +55,13 @@ export default function Admin() {
   const [cargando, setCargando] = useState(true);
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Las capturas se piden una por una, al tocar "Ver comprobante": son
+  // cientos de kilobytes cada una y casi nunca se necesitan las cincuenta.
+  const [comprobantes, setComprobantes] = useState<Record<string, string>>({});
+  // Las mismas URLs en un ref, para poder soltarlas AL SALIR de la pantalla.
+  // Con el estado en las dependencias del efecto, cargar la segunda captura
+  // revocaba la primera y la imagen que ya estaba a la vista se rompía.
+  const urls = useRef<Record<string, string>>({});
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -77,6 +85,13 @@ export default function Admin() {
     cargar();
   }, [cargar]);
 
+  useEffect(() => {
+    const abiertas = urls.current;
+    return () => {
+      for (const url of Object.values(abiertas)) URL.revokeObjectURL(url);
+    };
+  }, []);
+
   const conError = async (id: string, accion: () => Promise<void>) => {
     setOcupado(id);
     setError(null);
@@ -85,6 +100,22 @@ export default function Admin() {
       await cargar();
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo completar");
+    } finally {
+      setOcupado(null);
+    }
+  };
+
+  // Aparte de conError a propósito: traer la imagen no tiene por qué volver
+  // a pedir toda la lista.
+  const verComprobante = async (id: string) => {
+    setOcupado(id);
+    setError(null);
+    try {
+      const url = await descargarComprobante(id);
+      urls.current[id] = url;
+      setComprobantes((previos) => ({ ...previos, [id]: url }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo cargar el comprobante");
     } finally {
       setOcupado(null);
     }
@@ -221,24 +252,27 @@ export default function Admin() {
                   {s.boton.accesosComprados} comprados
                 </p>
 
-                {s.comprobante ? (
-                  <a href={s.comprobante} target="_blank" rel="noreferrer" className="mt-2 block">
-                    <img
-                      src={s.comprobante}
-                      alt="Comprobante de pago"
-                      className="max-h-56 rounded-lg border border-slate-200 object-contain"
-                    />
-                    <span className="mt-1 block text-xs font-medium text-red-600">
-                      Abrir comprobante
-                    </span>
-                  </a>
-                ) : (
-                  s.hayComprobante && (
-                    <p className="mt-2 text-xs text-slate-400">
-                      Hay comprobante. Filtra por "Por revisar" para verlo (el enlace caduca).
-                    </p>
-                  )
-                )}
+                {s.hayComprobante &&
+                  (comprobantes[s.id] ? (
+                    <a href={comprobantes[s.id]} target="_blank" rel="noreferrer" className="mt-2 block">
+                      <img
+                        src={comprobantes[s.id]}
+                        alt="Comprobante de pago"
+                        className="max-h-72 rounded-lg border border-slate-200 object-contain"
+                      />
+                      <span className="mt-1 block text-xs font-medium text-red-600">
+                        Abrir en grande
+                      </span>
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => verComprobante(s.id)}
+                      disabled={ocupado === s.id}
+                      className="mt-2 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 disabled:opacity-60"
+                    >
+                      {ocupado === s.id ? "Cargando…" : "Ver comprobante"}
+                    </button>
+                  ))}
 
                 {s.note && <p className="mt-2 text-xs text-slate-600">Nota: {s.note}</p>}
                 {s.revisadaPor && (
