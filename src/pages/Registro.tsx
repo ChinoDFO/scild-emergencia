@@ -2,6 +2,8 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { vincularCodigo } from "../services/api";
+import CampoContrasena from "../components/CampoContrasena";
+import CampoCorreo from "../components/CampoCorreo";
 
 function mensajeError(codigo: string): string {
   switch (codigo) {
@@ -94,52 +96,25 @@ export default function Registro() {
             </p>
           </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-              Correo
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            />
-          </div>
+          <CampoCorreo id="email" value={email} onChange={setEmail} />
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-              Contraseña
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            />
-          </div>
+          <CampoContrasena
+            id="password"
+            label="Contraseña"
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+            minLength={6}
+          />
 
-          <div>
-            <label htmlFor="confirmacion" className="block text-sm font-medium text-slate-700">
-              Confirmar contraseña
-            </label>
-            <input
-              id="confirmacion"
-              type="password"
-              required
-              minLength={6}
-              autoComplete="new-password"
-              value={confirmacion}
-              onChange={(e) => setConfirmacion(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            />
-          </div>
+          <CampoContrasena
+            id="confirmacion"
+            label="Confirmar contraseña"
+            value={confirmacion}
+            onChange={setConfirmacion}
+            autoComplete="new-password"
+            minLength={6}
+          />
 
           <div>
             <label htmlFor="codigo" className="block text-sm font-medium text-slate-700">

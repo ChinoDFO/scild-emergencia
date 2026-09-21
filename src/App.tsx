@@ -4,6 +4,7 @@ import AlarmaEnPantalla from "./components/AlarmaEnPantalla";
 import RutaProtegida from "./components/RutaProtegida";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
+import Recuperar from "./pages/Recuperar";
 import Inicio from "./pages/Inicio";
 import Grupo from "./pages/Grupo";
 import Ayuda from "./pages/Ayuda";
@@ -20,6 +21,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
+          <Route path="/recuperar" element={<Recuperar />} />
           <Route
             path="/"
             element={

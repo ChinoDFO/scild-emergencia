@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import CampoContrasena from "../components/CampoContrasena";
+import CampoCorreo from "../components/CampoCorreo";
 
 function mensajeError(codigo: string): string {
   switch (codigo) {
@@ -49,34 +51,21 @@ export default function Login() {
         </p>
 
         <form onSubmit={manejarEnvio} className="mt-6 space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-              Correo
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            />
-          </div>
+          <CampoCorreo id="email" value={email} onChange={setEmail} />
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-              Contraseña
-            </label>
-            <input
+            <CampoContrasena
               id="password"
-              type="password"
-              required
-              autoComplete="current-password"
+              label="Contraseña"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+              onChange={setPassword}
+              autoComplete="current-password"
             />
+            <p className="mt-1 text-right">
+              <Link to="/recuperar" className="text-xs text-slate-500 hover:text-red-600 hover:underline">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </p>
           </div>
 
           {error && (

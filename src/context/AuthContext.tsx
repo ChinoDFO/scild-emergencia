@@ -9,6 +9,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   type User,
 } from "firebase/auth";
@@ -22,6 +23,7 @@ interface AuthContextValue {
   cargando: boolean;
   iniciarSesion: (email: string, password: string) => Promise<void>;
   registrarse: (email: string, password: string, apodo: string) => Promise<void>;
+  recuperarContrasena: (email: string) => Promise<void>;
   cerrarSesion: () => Promise<void>;
 }
 
@@ -53,6 +55,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Firebase manda el correo con el enlace para poner una contraseña nueva;
+  // el backend no se entera ni tiene por qué. Quien llame a esto NO debe
+  // distinguir si el correo existía: ver abajo, en la pantalla.
+  const recuperarContrasena = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
   // El token de push se borra ANTES de cerrar la sesión: desregistrarlo
   // requiere el token de Firebase del usuario actual, y en un equipo
   // compartido el siguiente en entrar no debe heredar sus alertas.
@@ -64,7 +73,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ usuario, cargando, iniciarSesion, registrarse, cerrarSesion }}
+      value={{
+        usuario,
+        cargando,
+        iniciarSesion,
+        registrarse,
+        recuperarContrasena,
+        cerrarSesion,
+      }}
     >
       {children}
     </AuthContext.Provider>
