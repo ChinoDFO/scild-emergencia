@@ -137,6 +137,16 @@ export default function Codigos() {
             <p className="mt-1 text-xs text-slate-500">
               Titulares: {b.titulares.map((t) => t.nombre).join(" y ")} ({b.titulares.length} de 2)
             </p>
+            {/* TEMPORAL (pruebas): la confusión que salió al probar. Son dos
+                límites distintos y el de arriba NO se compra. */}
+            {b.titulares.length >= 2 && (
+              <p className="mt-1 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                Este botón ya tiene sus dos titulares, y ese número no se amplía pagando: el código
+                de la caja vale exactamente dos veces, siempre.{" "}
+                <span className="font-medium">Ampliar el límite es otra cosa</span> — suma accesos
+                completos para repartir entre gente que ya está en tu grupo, no titulares nuevos.
+              </p>
+            )}
 
             <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm">
               <p className="text-slate-700">

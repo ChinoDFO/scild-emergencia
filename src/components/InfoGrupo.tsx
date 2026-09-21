@@ -285,14 +285,36 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
             Actualizar
           </button>
         </div>
-        <p className="mt-0.5 text-xs text-slate-500">
-          Cada botón da cupo para 10 personas en el grupo.{" "}
-          {grupo.cupos.total === 0
-            ? "Sin botones no se puede meter a nadie más."
-            : `Van ${grupo.cupos.ocupados} de ${grupo.cupos.total} lugares.`}
-          {grupo.cupos.sinRespaldo > 0 &&
-            ` ${grupo.cupos.sinRespaldo} sin botón que los respalde.`}
-        </p>
+        {/* TEMPORAL (pruebas): el detalle de dónde sale cada lugar. Antes decía
+            solo "Van 2 de 10 lugares" y no se entendía de qué eran esos
+            lugares ni quién los ocupaba. */}
+        <div className="mt-0.5 space-y-1 text-xs text-slate-500">
+          {grupo.cupos.total === 0 ? (
+            <p className="rounded-lg bg-amber-50 px-3 py-2 text-amber-800">
+              <span className="font-medium">Este grupo no tiene ningún botón vinculado.</span> Por
+              eso nadie puede entrar todavía, ni con el código de invitación: los lugares salen de
+              los botones, y sin botón el cupo es 0.
+              {esAdmin && " Vincula el tuyo aquí abajo y se abren 10 lugares."}
+            </p>
+          ) : (
+            <p>
+              <span className="font-medium text-slate-700">
+                Personas en el grupo: {grupo.members.length} de {grupo.cupos.total}
+              </span>{" "}
+              — cada botón vinculado da 10 lugares, y aquí hay {grupo.devices.length}{" "}
+              {grupo.devices.length === 1 ? "botón" : "botones"}. Quedan {grupo.cupos.libres}{" "}
+              {grupo.cupos.libres === 1 ? "lugar libre" : "lugares libres"}.
+            </p>
+          )}
+          {grupo.cupos.sinRespaldo > 0 && (
+            <p className="text-amber-700">
+              {grupo.cupos.sinRespaldo}{" "}
+              {grupo.cupos.sinRespaldo === 1 ? "persona está" : "personas están"} en el grupo sin
+              que ningún botón respalde su lugar (entraron antes de que hubiera botón, o el suyo se
+              desvinculó). No se va nadie, pero esos lugares no cuentan como libres.
+            </p>
+          )}
+        </div>
         {grupo.devices.length === 0 ? (
           <p className="mt-1 text-sm text-slate-400">Aún no hay botones vinculados a este grupo.</p>
         ) : (
@@ -315,6 +337,17 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                       {estado.texto}
                     </span>
                   </div>
+                  {/* TEMPORAL (pruebas): de este botón salen estos lugares. */}
+                  {(() => {
+                    const cupo = grupo.cupos.porBoton.find((c) => c.deviceId === d.id);
+                    return cupo ? (
+                      <p className="mt-0.5 text-xs font-medium text-slate-600">
+                        De este botón salen {cupo.ocupados + cupo.libres} lugares: {cupo.ocupados}{" "}
+                        {cupo.ocupados === 1 ? "ocupado" : "ocupados"} y {cupo.libres}{" "}
+                        {cupo.libres === 1 ? "libre" : "libres"}.
+                      </p>
+                    ) : null;
+                  })()}
                   <p className="mt-0.5 flex items-center justify-between gap-2 text-xs text-slate-500">
                     <span className="min-w-0 truncate">
                       {d.lastSeenAt
@@ -413,6 +446,29 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                   <span className="font-medium text-slate-800">{m.displayName || m.email}</span>
                   {m.userId === grupo.myUserId && <span className="text-slate-400"> (tú)</span>}
                   {m.displayName && <span className="block truncate text-xs text-slate-400">{m.email}</span>}
+                  {/* TEMPORAL (pruebas): de qué botón sale su lugar, y de cuál
+                      viene su permiso de alertar. Son dos cosas distintas y se
+                      confundían: el lugar lo da el botón del GRUPO, el permiso
+                      lo da el botón de su CUENTA. */}
+                  <span className="block truncate text-xs text-slate-500">
+                    Lugar:{" "}
+                    {(() => {
+                      const suBoton = grupo.devices.find((d) => d.id === m.seatDeviceId);
+                      if (!suBoton) return "sin botón que lo respalde";
+                      return suBoton.name || suBoton.deviceCode;
+                    })()}
+                    {" · "}
+                    {(() => {
+                      const esTitular = grupo.devices.filter((d) =>
+                        d.titulares.some((t) => t.userId === m.userId)
+                      );
+                      if (esTitular.length > 0)
+                        return `titular de ${esTitular.map((d) => d.name || d.deviceCode).join(", ")}`;
+                      return m.accesoCompleto
+                        ? "alerta con un acceso que le dieron"
+                        : "sin botón en su cuenta";
+                    })()}
+                  </span>
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
                   <span
