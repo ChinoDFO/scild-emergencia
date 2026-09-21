@@ -1,9 +1,96 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Sistema de diseño de SCILD CONTROL.
+
+   Los colores salen medidos del PDF de diseño, no inventados:
+   la superficie gris-azul, el círculo de los avatares, el relleno de las
+   burbujas del chat y el degradado del login son los valores exactos.
+
+   Todo pasa por variables para que el modo oscuro sea cambiar el juego de
+   valores y no reescribir cada pantalla. El tema se fija con data-tema="oscuro"
+   en <html> (ver src/context/TemaContext.tsx).
+--------------------------------------------------------------------------- */
+:root {
+  --fondo: #ffffff;
+  --superficie: #c7d0d9;        /* tarjetas, filas, barra de búsqueda */
+  --superficie-suave: #dde3e9;  /* tarjetas dentro de una superficie */
+  --avatar: #5b6170;
+  --texto: #000000;
+  --texto-tenue: #5b6170;
+  --borde: #000000;
+  --borde-tenue: #9aa3b0;
+  --burbuja: #fefad1;           /* relleno de los mensajes */
+  --burbuja-borde: #4a2318;
+  --alerta: #f5c93f;            /* el "!" flotante del chat */
+  --emergencia: #2e1a17;        /* el círculo del centro de la barra */
+  --peligro: #b91c1c;
+  /* El degradado del login, de gris a negro. */
+  --login-de: #828282;
+  --login-a: #0b0b0b;
+  --sombra: rgba(0, 0, 0, 0.35);
+}
+
+:root[data-tema="oscuro"] {
+  --fondo: #14171c;
+  --superficie: #252b34;
+  --superficie-suave: #2f3742;
+  --avatar: #8d95a6;
+  --texto: #f2f5f8;
+  --texto-tenue: #aab3c0;
+  --borde: #f2f5f8;
+  --borde-tenue: #4a5260;
+  --burbuja: #3a3722;
+  --burbuja-borde: #d9cf8f;
+  --alerta: #f5c93f;
+  --emergencia: #f0e3e0;
+  --peligro: #f87171;
+  --login-de: #3a3a3a;
+  --login-a: #000000;
+  --sombra: rgba(0, 0, 0, 0.6);
+}
+
 body {
   margin: 0;
   min-height: 100svh;
+  background: var(--fondo);
+  color: var(--texto);
 }
+
+/* El trazo negro grueso de todo el diseño: filas, pills, tarjetas. */
+.trazo {
+  border: 2px solid var(--borde);
+}
+
+/* La pieza que más se repite: rectángulo gris-azul muy redondeado con
+   contorno. Sirve igual para una fila de grupo, un pill de configuración o
+   la barra de búsqueda. */
+.pieza {
+  background: var(--superficie);
+  border: 2px solid var(--borde);
+  border-radius: 9999px;
+}
+
+.tarjeta {
+  background: var(--superficie);
+  border: 2px solid var(--borde);
+  border-radius: 20px;
+}
+
+/* Contorno punteado: en el diseño marca los bloques de datos del perfil y
+   los formularios del botón. */
+.punteado {
+  border: 3px dashed var(--borde);
+}
+
+/* Título de pantalla: negrita, mayúsculas, pegado a la izquierda. */
+.titulo-pantalla {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--texto);
+}
+
 
 /* Halo del botón SOS en reposo. */
 @keyframes latido {
@@ -22,6 +109,6 @@ body {
    propios (escudo, campana, casa, corazón). Da la sensación de app de
    mensajería sin copiar el fondo de ninguna. */
 .fondo-chat {
-  background-color: #e9edf1;
+  background-color: var(--fondo);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23b91c1c' stroke-opacity='0.07' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M30 14l14 5v10c0 9-6 15-14 18-8-3-14-9-14-18V19z'/%3E%3Cpath d='M112 22a9 9 0 0 1 18 0c0 10 5 13 5 13h-28s5-3 5-13M118 40a3 3 0 0 0 6 0'/%3E%3Cpath d='M22 112l14-12 14 12v16H22zM32 128v-9h8v9'/%3E%3Cpath d='M116 128s-14-8-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 10-14 18-14 18z'/%3E%3Ccircle cx='80' cy='80' r='3'/%3E%3Cpath d='M70 40h8M74 36v8M86 124h8M90 120v8'/%3E%3C/g%3E%3C/svg%3E");
 }
