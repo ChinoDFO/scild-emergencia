@@ -112,6 +112,12 @@ export function actualizarApodo(displayName: string): Promise<{ displayName: str
   return llamarBackend("/api/auth/me", { method: "PATCH", body: JSON.stringify({ displayName }) });
 }
 
+// Borra la cuenta. El backend libera el lugar que ocupaba en el código de la
+// caja y devuelve de cuántos botones era titular.
+export function eliminarCuenta(): Promise<{ ok: true; botonesLiberados: number }> {
+  return llamarBackend("/api/auth/me", { method: "DELETE" });
+}
+
 export function crearGrupo(datos: { name: string; address: string }): Promise<{ id: string; name: string }> {
   return llamarBackend("/api/groups", { method: "POST", body: JSON.stringify(datos) });
 }

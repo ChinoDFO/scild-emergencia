@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Apodo from "../components/Apodo";
+import EliminarCuenta from "../components/EliminarCuenta";
 import GestionGrupos from "../components/GestionGrupos";
 import ListaAlertas from "../components/ListaAlertas";
 import Notificaciones from "../components/Notificaciones";
@@ -116,6 +117,8 @@ export default function Inicio() {
         )}
 
         <Notificaciones />
+
+        {usuario?.email && <EliminarCuenta email={usuario.email} />}
       </div>
     </div>
   );
