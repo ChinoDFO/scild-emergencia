@@ -21,6 +21,8 @@ export interface Perfil {
   esTitular: boolean;
   // Administrador de la plataforma (nosotros): ve el panel de solicitudes.
   esAdminPlataforma: boolean;
+  // Para el dato "fecha de creación de cuenta" del perfil.
+  creadaEl: string;
   groups: Grupo[];
 }
 
@@ -37,6 +39,13 @@ export interface BotonDeAcceso {
   // Accesos comprados para repartir entre los invitados del grupo.
   accesos: { comprados: number; repartidos: number; libres: number };
   repartidosA: { userId: string; nombre: string; email: string }[];
+  // Monitoreo. La dirección es la del establecimiento donde está vinculado:
+  // el aparato no guarda una propia.
+  direccion: string | null;
+  estado: "ONLINE" | "IRREGULAR" | "OFFLINE" | "EMERGENCY" | "MAINTENANCE";
+  ultimaSenal: string | null;
+  bateria: number | null;
+  firmware: string | null;
 }
 
 export interface Acceso {
