@@ -2,8 +2,12 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { vincularCodigo } from "../services/api";
+import TarjetaSesion, {
+  CampoSesion,
+  CLASE_BOTON_SESION,
+  CLASE_CAMPO_SESION,
+} from "../components/TarjetaSesion";
 import CampoContrasena from "../components/CampoContrasena";
-import CampoCorreo from "../components/CampoCorreo";
 
 function mensajeError(codigo: string): string {
   switch (codigo) {
@@ -68,36 +72,35 @@ export default function Registro() {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-        <h1 className="text-xl font-semibold text-slate-900">Crear cuenta</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Regístrate para gestionar tu botón de emergencia.
-        </p>
+    <TarjetaSesion titulo="Crear cuenta" subtitulo="Regístrate para gestionar tu botón de emergencia">
+      <form onSubmit={manejarEnvio} className="space-y-4">
+        <CampoSesion id="apodo" etiqueta="¿Cómo te van a ver en tu grupo?">
+          <input
+            id="apodo"
+            type="text"
+            required
+            maxLength={40}
+            autoComplete="nickname"
+            placeholder="Ej. Mamá, Papá, Juan, Cajero"
+            value={apodo}
+            onChange={(e) => setApodo(e.target.value)}
+            className={CLASE_CAMPO_SESION}
+          />
+        </CampoSesion>
 
-        <form onSubmit={manejarEnvio} className="mt-6 space-y-4">
-          <div>
-            <label htmlFor="apodo" className="block text-sm font-medium text-slate-700">
-              ¿Cómo te van a ver en tu grupo?
-            </label>
-            <input
-              id="apodo"
-              type="text"
-              required
-              maxLength={40}
-              autoComplete="nickname"
-              placeholder="Ej. Mamá, Papá, Juan, Cajero"
-              value={apodo}
-              onChange={(e) => setApodo(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-            />
-            <p className="mt-1 text-xs text-slate-400">
-              Aparece en el chat y en las alertas que envíes. Lo puedes cambiar después.
-            </p>
-          </div>
+        <CampoSesion id="email" etiqueta="Correo">
+          <input
+            id="email"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={CLASE_CAMPO_SESION}
+          />
+        </CampoSesion>
 
-          <CampoCorreo id="email" value={email} onChange={setEmail} />
-
+        <div className="[&_label]:text-white/90 [&_input]:border-2 [&_input]:border-black [&_input]:bg-[#c7d0d9] [&_input]:text-black [&_button]:text-black">
           <CampoContrasena
             id="password"
             label="Contraseña"
@@ -106,57 +109,50 @@ export default function Registro() {
             autoComplete="new-password"
             minLength={6}
           />
-
-          <CampoContrasena
-            id="confirmacion"
-            label="Confirmar contraseña"
-            value={confirmacion}
-            onChange={setConfirmacion}
-            autoComplete="new-password"
-            minLength={6}
-          />
-
-          <div>
-            <label htmlFor="codigo" className="block text-sm font-medium text-slate-700">
-              Código del botón <span className="font-normal text-slate-400">(opcional)</span>
-            </label>
-            <input
-              id="codigo"
-              type="text"
-              autoCapitalize="characters"
-              autoComplete="off"
-              placeholder="ABC-DEF-GHJ"
-              value={codigo}
-              onChange={(e) => setCodigo(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm uppercase tracking-wider focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          <div className="mt-4">
+            <CampoContrasena
+              id="confirmacion"
+              label="Confirmar contraseña"
+              value={confirmacion}
+              onChange={setConfirmacion}
+              autoComplete="new-password"
+              minLength={6}
             />
-            <p className="mt-1 text-xs text-slate-400">
-              Viene impreso en la caja de tu botón y sirve para dos personas. Sin él puedes
-              entrar a grupos y escribir en el chat, pero no enviar alertas. Lo puedes capturar
-              después en Códigos.
-            </p>
           </div>
+        </div>
 
-          {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
-          )}
+        <CampoSesion id="codigo" etiqueta="Código del botón (opcional)">
+          <input
+            id="codigo"
+            type="text"
+            autoCapitalize="characters"
+            autoComplete="off"
+            placeholder="ABC-DEF-GHJ"
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value)}
+            className={`${CLASE_CAMPO_SESION} font-mono uppercase tracking-wider`}
+          />
+          <p className="mt-1 text-[11px] text-white/70">
+            Viene impreso en la caja de tu botón y sirve para dos personas. Sin él puedes entrar a
+            grupos y escribir en el chat, pero no enviar alertas.
+          </p>
+        </CampoSesion>
 
-          <button
-            type="submit"
-            disabled={enviando}
-            className="w-full rounded-lg bg-red-600 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-60"
-          >
-            {enviando ? "Creando cuenta..." : "Crear cuenta"}
-          </button>
-        </form>
+        {error && (
+          <p className="rounded-lg bg-red-100 px-3 py-2 text-sm font-medium text-red-900">{error}</p>
+        )}
 
-        <p className="mt-6 text-center text-sm text-slate-500">
-          ¿Ya tienes cuenta?{" "}
-          <Link to="/login" className="font-medium text-red-600 hover:underline">
-            Inicia sesión
-          </Link>
-        </p>
-      </div>
-    </div>
+        <button type="submit" disabled={enviando} className={CLASE_BOTON_SESION}>
+          {enviando ? "Creando cuenta…" : "Crear cuenta"}
+        </button>
+      </form>
+
+      <p className="pt-1 text-center text-sm text-white">
+        ¿Ya tienes cuenta?{" "}
+        <Link to="/login" className="font-bold hover:underline">
+          Inicia sesión
+        </Link>
+      </p>
+    </TarjetaSesion>
   );
 }

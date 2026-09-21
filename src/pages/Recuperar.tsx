@@ -1,7 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import CampoCorreo from "../components/CampoCorreo";
+import TarjetaSesion, {
+  CampoSesion,
+  CLASE_BOTON_SESION,
+  CLASE_CAMPO_SESION,
+} from "../components/TarjetaSesion";
 
 export default function Recuperar() {
   const { recuperarContrasena } = useAuth();
@@ -20,67 +24,58 @@ export default function Recuperar() {
     } catch (err) {
       const codigo = (err as { code?: string }).code ?? "";
       // A propósito NO se distingue "ese correo no existe": si lo dijéramos,
-      // cualquiera podría averiguar quién tiene cuenta con solo teclear
-      // correos. Un correo mal escrito sí se avisa, porque ahí el error es
-      // del dedo y no hay nada que revelar.
-      if (codigo === "auth/invalid-email") {
-        setError("El correo no es válido.");
-      } else if (codigo === "auth/too-many-requests") {
+      // cualquiera podría averiguar quién tiene cuenta tecleando correos.
+      if (codigo === "auth/invalid-email") setError("El correo no es válido.");
+      else if (codigo === "auth/too-many-requests")
         setError("Demasiados intentos. Espera un momento e intenta de nuevo.");
-      } else {
-        setEnviado(true);
-      }
+      else setEnviado(true);
     } finally {
       setEnviando(false);
     }
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-        <h1 className="text-xl font-semibold text-slate-900">Recuperar contraseña</h1>
+    <TarjetaSesion
+      titulo="Recuperar contraseña"
+      subtitulo={enviado ? undefined : "Te mandamos un enlace para cambiarla"}
+    >
+      {enviado ? (
+        <>
+          <p className="rounded-xl bg-white/15 px-4 py-3 text-sm text-white">
+            Si hay una cuenta con ese correo, ya va en camino un mensaje con el enlace para poner
+            una contraseña nueva.
+          </p>
+          <p className="text-xs text-white/70">
+            Revisa también la carpeta de correo no deseado. El enlace caduca, así que úsalo pronto.
+          </p>
+        </>
+      ) : (
+        <form onSubmit={manejarEnvio} className="space-y-4">
+          <CampoSesion id="email" etiqueta="Correo">
+            <input
+              id="email"
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={CLASE_CAMPO_SESION}
+            />
+          </CampoSesion>
+          {error && (
+            <p className="rounded-lg bg-red-100 px-3 py-2 text-sm font-medium text-red-900">{error}</p>
+          )}
+          <button type="submit" disabled={enviando} className={CLASE_BOTON_SESION}>
+            {enviando ? "Enviando…" : "Enviar enlace"}
+          </button>
+        </form>
+      )}
 
-        {enviado ? (
-          <>
-            <p className="mt-4 rounded-lg bg-green-50 px-3 py-3 text-sm text-green-800">
-              Si hay una cuenta con ese correo, ya va en camino un mensaje con el enlace para
-              poner una contraseña nueva.
-            </p>
-            <p className="mt-3 text-xs text-slate-400">
-              Revisa también la carpeta de correo no deseado. El enlace caduca, así que úsalo
-              pronto.
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="mt-1 text-sm text-slate-500">
-              Escribe tu correo y te mandamos un enlace para cambiarla.
-            </p>
-
-            <form onSubmit={manejarEnvio} className="mt-6 space-y-4">
-              <CampoCorreo id="email" value={email} onChange={setEmail} />
-
-              {error && (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={enviando}
-                className="w-full rounded-lg bg-red-600 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-60"
-              >
-                {enviando ? "Enviando..." : "Enviar enlace"}
-              </button>
-            </form>
-          </>
-        )}
-
-        <p className="mt-6 text-center text-sm text-slate-500">
-          <Link to="/login" className="font-medium text-red-600 hover:underline">
-            Volver a iniciar sesión
-          </Link>
-        </p>
-      </div>
-    </div>
+      <p className="pt-1 text-center text-sm">
+        <Link to="/login" className="font-bold text-white hover:underline">
+          Volver a iniciar sesión
+        </Link>
+      </p>
+    </TarjetaSesion>
   );
 }
