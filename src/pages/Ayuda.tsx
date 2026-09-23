@@ -1,27 +1,34 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import Pantalla from "../components/Pantalla";
+import GuiaBienvenida from "../components/GuiaBienvenida";
 import { CONTACTO, SECCIONES_AYUDA, type Pregunta } from "../data/ayuda";
 
 function Respuesta({ pregunta }: { pregunta: Pregunta }) {
   const [abierta, setAbierta] = useState(false);
 
   return (
-    <li className="border-b border-slate-100 last:border-0">
+    <li className="border-b-2 last:border-0" style={{ borderColor: "var(--borde-tenue)" }}>
       <button
         onClick={() => setAbierta((v) => !v)}
         aria-expanded={abierta}
         className="flex w-full items-center justify-between gap-3 py-3 text-left"
       >
-        <span className="text-sm font-medium text-slate-800">{pregunta.pregunta}</span>
-        <span className={`shrink-0 text-slate-400 transition-transform ${abierta ? "rotate-180" : ""}`} aria-hidden>
+        <span className="text-sm font-bold" style={{ color: "var(--texto)" }}>
+          {pregunta.pregunta}
+        </span>
+        <span
+          className={`shrink-0 text-lg leading-none transition-transform ${abierta ? "rotate-180" : ""}`}
+          style={{ color: "var(--texto-tenue)" }}
+          aria-hidden
+        >
           ⌄
         </span>
       </button>
 
       {abierta && (
-        <div className="pb-3 text-sm text-slate-600">
+        <div className="pb-3 text-sm leading-relaxed" style={{ color: "var(--texto-tenue)" }}>
           {pregunta.pendiente ? (
-            <p className="rounded-lg bg-amber-50 px-3 py-2 text-amber-900">
+            <p className="rounded-xl px-3 py-2" style={{ background: "var(--superficie-suave)" }}>
               Estamos preparando esta información. Mientras tanto, escríbenos y te ayudamos.
             </p>
           ) : (
@@ -40,24 +47,39 @@ function Respuesta({ pregunta }: { pregunta: Pregunta }) {
 // Apartado de ayuda. El contenido vive en src/data/ayuda.ts para poder
 // agregar respuestas sin tocar esta pantalla.
 export default function Ayuda() {
+  const [guia, setGuia] = useState(false);
   const hayContacto = CONTACTO.telefono || CONTACTO.correo;
 
   return (
-    <div className="min-h-svh bg-slate-50 px-4 py-6 sm:py-10">
-      <div className="mx-auto max-w-lg">
-        <Link to="/" className="text-sm font-medium text-slate-500 hover:text-red-600">
-          ← Volver
-        </Link>
+    <>
+      {guia && <GuiaBienvenida alCerrar={() => setGuia(false)} />}
+      <Pantalla titulo="Ayuda" subtitulo="Tu botón, tus alertas y tu cuenta">
+        {/* La guía del primer día, para volver a verla cuando haga falta. */}
+        <button
+          type="button"
+          onClick={() => setGuia(true)}
+          className="tarjeta mb-4 flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+        >
+          <span>
+            <span className="block text-sm font-bold uppercase" style={{ color: "var(--texto)" }}>
+              Cómo funciona SCILD
+            </span>
+            <span className="block text-xs" style={{ color: "var(--texto-tenue)" }}>
+              La guía rápida, en cinco pasos
+            </span>
+          </span>
+          <span className="shrink-0 text-xl" style={{ color: "var(--texto)" }} aria-hidden>
+            →
+          </span>
+        </button>
 
-        <h1 className="mt-3 text-xl font-semibold text-slate-900">Ayuda</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Problemas con tu botón, con las alertas o con tu cuenta.
-        </p>
-
-        <div className="mt-5 space-y-4">
+        <div className="space-y-3">
           {SECCIONES_AYUDA.map((seccion) => (
-            <section key={seccion.id} className="rounded-2xl bg-white px-5 py-3 shadow-sm ring-1 ring-slate-200">
-              <h2 className="pt-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <section key={seccion.id} className="tarjeta px-4 py-2">
+              <h2
+                className="pt-2 text-xs font-bold uppercase tracking-wide"
+                style={{ color: "var(--texto-tenue)" }}
+              >
                 {seccion.titulo}
               </h2>
               <ul>
@@ -69,14 +91,16 @@ export default function Ayuda() {
           ))}
         </div>
 
-        <section className="mt-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <h2 className="text-sm font-semibold text-slate-800">¿Sigues con el problema?</h2>
+        <section className="tarjeta mt-3 p-4">
+          <h2 className="text-sm font-bold uppercase" style={{ color: "var(--texto)" }}>
+            ¿Sigues con el problema?
+          </h2>
           {hayContacto ? (
-            <div className="mt-2 space-y-1 text-sm text-slate-600">
+            <div className="mt-2 space-y-1 text-sm" style={{ color: "var(--texto-tenue)" }}>
               {CONTACTO.telefono && (
                 <p>
                   Teléfono:{" "}
-                  <a href={`tel:${CONTACTO.telefono}`} className="font-medium text-red-600 hover:underline">
+                  <a href={`tel:${CONTACTO.telefono}`} className="font-bold underline" style={{ color: "var(--texto)" }}>
                     {CONTACTO.telefono}
                   </a>
                 </p>
@@ -84,25 +108,32 @@ export default function Ayuda() {
               {CONTACTO.correo && (
                 <p>
                   Correo:{" "}
-                  <a href={`mailto:${CONTACTO.correo}`} className="font-medium text-red-600 hover:underline">
+                  <a href={`mailto:${CONTACTO.correo}`} className="font-bold underline" style={{ color: "var(--texto)" }}>
                     {CONTACTO.correo}
                   </a>
                 </p>
               )}
-              {CONTACTO.horario && <p className="text-slate-500">{CONTACTO.horario}</p>}
+              {CONTACTO.horario && <p>{CONTACTO.horario}</p>}
             </div>
           ) : (
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm" style={{ color: "var(--texto-tenue)" }}>
               Aquí van el teléfono y el correo de soporte. Se configuran en{" "}
-              <code className="rounded bg-slate-100 px-1 text-xs">src/data/ayuda.ts</code>.
+              <code className="rounded px-1 text-xs" style={{ background: "var(--superficie-suave)" }}>
+                src/data/ayuda.ts
+              </code>
+              .
             </p>
           )}
         </section>
 
-        <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-center text-sm text-red-800">
-          Si estás en una emergencia real, no esperes soporte: usa el botón SOS de tu grupo y llama al 911.
+        <p
+          className="mt-3 rounded-2xl px-4 py-3 text-center text-sm font-bold"
+          style={{ background: "var(--peligro)", color: "#fff" }}
+        >
+          Si estás en una emergencia real, no esperes soporte: usa el botón SOS de tu grupo y llama
+          al 911.
         </p>
-      </div>
-    </div>
+      </Pantalla>
+    </>
   );
 }
