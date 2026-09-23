@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Pantalla from "../components/Pantalla";
 import BarraBusqueda from "../components/BarraBusqueda";
 import GestionGrupos from "../components/GestionGrupos";
+import GuiaBienvenida, { guiaYaVista, marcarGuiaVista } from "../components/GuiaBienvenida";
+import { useAuth } from "../context/AuthContext";
 import { obtenerPerfil, type Perfil } from "../services/api";
 
 // "SCILD CONTROL" del diseño: el buscador, la lista de grupos con su avatar y
@@ -10,6 +12,9 @@ import { obtenerPerfil, type Perfil } from "../services/api";
 
 export default function Grupos() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
+  // La guía se abre sola la primera vez que esta cuenta entra.
+  const [guia, setGuia] = useState(() => Boolean(usuario) && !guiaYaVista(usuario!.uid));
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [creando, setCreando] = useState(false);
@@ -27,7 +32,14 @@ export default function Grupos() {
     return q ? todos.filter((g) => g.name.toLowerCase().includes(q)) : todos;
   }, [perfil, busqueda]);
 
+  const cerrarGuia = () => {
+    if (usuario) marcarGuiaVista(usuario.uid);
+    setGuia(false);
+  };
+
   return (
+    <>
+    {guia && <GuiaBienvenida alCerrar={cerrarGuia} />}
     <Pantalla
       titulo="SCILD Control"
       accion={{ etiqueta: "Crear o unirse a un grupo", alTocar: () => setCreando((v) => !v) }}
@@ -99,5 +111,6 @@ export default function Grupos() {
         </p>
       )}
     </Pantalla>
+    </>
   );
 }
