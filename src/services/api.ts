@@ -15,10 +15,12 @@ export interface Perfil {
   email: string;
   displayName: string | null;
   phone: string | null;
-  // Si la cuenta puede disparar alertas. Es lo mismo que ser titular de un
-  // botón: no hay otra forma de tenerlo. Sin esto solo se participa en el chat.
+  // Si la cuenta puede disparar alertas: es titular de un botón o un titular
+  // le regaló uno de sus accesos. Sin esto solo se participa en el chat.
   accesoCompleto: boolean;
   esTitular: boolean;
+  // Administrador de la plataforma (nosotros): ve el panel de solicitudes.
+  esAdminPlataforma: boolean;
   // Para el dato "fecha de creación de cuenta" del perfil.
   creadaEl: string;
   groups: Grupo[];
@@ -46,7 +48,6 @@ export interface BotonDeAcceso {
 export interface Acceso {
   completo: boolean;
   esTitular: boolean;
-  accesoDe: string | null;
   botones: BotonDeAcceso[];
 }
 
@@ -62,8 +63,6 @@ export function vincularCodigo(claimCode: string) {
     body: JSON.stringify({ claimCode }),
   });
 }
-
-
 
 async function llamarBackend(ruta: string, opciones: RequestInit = {}) {
   const usuario = auth.currentUser;
@@ -316,4 +315,26 @@ export function desvincularBoton(groupId: string, deviceId: string) {
     `/api/groups/${encodeURIComponent(groupId)}/devices/${encodeURIComponent(deviceId)}`,
     { method: "DELETE" }
   );
+}
+
+// --- Panel de administradores de la plataforma ------------------------------
+
+export interface ClienteAdmin {
+  deviceId: string;
+  nombre: string;
+  deviceCode: string;
+  grupo: string | null;
+  // Quien registró el botón primero: el cliente de verdad.
+  cliente: { userId: string; nombre: string; email: string; registradoEl: string };
+  // La segunda persona, si ya usaron las dos validaciones del código.
+  acompanante: string | null;
+  lugaresOcupados: number;
+  lugaresTotales: number;
+}
+
+export function listarClientes(filtro: { q?: string } = {}): Promise<ClienteAdmin[]> {
+  const parametros = new URLSearchParams();
+  if (filtro.q) parametros.set("q", filtro.q);
+  const query = parametros.toString();
+  return llamarBackend(`/api/admin/clientes${query ? `?${query}` : ""}`);
 }

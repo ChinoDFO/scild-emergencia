@@ -116,11 +116,13 @@ export default function Codigos() {
             </p>
             {b.titulares.length >= 2 && (
               <p className="mt-1 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
-                Este botón ya tiene sus dos titulares. Ese número no se amplía de ninguna forma: el
-                código de la caja vale exactamente dos veces, siempre. Para que otra persona pueda
-                enviar alertas necesita su propio botón.
+                Este botón ya tiene sus dos titulares. Ese número no se amplía: el código de la
+                caja vale exactamente dos veces, siempre. Los demás del grupo entran como
+                invitados y participan en el chat, pero no envían alertas; para poder hacerlo
+                necesitan su propio botón.
               </p>
             )}
+
           </section>
         ))}
       </div>

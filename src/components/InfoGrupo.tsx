@@ -410,7 +410,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
         <h2 className="text-sm font-medium text-slate-700">Miembros ({grupo.members.length})</h2>
         <p className="mt-0.5 text-xs text-slate-500">
           Quien tiene un botón vinculado a su cuenta puede enviar alertas. Los demás participan
-          en el chat como invitados.
+          en el chat como invitados. El código de la caja vale para dos personas.
         </p>
         <ul className="mt-1 space-y-1">
           {grupo.members.map((m) => (

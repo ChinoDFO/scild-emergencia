@@ -81,7 +81,7 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         respuesta: [
           "Las alertas las envía quien tiene un botón vinculado a su cuenta. Los demás reciben todas las alertas y participan en el chat, pero no pueden dispararlas.",
           'Si compraste un botón, captura el código de su caja en el apartado "Códigos". Ese mismo código sirve para dos personas: tú y quien viva contigo, porque el botón es de la casa.',
-          "Si el código de tu botón ya se usó dos veces, no hay forma de sumarte: ese número es fijo. Para enviar alertas necesitarías tu propio botón.",
+          "Si no tienes botón propio (cubres un turno, vives ahí pero el código ya se usó dos veces), tu cuenta se queda como invitada: recibes todas las alertas y escribes en el chat, pero no puedes dispararlas.",
         ],
       },
       {
