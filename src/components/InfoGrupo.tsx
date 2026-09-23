@@ -37,6 +37,8 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
+  const [guardandoCupo, setGuardandoCupo] = useState(false);
+  const [errorCupo, setErrorCupo] = useState<string | null>(null);
   const [regenerando, setRegenerando] = useState(false);
   const [cambiandoRol, setCambiandoRol] = useState<string | null>(null);
   const [saliendo, setSaliendo] = useState(false);
@@ -139,6 +141,22 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
       setError(err instanceof Error ? err.message : "No se pudo cambiar el rol");
     } finally {
       setCambiandoRol(null);
+    }
+  };
+
+  // Se guarda al salir del campo y no con un botón aparte: es un solo número,
+  // y un "Guardar" más sería un paso de más para cambiar un 10 por un 20.
+  const guardarCupo = async (valor: number) => {
+    if (!Number.isFinite(valor) || valor === grupo.cupos.total) return;
+    setErrorCupo(null);
+    setGuardandoCupo(true);
+    try {
+      await actualizarGrupo(grupo.id, { maxMembers: valor });
+      alCambiar();
+    } catch (err) {
+      setErrorCupo(err instanceof Error ? err.message : "No se pudo cambiar el cupo");
+    } finally {
+      setGuardandoCupo(false);
     }
   };
 
@@ -259,36 +277,10 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
             Actualizar
           </button>
         </div>
-        {/* TEMPORAL (pruebas): el detalle de dónde sale cada lugar. Antes decía
-            solo "Van 2 de 10 lugares" y no se entendía de qué eran esos
-            lugares ni quién los ocupaba. */}
-        <div className="mt-0.5 space-y-1 text-xs text-slate-500">
-          {grupo.cupos.total === 0 ? (
-            <p className="rounded-lg bg-amber-50 px-3 py-2 text-amber-800">
-              <span className="font-medium">Este grupo no tiene ningún botón vinculado.</span> Por
-              eso nadie puede entrar todavía, ni con el código de invitación: los lugares salen de
-              los botones, y sin botón el cupo es 0.
-              {esAdmin && " Vincula el tuyo aquí abajo y se abren 10 lugares."}
-            </p>
-          ) : (
-            <p>
-              <span className="font-medium text-slate-700">
-                Personas en el grupo: {grupo.members.length} de {grupo.cupos.total}
-              </span>{" "}
-              — cada botón vinculado da 10 lugares, y aquí hay {grupo.devices.length}{" "}
-              {grupo.devices.length === 1 ? "botón" : "botones"}. Quedan {grupo.cupos.libres}{" "}
-              {grupo.cupos.libres === 1 ? "lugar libre" : "lugares libres"}.
-            </p>
-          )}
-          {grupo.cupos.sinRespaldo > 0 && (
-            <p className="text-amber-700">
-              {grupo.cupos.sinRespaldo}{" "}
-              {grupo.cupos.sinRespaldo === 1 ? "persona está" : "personas están"} en el grupo sin
-              que ningún botón respalde su lugar (entraron antes de que hubiera botón, o el suyo se
-              desvinculó). No se va nadie, pero esos lugares no cuentan como libres.
-            </p>
-          )}
-        </div>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--texto-tenue)" }}>
+          Vincular un botón aquí no cambia quién puede alertar ni cuánta gente cabe: solo decide a
+          dónde llega la alerta cuando se presiona el aparato físico.
+        </p>
         {grupo.devices.length === 0 ? (
           <p className="mt-1 text-sm text-slate-400">Aún no hay botones vinculados a este grupo.</p>
         ) : (
@@ -311,17 +303,6 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                       {estado.texto}
                     </span>
                   </div>
-                  {/* TEMPORAL (pruebas): de este botón salen estos lugares. */}
-                  {(() => {
-                    const cupo = grupo.cupos.porBoton.find((c) => c.deviceId === d.id);
-                    return cupo ? (
-                      <p className="mt-0.5 text-xs font-medium text-slate-600">
-                        De este botón salen {cupo.ocupados + cupo.libres} lugares: {cupo.ocupados}{" "}
-                        {cupo.ocupados === 1 ? "ocupado" : "ocupados"} y {cupo.libres}{" "}
-                        {cupo.libres === 1 ? "libre" : "libres"}.
-                      </p>
-                    ) : null;
-                  })()}
                   <p className="mt-0.5 flex items-center justify-between gap-2 text-xs text-slate-500">
                     <span className="min-w-0 truncate">
                       {d.lastSeenAt
@@ -407,11 +388,53 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
       </section>
 
       <section>
-        <h2 className="text-sm font-medium text-slate-700">Miembros ({grupo.members.length})</h2>
-        <p className="mt-0.5 text-xs text-slate-500">
-          Quien tiene un botón vinculado a su cuenta puede enviar alertas. Los demás participan
-          en el chat como invitados. El código de la caja vale para dos personas.
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="text-sm font-bold uppercase" style={{ color: "var(--texto)" }}>
+            Miembros
+          </h2>
+          <span className="text-xs" style={{ color: "var(--texto-tenue)" }}>
+            {grupo.cupos.ocupados} de {grupo.cupos.total}
+          </span>
+        </div>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--texto-tenue)" }}>
+          Quien tiene un botón vinculado a su cuenta puede enviar alertas. Los demás participan en
+          el chat como invitados. El código de la caja vale para tres personas.
         </p>
+
+        {/* El cupo es del grupo y lo mueve su administrador. Se muestra a
+            todos —saber cuánto queda evita repartir el código de invitación
+            de más— pero solo el ADMIN ve el control. */}
+        {esAdmin ? (
+          <div className="mt-2 flex items-center gap-2 rounded-xl p-3" style={{ background: "var(--superficie-suave)" }}>
+            <label className="flex-1 text-xs font-bold uppercase" style={{ color: "var(--texto)" }}>
+              Cupo del grupo
+              <span className="mt-0.5 block text-[11px] font-normal normal-case" style={{ color: "var(--texto-tenue)" }}>
+                Hasta {grupo.cupos.tope} personas. No se puede bajar de las {grupo.cupos.ocupados} que
+                ya están.
+              </span>
+            </label>
+            <input
+              type="number"
+              min={grupo.cupos.ocupados}
+              max={grupo.cupos.tope}
+              defaultValue={grupo.cupos.total}
+              disabled={guardandoCupo}
+              onBlur={(e) => guardarCupo(Number(e.target.value))}
+              className="w-20 rounded-xl border-2 px-2 py-1.5 text-center text-sm font-bold outline-none disabled:opacity-50"
+              style={{ borderColor: "var(--borde)", background: "var(--fondo)", color: "var(--texto)" }}
+              aria-label="Cupo del grupo"
+            />
+          </div>
+        ) : (
+          <p className="mt-1 text-xs" style={{ color: "var(--texto-tenue)" }}>
+            Quedan {grupo.cupos.libres} {grupo.cupos.libres === 1 ? "lugar libre" : "lugares libres"}.
+          </p>
+        )}
+        {errorCupo && (
+          <p className="mt-1 rounded-xl px-3 py-2 text-xs" style={{ background: "var(--superficie-suave)", color: "var(--peligro)" }}>
+            {errorCupo}
+          </p>
+        )}
         <ul className="mt-1 space-y-1">
           {grupo.members.map((m) => (
             <li key={m.userId} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
@@ -420,27 +443,17 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                   <span className="font-medium text-slate-800">{m.displayName || m.email}</span>
                   {m.userId === grupo.myUserId && <span className="text-slate-400"> (tú)</span>}
                   {m.displayName && <span className="block truncate text-xs text-slate-400">{m.email}</span>}
-                  {/* TEMPORAL (pruebas): de qué botón sale su lugar, y de cuál
-                      viene su permiso de alertar. Son dos cosas distintas y se
-                      confundían: el lugar lo da el botón del GRUPO, el permiso
-                      lo da el botón de su CUENTA. */}
-                  <span className="block truncate text-xs text-slate-500">
-                    Lugar:{" "}
+                  <span className="block truncate text-xs" style={{ color: "var(--texto-tenue)" }}>
                     {(() => {
-                      const suBoton = grupo.devices.find((d) => d.id === m.seatDeviceId);
-                      if (!suBoton) return "sin botón que lo respalde";
-                      return suBoton.name || suBoton.deviceCode;
-                    })()}
-                    {" · "}
-                    {(() => {
-                      const esTitular = grupo.devices.filter((d) =>
+                      const suyos = grupo.devices.filter((d) =>
                         d.titulares.some((t) => t.userId === m.userId)
                       );
-                      if (esTitular.length > 0)
-                        return `titular de ${esTitular.map((d) => d.name || d.deviceCode).join(", ")}`;
+                      if (suyos.length > 0) {
+                        return `Titular de ${suyos.map((d) => d.name || d.deviceCode).join(", ")}`;
+                      }
                       return m.accesoCompleto
-                        ? "alerta con un acceso que le dieron"
-                        : "sin botón en su cuenta";
+                        ? "Puede alertar con su botón"
+                        : "Invitado: solo chat";
                     })()}
                   </span>
                 </span>

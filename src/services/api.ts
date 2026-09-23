@@ -106,7 +106,15 @@ export function eliminarCuenta(): Promise<{ ok: true; botonesLiberados: number }
   return llamarBackend("/api/auth/me", { method: "DELETE" });
 }
 
-export function crearGrupo(datos: { name: string; address: string }): Promise<{ id: string; name: string }> {
+// `vincularBoton` engancha de una vez un botón de tu cuenta, sin pedir el
+// código otra vez. No da ventajas dentro del grupo: solo decide a dónde llega
+// la alerta cuando se presiona el aparato físico.
+export function crearGrupo(datos: {
+  name: string;
+  address: string;
+  vincularBoton?: boolean;
+  deviceId?: string;
+}): Promise<{ id: string; name: string; maxMembers: number; botonesVinculados: number }> {
   return llamarBackend("/api/groups", { method: "POST", body: JSON.stringify(datos) });
 }
 
@@ -148,23 +156,20 @@ export interface DetalleGrupo {
   // Si puedes disparar alertas. Es propiedad de tu cuenta, no de este grupo:
   // sin esto solo se participa en el chat y el botón SOS ni aparece.
   puedoAlertar: boolean;
-  // Diez lugares por cada botón vinculado al grupo.
+  // Cuánta gente cabe. Lo edita el ADMIN del grupo, con tope en `tope`.
   cupos: {
     total: number;
     ocupados: number;
     libres: number;
-    // Miembros cuyo botón se desvinculó (siguen en el grupo, sin respaldo).
-    sinRespaldo: number;
-    porBoton: { deviceId: string; nombre: string; ocupados: number; libres: number }[];
+    tope: number;
   };
   members: {
     userId: string;
     email: string;
     displayName: string | null;
     role: "ADMIN" | "MEMBER";
-    // Titular de un botón o con un acceso regalado; si no, es invitado.
+    // Titular de un botón; si no, es invitado y solo participa en el chat.
     accesoCompleto: boolean;
-    seatDeviceId: string | null;
   }[];
   devices: {
     id: string;
@@ -177,7 +182,7 @@ export interface DetalleGrupo {
     lastSeenAt: string | null;
     // Quién lo vinculó: en un coto, de qué casa es el botón.
     owner: { userId: string; nombre: string } | null;
-    // Las dos personas que comparten el botón.
+    // Las personas que comparten el botón (hasta tres).
     titulares: { userId: string; nombre: string }[];
     puedoDesvincular: boolean;
   }[];
@@ -240,8 +245,8 @@ export function cambiarEstadoAlerta(id: string, accion: "atender" | "resolver"):
 
 export function actualizarGrupo(
   id: string,
-  datos: { name?: string; address?: string }
-): Promise<{ id: string; name: string; address: string }> {
+  datos: { name?: string; address?: string; maxMembers?: number }
+): Promise<{ id: string; name: string; address: string; maxMembers: number }> {
   return llamarBackend(`/api/groups/${encodeURIComponent(id)}`, {
     method: "PATCH",
     body: JSON.stringify(datos),
