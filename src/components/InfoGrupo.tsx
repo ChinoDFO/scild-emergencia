@@ -1,11 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   actualizarGrupo,
   cambiarRolMiembro,
   desvincularBoton,
   eliminarGrupo,
-  otorgarAcceso,
   regenerarCodigoInvitacion,
   salirDelGrupo,
   vincularBoton,
@@ -40,7 +39,6 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
   const [copiado, setCopiado] = useState(false);
   const [regenerando, setRegenerando] = useState(false);
   const [cambiandoRol, setCambiandoRol] = useState<string | null>(null);
-  const [cambiandoPermiso, setCambiandoPermiso] = useState<string | null>(null);
   const [saliendo, setSaliendo] = useState(false);
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [nombreEscrito, setNombreEscrito] = useState("");
@@ -144,24 +142,6 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
     }
   };
 
-  // El titular le regala a alguien uno de los accesos completos que compró.
-  // Quitarlos se hace desde Códigos, que es donde se ve de qué botón salió
-  // cada acceso; aquí solo se sabe si la persona lo tiene o no.
-  const darAcceso = async (userId: string, nombre: string) => {
-    if (!miBoton) return;
-    if (!confirm(`${nombre} podrá enviar alertas en todos sus grupos. ¿Continuar?`)) return;
-    setCambiandoPermiso(userId);
-    setError(null);
-    try {
-      await otorgarAcceso(miBoton.id, userId);
-      alCambiar();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo dar el acceso");
-    } finally {
-      setCambiandoPermiso(null);
-    }
-  };
-
   const salir = async () => {
     if (!confirm(`Vas a salir de ${grupo.name} y dejarás de recibir sus alertas. ¿Seguro?`)) return;
     setSaliendo(true);
@@ -189,12 +169,6 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
       setEliminando(false);
     }
   };
-
-  // Si soy titular de alguno de los botones de este grupo, de ahí salen los
-  // accesos que puedo repartir.
-  const miBoton = grupo.devices.find((d) =>
-    d.titulares.some((t) => t.userId === grupo.myUserId)
-  );
 
   const mapa =
     grupo.latitude != null && grupo.longitude != null
@@ -482,18 +456,8 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                 </span>
               </div>
 
-              {(esAdmin || miBoton) && (
+              {esAdmin && (
                 <div className="mt-1 flex justify-end gap-3">
-                  {/* Regalar uno de los accesos comprados del botón propio. */}
-                  {miBoton && !m.accesoCompleto && m.userId !== grupo.myUserId && (
-                    <button
-                      onClick={() => darAcceso(m.userId, m.displayName || m.email)}
-                      disabled={cambiandoPermiso === m.userId}
-                      className="text-xs font-medium text-red-600 hover:underline disabled:opacity-60"
-                    >
-                      {cambiandoPermiso === m.userId ? "…" : "Dar acceso"}
-                    </button>
-                  )}
                   {esAdmin && m.userId !== grupo.myUserId && (
                     <button
                       onClick={() => hacerAdmin(m.userId, m.role === "ADMIN" ? "MEMBER" : "ADMIN")}
@@ -509,15 +473,6 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
           ))}
         </ul>
 
-        {miBoton && (
-          <p className="mt-2 text-xs text-slate-500">
-            Los accesos que reparte tu botón se administran en{" "}
-            <Link to="/codigos" className="font-medium text-red-600 hover:underline">
-              Códigos
-            </Link>
-            .
-          </p>
-        )}
 
         {grupo.inviteCode && (
           <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm">

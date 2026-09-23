@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pantalla from "../components/Pantalla";
 import BarraBusqueda from "../components/BarraBusqueda";
@@ -6,10 +6,9 @@ import EliminarCuenta from "../components/EliminarCuenta";
 import Notificaciones from "../components/Notificaciones";
 import { useAuth } from "../context/AuthContext";
 import { useTema } from "../context/TemaContext";
-import { obtenerPerfil, type Perfil } from "../services/api";
 
 // La lista de pills del diseño. El buscador de arriba filtra las opciones:
-// son once y con el teclado abierto no caben en una pantalla de celular.
+// son varias y con el teclado abierto no caben en una pantalla de celular.
 //
 // Las que todavía no tienen a dónde ir se muestran igual, pero deshabilitadas
 // y diciendo por qué. Esconderlas daría la impresión de que no están
@@ -27,15 +26,8 @@ export default function Configuracion() {
   const navigate = useNavigate();
   const { cerrarSesion, usuario } = useAuth();
   const { tema, alternarTema } = useTema();
-  const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [panel, setPanel] = useState<"notificaciones" | "eliminar" | null>(null);
-
-  useEffect(() => {
-    obtenerPerfil()
-      .then(setPerfil)
-      .catch(() => setPerfil(null));
-  }, []);
 
   const opciones: Opcion[] = useMemo(
     () => [
@@ -73,9 +65,6 @@ export default function Configuracion() {
         texto: "Control de notificaciones",
         alTocar: () => setPanel((p) => (p === "notificaciones" ? null : "notificaciones")),
       },
-      ...(perfil?.esAdminPlataforma
-        ? [{ texto: "Panel de administración", alTocar: () => navigate("/admin") }]
-        : []),
       { texto: "Cambiar/cerrar sesión", alTocar: () => void cerrarSesion() },
       {
         texto: "Eliminar cuenta",
@@ -83,7 +72,7 @@ export default function Configuracion() {
         alTocar: () => setPanel((p) => (p === "eliminar" ? null : "eliminar")),
       },
     ],
-    [tema, alternarTema, navigate, cerrarSesion, perfil]
+    [tema, alternarTema, navigate, cerrarSesion]
   );
 
   const visibles = useMemo(() => {

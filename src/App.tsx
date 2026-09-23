@@ -15,8 +15,6 @@ import ConfigurarBoton from "./pages/ConfigurarBoton";
 import Grupo from "./pages/Grupo";
 import Ayuda from "./pages/Ayuda";
 import Codigos from "./pages/Codigos";
-import Pago from "./pages/Pago";
-import Admin from "./pages/Admin";
 
 export default function App() {
   return (
@@ -91,22 +89,6 @@ export default function App() {
             element={
               <RutaProtegida>
                 <Codigos />
-              </RutaProtegida>
-            }
-          />
-          <Route
-            path="/pago"
-            element={
-              <RutaProtegida>
-                <Pago />
-              </RutaProtegida>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <RutaProtegida>
-                <Admin />
               </RutaProtegida>
             }
           />
