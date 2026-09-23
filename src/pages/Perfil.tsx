@@ -111,8 +111,8 @@ export default function Perfil() {
         </ul>
       </div>
 
-      {/* Códigos y el pago viven aquí: es donde el diseño ya habla de los
-          botones vinculados a la cuenta. */}
+      {/* Códigos vive aquí: es donde el diseño ya habla de los botones
+          vinculados a la cuenta. */}
       <div className="mb-6 grid grid-cols-2 gap-3">
         <Link
           to="/codigos"

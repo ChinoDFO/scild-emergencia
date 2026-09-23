@@ -81,7 +81,7 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         respuesta: [
           "Las alertas las envía quien tiene un botón vinculado a su cuenta. Los demás reciben todas las alertas y participan en el chat, pero no pueden dispararlas.",
           'Si compraste un botón, captura el código de su caja en el apartado "Códigos". Ese mismo código sirve para dos personas: tú y quien viva contigo, porque el botón es de la casa.',
-          "Si no tienes botón propio (cubres un turno, vives ahí pero el código ya se usó dos veces), pídele a un titular que te dé uno de los accesos que haya comprado: lo hace desde la información del grupo, junto a tu nombre.",
+          "Si no tienes botón propio (cubres un turno, vives ahí pero el código ya se usó dos veces), tu cuenta se queda como invitada: recibes todas las alertas y escribes en el chat, pero no puedes dispararlas.",
         ],
       },
       {
@@ -116,21 +116,10 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
     titulo: "Cuenta y grupos",
     preguntas: [
       {
-        id: "ampliar-limite",
-        pregunta: "¿Cómo dejo que más personas de mi grupo envíen alertas?",
-        respuesta: [
-          "De fábrica, tu botón da funciones completas a sus dos titulares: tú y quien viva contigo. Los demás entran como invitados.",
-          'Si quieres que más gente de tu grupo pueda enviar alertas, entra a "Códigos" y toca "Ampliar límite". Ahí te damos los datos para hacer la transferencia.',
-          "Cuando hayas pagado, toca \"Ya pagué\" y manda la captura de tu comprobante. Solo se puede mandar una por solicitud, así que revisa antes que se vean el monto y la fecha.",
-          "En cuanto confirmemos el depósito se te activan cinco accesos, que repartes desde la información de tu grupo, junto al nombre de cada persona.",
-        ],
-      },
-      {
         id: "cupo-grupo",
         pregunta: "Ya no puedo meter a más gente a mi grupo",
         respuesta: [
           "Cada botón da cupo para 10 personas en el grupo. Cuando se llenan, la forma de crecer es que alguien más con su propio botón se una: ese botón trae sus otros 10 lugares.",
-          "Ampliar el límite es otra cosa: eso no mete más gente, sino que deja que más de los que ya están puedan enviar alertas.",
         ],
       },
       {
