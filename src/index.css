@@ -22,9 +22,17 @@
   --borde-tenue: #9aa3b0;
   --burbuja: #fefad1;           /* relleno de los mensajes */
   --burbuja-borde: #4a2318;
-  --alerta: #f5c93f;            /* el "!" flotante del chat */
-  --emergencia: #2e1a17;        /* el círculo del centro de la barra */
+  --alerta: #f5c93f;            /* el "!" del chat: alertas por tipo */
+  --alerta-texto: #2e1a17;      /* lo que va encima del amarillo */
+  --emergencia: #2e1a17;        /* el círculo SOS del centro de la barra */
   --peligro: #b91c1c;
+  /* Color del nombre de cada persona en el chat, siempre el mismo para ella. */
+  --nombre-1: #9f1239;
+  --nombre-2: #075985;
+  --nombre-3: #5b21b6;
+  --nombre-4: #854d0e;
+  --nombre-5: #065f46;
+  --nombre-6: #9d174d;
   /* El degradado del login, de gris a negro. */
   --login-de: #828282;
   --login-a: #0b0b0b;
@@ -43,8 +51,16 @@
   --burbuja: #3a3722;
   --burbuja-borde: #d9cf8f;
   --alerta: #f5c93f;
+  /* El amarillo no cambia con el tema, así que su texto tampoco. */
+  --alerta-texto: #2e1a17;
   --emergencia: #f0e3e0;
   --peligro: #f87171;
+  --nombre-1: #fda4af;
+  --nombre-2: #7dd3fc;
+  --nombre-3: #c4b5fd;
+  --nombre-4: #fcd34d;
+  --nombre-5: #6ee7b7;
+  --nombre-6: #f9a8d4;
   --login-de: #3a3a3a;
   --login-a: #000000;
   --sombra: rgba(0, 0, 0, 0.6);
@@ -92,6 +108,18 @@ body {
 }
 
 
+/* Burbujas del chat: mismo trazo grueso que las tarjetas del resto de la app.
+   La mía va en el crema del diseño; las de los demás, en la superficie. */
+.burbuja-mia {
+  background: var(--burbuja);
+  border: 2px solid var(--burbuja-borde);
+}
+
+.burbuja-otro {
+  background: var(--superficie);
+  border: 2px solid var(--borde);
+}
+
 /* Halo del botón SOS en reposo. */
 @keyframes latido {
   0% {
@@ -105,10 +133,12 @@ body {
   }
 }
 
-/* Fondo de la conversación: gris frío con un patrón muy tenue de íconos
-   propios (escudo, campana, casa, corazón). Da la sensación de app de
-   mensajería sin copiar el fondo de ninguna. */
+/* Fondo de la conversación: el mismo fondo de las demás pantallas con un
+   patrón muy tenue de íconos propios (escudo, campana, casa, corazón). Da la
+   sensación de app de mensajería sin copiar el fondo de ninguna, y el trazo
+   gris funciona igual en claro y en oscuro (antes era rojo y solo cuadraba
+   con el chat viejo). */
 .fondo-chat {
   background-color: var(--fondo);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23b91c1c' stroke-opacity='0.07' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M30 14l14 5v10c0 9-6 15-14 18-8-3-14-9-14-18V19z'/%3E%3Cpath d='M112 22a9 9 0 0 1 18 0c0 10 5 13 5 13h-28s5-3 5-13M118 40a3 3 0 0 0 6 0'/%3E%3Cpath d='M22 112l14-12 14 12v16H22zM32 128v-9h8v9'/%3E%3Cpath d='M116 128s-14-8-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 10-14 18-14 18z'/%3E%3Ccircle cx='80' cy='80' r='3'/%3E%3Cpath d='M70 40h8M74 36v8M86 124h8M90 120v8'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%235b6170' stroke-opacity='0.1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M30 14l14 5v10c0 9-6 15-14 18-8-3-14-9-14-18V19z'/%3E%3Cpath d='M112 22a9 9 0 0 1 18 0c0 10 5 13 5 13h-28s5-3 5-13M118 40a3 3 0 0 0 6 0'/%3E%3Cpath d='M22 112l14-12 14 12v16H22zM32 128v-9h8v9'/%3E%3Cpath d='M116 128s-14-8-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 10-14 18-14 18z'/%3E%3Ccircle cx='80' cy='80' r='3'/%3E%3Cpath d='M70 40h8M74 36v8M86 124h8M90 120v8'/%3E%3C/g%3E%3C/svg%3E");
 }

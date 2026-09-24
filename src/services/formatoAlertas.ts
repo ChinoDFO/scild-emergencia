@@ -3,10 +3,12 @@ import type { Alerta } from "./api";
 // Cómo se muestra una alerta: lo comparten la lista de Inicio y la
 // conversación del grupo.
 
-export const ETIQUETA_ESTADO: Record<Alerta["status"], { texto: string; clase: string }> = {
-  ACTIVE: { texto: "Activa", clase: "bg-red-600 text-white" },
-  ACKNOWLEDGED: { texto: "Atendiendo", clase: "bg-amber-100 text-amber-800" },
-  RESOLVED: { texto: "Resuelta", clase: "bg-slate-100 text-slate-500" },
+// Los colores salen de las variables del tema (src/index.css), no de clases
+// fijas: así la pastilla se ve igual de bien en claro y en oscuro.
+export const ETIQUETA_ESTADO: Record<Alerta["status"], { texto: string; fondo: string; color: string }> = {
+  ACTIVE: { texto: "Activa", fondo: "var(--peligro)", color: "var(--fondo)" },
+  ACKNOWLEDGED: { texto: "Atendiendo", fondo: "var(--alerta)", color: "var(--alerta-texto)" },
+  RESOLVED: { texto: "Resuelta", fondo: "var(--superficie-suave)", color: "var(--texto-tenue)" },
 };
 
 export function origen(alerta: Alerta) {

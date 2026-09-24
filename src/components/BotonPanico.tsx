@@ -1,59 +1,49 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { generarAlerta } from "../services/api";
 
-// Cuánto hay que mantenerlo presionado. Es un solo gesto (inmediato, sin
-// menú ni "¿confirmas?"), pero un roce accidental con el celular en la bolsa
-// no alcanza a disparar una alerta que despierta a todo el grupo.
+// El botón de emergencia: el círculo oscuro del centro de la barra de abajo.
+//
+// Vive ahí y no dentro del chat a propósito. Antes era un círculo rojo enorme
+// arriba de la conversación, así que para pedir ayuda había que entrar al
+// grupo primero; en la barra está en todas las pantallas y a una mano de
+// distancia. Quién recibe la alerta lo resuelve BarraInferior.
+//
+// Se mantiene presionado un segundo: es un solo gesto (sin menú ni
+// "¿confirmas?"), pero un roce con el celular en la bolsa no alcanza a
+// despertar a todo el grupo.
+
 const MANTENER_MS = 1000;
 
-const RADIO = 58;
+// El anillo se dibuja sobre el borde del círculo de 64px.
+const RADIO = 29;
 const CIRCUNFERENCIA = 2 * Math.PI * RADIO;
 
-type Estado = "listo" | "presionando" | "enviando" | "enviada" | "error";
+export type EstadoSOS = "listo" | "enviando" | "enviada";
 
 interface Props {
-  groupId: string;
-  alEnviar?: () => void;
+  // Se llama cuando se completó el segundo de presión.
+  alMantener: () => void;
+  estado: EstadoSOS;
+  // Sin acceso completo el botón no se mantiene: un toque explica por qué.
+  bloqueado?: boolean;
+  alToqueBloqueado?: () => void;
 }
 
-export default function BotonPanico({ groupId, alEnviar }: Props) {
-  const [estado, setEstado] = useState<Estado>("listo");
+export default function BotonPanico({ alMantener, estado, bloqueado, alToqueBloqueado }: Props) {
   const [progreso, setProgreso] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const inicio = useRef<number | null>(null);
   const cuadro = useRef<number | null>(null);
   // Quien dispara la alerta es este temporizador, no la animación: el
   // navegador pausa requestAnimationFrame si la página no está visible, y una
   // alerta no puede depender de que se dibuje el anillo.
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const reinicio = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
     () => () => {
       if (cuadro.current) cancelAnimationFrame(cuadro.current);
       if (temporizador.current) clearTimeout(temporizador.current);
-      if (reinicio.current) clearTimeout(reinicio.current);
     },
     []
   );
-
-  const disparar = async () => {
-    setEstado("enviando");
-    navigator.vibrate?.([120, 60, 120]);
-    try {
-      await generarAlerta(groupId, "GENERAL");
-      setEstado("enviada");
-      alEnviar?.();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo enviar");
-      setEstado("error");
-    }
-    setProgreso(0);
-    reinicio.current = setTimeout(() => {
-      setEstado("listo");
-      setError(null);
-    }, 5000);
-  };
 
   // Solo dibuja el anillo.
   const avanzar = () => {
@@ -65,15 +55,12 @@ export default function BotonPanico({ groupId, alEnviar }: Props) {
   const completar = () => {
     inicio.current = null;
     if (cuadro.current) cancelAnimationFrame(cuadro.current);
-    setProgreso(1);
-    disparar();
+    setProgreso(0);
+    alMantener();
   };
 
   const empezar = () => {
-    if (estado === "enviando" || inicio.current !== null) return;
-    if (reinicio.current) clearTimeout(reinicio.current);
-    setError(null);
-    setEstado("presionando");
+    if (bloqueado || estado === "enviando" || inicio.current !== null) return;
     navigator.vibrate?.(30);
     inicio.current = performance.now();
     temporizador.current = setTimeout(completar, MANTENER_MS);
@@ -87,84 +74,93 @@ export default function BotonPanico({ groupId, alEnviar }: Props) {
     if (temporizador.current) clearTimeout(temporizador.current);
     if (cuadro.current) cancelAnimationFrame(cuadro.current);
     setProgreso(0);
-    setEstado("listo");
   };
 
   const conTeclado = (e: KeyboardEvent, bajando: boolean) => {
     if (e.key !== " " && e.key !== "Enter") return;
     e.preventDefault();
+    if (bloqueado) {
+      if (bajando && !e.repeat) alToqueBloqueado?.();
+      return;
+    }
     if (bajando && !e.repeat) empezar();
     if (!bajando) cancelar();
   };
 
-  const texto = {
-    listo: "Mantén presionado para pedir ayuda",
-    presionando: "Sigue presionando…",
-    enviando: "Enviando alerta…",
-    enviada: "✓ Alerta enviada a todo el grupo",
-    error: error ? `No se pudo enviar: ${error}` : "No se pudo enviar",
-  }[estado];
+  const presionando = progreso > 0;
+  const glifo = estado === "enviada" ? "✓" : estado === "enviando" ? "···" : "SOS";
 
   return (
-    <div className="flex flex-col items-center gap-2 py-3">
-      <div className="relative size-28">
-        {/* Halo que late mientras está en reposo, para que se note que es EL botón. */}
-        {estado === "listo" && (
-          <span className="absolute inset-3 rounded-full bg-red-500/40 motion-safe:animate-[latido_2.4s_ease-out_infinite]" />
-        )}
+    <div className="relative -mt-6 h-16 w-16 shrink-0">
+      {/* Halo que late en reposo, para que se note que es EL botón. */}
+      {estado === "listo" && !bloqueado && !presionando && (
+        <span
+          className="pointer-events-none absolute inset-0 rounded-full motion-safe:animate-[latido_2.4s_ease-out_infinite]"
+          style={{ background: "var(--emergencia)", opacity: 0.35 }}
+        />
+      )}
 
-        <svg className="absolute inset-0 -rotate-90" viewBox="0 0 128 128" aria-hidden>
-          <circle cx="64" cy="64" r={RADIO} fill="none" stroke="rgb(254 202 202)" strokeWidth="6" />
+      <button
+        type="button"
+        aria-label={
+          bloqueado
+            ? "Botón de emergencia: tu cuenta todavía no puede enviar alertas"
+            : "Botón de emergencia: mantén presionado un segundo para avisar a tu grupo"
+        }
+        disabled={estado === "enviando"}
+        onPointerDown={(e) => {
+          if (bloqueado) return;
+          // Capturar el puntero: si el dedo se desliza un poco fuera del
+          // círculo no se cancela; solo al soltar.
+          try {
+            e.currentTarget.setPointerCapture(e.pointerId);
+          } catch {
+            // Algunos navegadores no lo permiten para ciertos punteros.
+          }
+          empezar();
+        }}
+        onPointerUp={cancelar}
+        onPointerCancel={cancelar}
+        onLostPointerCapture={cancelar}
+        onClick={() => bloqueado && alToqueBloqueado?.()}
+        onKeyDown={(e) => conTeclado(e, true)}
+        onKeyUp={(e) => conTeclado(e, false)}
+        onContextMenu={(e) => e.preventDefault()}
+        style={{
+          background: "var(--emergencia)",
+          color: "var(--fondo)",
+          border: "3px solid var(--borde)",
+          boxShadow: `0 4px 12px var(--sombra)`,
+          opacity: bloqueado ? 0.45 : 1,
+          WebkitTouchCallout: "none",
+        }}
+        className={`absolute inset-0 flex touch-none select-none items-center justify-center rounded-full text-sm font-black tracking-wider transition-transform duration-150 ${
+          presionando ? "scale-95" : ""
+        }`}
+      >
+        {glifo}
+      </button>
+
+      {/* Anillo de avance: solo aparece mientras se mantiene presionado. */}
+      {presionando && (
+        <svg
+          className="pointer-events-none absolute inset-0 -rotate-90"
+          viewBox="0 0 64 64"
+          aria-hidden
+        >
           <circle
-            cx="64"
-            cy="64"
+            cx="32"
+            cy="32"
             r={RADIO}
             fill="none"
-            stroke="rgb(185 28 28)"
-            strokeWidth="6"
+            stroke="var(--alerta)"
+            strokeWidth="5"
             strokeLinecap="round"
             strokeDasharray={CIRCUNFERENCIA}
             strokeDashoffset={CIRCUNFERENCIA * (1 - progreso)}
           />
         </svg>
-
-        <button
-          type="button"
-          aria-label={`Botón de emergencia: mantén presionado un segundo para avisar a todo el grupo. ${texto}`}
-          disabled={estado === "enviando"}
-          onPointerDown={(e) => {
-            // Capturar el puntero: si el dedo se desliza un poco fuera del
-            // círculo no se cancela; solo al soltar.
-            try {
-              e.currentTarget.setPointerCapture(e.pointerId);
-            } catch {
-              // Algunos navegadores no lo permiten para ciertos punteros.
-            }
-            empezar();
-          }}
-          onPointerUp={cancelar}
-          onPointerCancel={cancelar}
-          onLostPointerCapture={cancelar}
-          onKeyDown={(e) => conTeclado(e, true)}
-          onKeyUp={(e) => conTeclado(e, false)}
-          onContextMenu={(e) => e.preventDefault()}
-          style={{ WebkitTouchCallout: "none" }}
-          className={`absolute inset-3 flex touch-none select-none flex-col items-center justify-center rounded-full text-white shadow-lg shadow-red-300 transition-transform duration-150 ${
-            estado === "enviada" ? "bg-emerald-600" : "bg-red-600"
-          } ${estado === "presionando" ? "scale-95 bg-red-700" : ""}`}
-        >
-          <span className="text-2xl font-black tracking-wider">{estado === "enviada" ? "✓" : "SOS"}</span>
-        </button>
-      </div>
-
-      <p
-        role="status"
-        className={`text-sm font-medium ${
-          estado === "error" ? "text-red-700" : estado === "enviada" ? "text-emerald-700" : "text-slate-600"
-        }`}
-      >
-        {texto}
-      </p>
+      )}
     </div>
   );
 }

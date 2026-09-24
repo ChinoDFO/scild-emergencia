@@ -1,11 +1,21 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import BotonPanico, { type EstadoSOS } from "./BotonPanico";
+import { generarAlerta, obtenerPerfil, type Perfil } from "../services/api";
 
 // La barra de 5 pestañas del diseño. El centro no es una pestaña más: es el
-// botón de emergencia, dibujado como círculo oscuro sobresaliendo del resto.
+// botón de emergencia, el círculo oscuro que sobresale del resto.
 //
-// Lleva a la pantalla desde donde se dispara la alerta. Si la persona está
-// dentro de un grupo, ahí mismo; si no, a la lista para que elija a quién
-// avisar — en una emergencia no se puede adivinar el destinatario.
+// Desde aquí SE DISPARA la alerta, no se navega a otra pantalla. Antes había
+// que entrar al grupo para llegar al botón; ahora está en todas las pantallas
+// de la app, que es lo que importa cuando hay prisa.
+//
+// A quién le llega:
+//   - si se está dentro de un grupo, a ese grupo;
+//   - si solo hay uno, a ese;
+//   - si hay varios, se pregunta — en una emergencia no se puede adivinar el
+//     destinatario, y mandar el aviso a la casa equivocada es peor que tardar
+//     un toque más.
 
 const ICONO = "h-7 w-7";
 
@@ -54,26 +64,168 @@ const PESTANAS = [
   { a: "/configuracion", etiqueta: "Configuración", Icono: Engrane },
 ];
 
-export default function BarraInferior() {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const enUnGrupo = pathname.startsWith("/grupos/");
+interface Aviso {
+  texto: string;
+  tono: "ok" | "error" | "info";
+  accion?: { a: string; etiqueta: string };
+}
 
-  const irAEmergencia = () => {
-    // Dentro de un grupo el SOS ya está en pantalla; desde fuera hay que
-    // elegir grupo primero.
-    if (!enUnGrupo) navigate("/grupos");
+export default function BarraInferior() {
+  const { pathname } = useLocation();
+  const [perfil, setPerfil] = useState<Perfil | null>(null);
+  const [estado, setEstado] = useState<EstadoSOS>("listo");
+  const [aviso, setAviso] = useState<Aviso | null>(null);
+  const [eligiendo, setEligiendo] = useState(false);
+  const reinicio = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Se pide una vez: de aquí salen si la cuenta puede alertar y a qué grupos
+  // pertenece, que es todo lo que el botón necesita para decidir.
+  useEffect(() => {
+    obtenerPerfil()
+      .then(setPerfil)
+      .catch(() => setPerfil(null));
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (reinicio.current) clearTimeout(reinicio.current);
+    },
+    []
+  );
+
+  const grupos = perfil?.groups ?? [];
+  // Mientras el perfil no llega no se bloquea: si se alcanza a mantener el
+  // botón, manejarSOS lo explica en vez de tragarse el gesto.
+  const bloqueado = perfil !== null && !perfil.accesoCompleto;
+
+  const programarLimpieza = () => {
+    if (reinicio.current) clearTimeout(reinicio.current);
+    reinicio.current = setTimeout(() => {
+      setEstado("listo");
+      setAviso(null);
+    }, 6000);
   };
+
+  const disparar = async (groupId: string) => {
+    setEligiendo(false);
+    setAviso(null);
+    setEstado("enviando");
+    try {
+      await generarAlerta(groupId, "GENERAL");
+      navigator.vibrate?.([120, 60, 120]);
+      const nombre = grupos.find((g) => g.id === groupId)?.name;
+      setEstado("enviada");
+      setAviso({
+        tono: "ok",
+        texto: nombre ? `Alerta enviada a ${nombre}.` : "Alerta enviada.",
+        accion: { a: `/grupos/${groupId}`, etiqueta: "Abrir el grupo" },
+      });
+    } catch (e) {
+      setEstado("listo");
+      setAviso({
+        tono: "error",
+        texto: e instanceof Error ? e.message : "No se pudo enviar la alerta",
+      });
+    }
+    programarLimpieza();
+  };
+
+  const manejarSOS = () => {
+    // Dentro de un grupo el destinatario es obvio: ese.
+    const enUnGrupo = pathname.startsWith("/grupos/") ? pathname.split("/")[2] : null;
+    if (enUnGrupo) return disparar(enUnGrupo);
+
+    if (!perfil) {
+      setAviso({ tono: "info", texto: "Estamos leyendo tu cuenta. Intenta otra vez en un momento." });
+      obtenerPerfil().then(setPerfil).catch(() => {});
+      programarLimpieza();
+      return;
+    }
+    if (grupos.length === 0) {
+      setAviso({
+        tono: "info",
+        texto: "Todavía no estás en ningún grupo, así que no hay a quién avisarle.",
+        accion: { a: "/grupos", etiqueta: "Crear o unirme a uno" },
+      });
+      programarLimpieza();
+      return;
+    }
+    if (grupos.length === 1) return disparar(grupos[0].id);
+    setEligiendo(true);
+  };
+
+  const explicarBloqueo = () => {
+    setAviso({
+      tono: "info",
+      texto: "Tu cuenta no puede enviar alertas: primero captura el código de la caja de tu botón.",
+      accion: { a: "/codigos", etiqueta: "Ir a Códigos" },
+    });
+    programarLimpieza();
+  };
+
+  const colorAviso = (tono: Aviso["tono"]) =>
+    tono === "error" ? "var(--peligro)" : tono === "ok" ? "var(--texto)" : "var(--texto-tenue)";
 
   const izquierda = PESTANAS.slice(0, 2);
   const derecha = PESTANAS.slice(2);
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t px-2 pb-[env(safe-area-inset-bottom)] pt-2"
-      style={{ background: "var(--fondo)", borderColor: "var(--borde-tenue)" }}
+      className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around border-t-2 px-2 pb-[env(safe-area-inset-bottom)] pt-2"
+      style={{ background: "var(--fondo)", borderColor: "var(--borde)" }}
       aria-label="Navegación principal"
     >
+      {/* Lo que el SOS tenga que decir sale aquí arriba, pegado al botón. */}
+      {(eligiendo || aviso) && (
+        <div className="absolute inset-x-0 bottom-full mb-2 px-3">
+          <div className="tarjeta mx-auto max-w-lg p-3">
+            {eligiendo ? (
+              <>
+                <p className="text-xs font-bold uppercase" style={{ color: "var(--texto)" }}>
+                  ¿A qué grupo le aviso?
+                </p>
+                <ul className="mt-2 space-y-1.5">
+                  {grupos.map((g) => (
+                    <li key={g.id}>
+                      <button
+                        type="button"
+                        onClick={() => disparar(g.id)}
+                        className="pieza w-full truncate px-4 py-2 text-left text-sm font-bold"
+                        style={{ color: "var(--texto)" }}
+                      >
+                        {g.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setEligiendo(false)}
+                  className="mt-2 w-full rounded-full py-1.5 text-xs font-bold uppercase"
+                  style={{ background: "var(--fondo)", color: "var(--texto)" }}
+                >
+                  Cancelar
+                </button>
+              </>
+            ) : (
+              <p role="status" className="text-sm font-medium" style={{ color: colorAviso(aviso!.tono) }}>
+                {aviso!.texto}{" "}
+                {aviso!.accion && (
+                  <Link
+                    to={aviso!.accion.a}
+                    onClick={() => setAviso(null)}
+                    className="font-bold underline"
+                    style={{ color: "var(--texto)" }}
+                  >
+                    {aviso!.accion.etiqueta}
+                  </Link>
+                )}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {izquierda.map(({ a, etiqueta, Icono }) => (
         <NavLink key={a} to={a} aria-label={etiqueta} className="p-2">
           {({ isActive }) => (
@@ -84,20 +236,12 @@ export default function BarraInferior() {
         </NavLink>
       ))}
 
-      <button
-        type="button"
-        onClick={irAEmergencia}
-        aria-label="Botón de emergencia"
-        className="-mt-6 flex h-16 w-16 items-center justify-center rounded-full text-3xl font-black shadow-lg transition active:scale-95"
-        style={{
-          background: "var(--emergencia)",
-          color: "var(--fondo)",
-          border: "3px solid var(--borde)",
-          boxShadow: "0 4px 12px var(--sombra)",
-        }}
-      >
-        !
-      </button>
+      <BotonPanico
+        estado={estado}
+        alMantener={manejarSOS}
+        bloqueado={bloqueado}
+        alToqueBloqueado={explicarBloqueo}
+      />
 
       {derecha.map(({ a, etiqueta, Icono }) => (
         <NavLink key={a} to={a} aria-label={etiqueta} className="p-2">

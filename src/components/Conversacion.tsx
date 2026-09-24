@@ -18,15 +18,14 @@ interface Dia {
 }
 
 // Color del nombre de cada persona en el chat, siempre el mismo para ella.
+// Son variables del tema: los tonos oscuros no se leerían en modo oscuro.
 const COLORES_NOMBRE = [
-  "text-rose-700",
-  "text-sky-700",
-  "text-violet-700",
-  "text-amber-700",
-  "text-emerald-700",
-  "text-fuchsia-700",
-  "text-indigo-700",
-  "text-orange-700",
+  "var(--nombre-1)",
+  "var(--nombre-2)",
+  "var(--nombre-3)",
+  "var(--nombre-4)",
+  "var(--nombre-5)",
+  "var(--nombre-6)",
 ];
 function colorDe(id: string) {
   let h = 0;
@@ -141,7 +140,7 @@ export default function Conversacion({
   }, []);
 
   // Con el chat abierto, lo que llega ya se está leyendo: se pone el
-  // contador en cero para que el globito de Inicio y el próximo aviso push
+  // contador en cero para que el globito de Grupos y el próximo aviso push
   // reflejen la realidad.
   useEffect(() => {
     if (!mensajes) return;
@@ -201,14 +200,29 @@ export default function Conversacion({
 
   const hayTexto = texto.trim().length > 0;
 
+  // Pastilla flotante sobre la conversación (el día, "ver anteriores", los
+  // avisos): el mismo gris-azul con trazo de las piezas del resto de la app.
+  const pastilla = "rounded-full border-2 px-3 py-1 text-[11px] font-bold uppercase";
+  const estiloPastilla = {
+    background: "var(--superficie)",
+    borderColor: "var(--borde)",
+    color: "var(--texto)",
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div ref={lista} onScroll={alDesplazar} className="fondo-chat min-h-0 flex-1 overflow-y-auto px-3 py-2">
-        {mensajes === null && !error && <p className="py-6 text-center text-sm text-slate-500">Cargando…</p>}
+        {mensajes === null && !error && (
+          <p className="py-6 text-center text-sm" style={{ color: "var(--texto-tenue)" }}>
+            Cargando…
+          </p>
+        )}
 
         {error && (
-          <p className="mx-auto my-3 max-w-xs rounded-lg bg-white/90 px-3 py-2 text-center text-sm text-red-700 shadow-sm">
-            {error}
+          <p className="my-3 flex justify-center">
+            <span className={pastilla} style={{ ...estiloPastilla, color: "var(--peligro)" }}>
+              {error}
+            </span>
           </p>
         )}
 
@@ -217,7 +231,8 @@ export default function Conversacion({
             <button
               onClick={verAnteriores}
               disabled={cargandoAnteriores}
-              className="rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-slate-600 shadow-sm disabled:opacity-60"
+              className={`${pastilla} disabled:opacity-60`}
+              style={estiloPastilla}
             >
               {cargandoAnteriores ? "Cargando…" : "Ver mensajes anteriores"}
             </button>
@@ -225,7 +240,10 @@ export default function Conversacion({
         )}
 
         {mensajes?.length === 0 && alertas.length === 0 && (
-          <p className="mx-auto mt-8 max-w-xs rounded-lg bg-amber-50/95 px-3 py-2 text-center text-xs text-amber-900 shadow-sm">
+          <p
+            className="tarjeta mx-auto mt-8 max-w-xs px-3 py-2 text-center text-xs"
+            style={{ color: "var(--texto-tenue)" }}
+          >
             Aquí van los mensajes y las alertas de {groupName}. Escribe el primero.
           </p>
         )}
@@ -233,27 +251,37 @@ export default function Conversacion({
         {dias.map((dia) => (
           <section key={dia.clave} aria-label={dia.texto}>
             <div className="pointer-events-none sticky top-1 z-10 flex justify-center py-2">
-              <span className="rounded-md bg-white/95 px-2.5 py-1 text-xs font-medium text-slate-600 shadow-sm">
+              <span className={pastilla} style={estiloPastilla}>
                 {dia.texto}
               </span>
             </div>
-            <ul className="space-y-1">
+            <ul className="space-y-1.5">
               {dia.elementos.map((el) => {
                 if (el.clase === "alerta") {
                   const a = el.a;
                   const estado = ETIQUETA_ESTADO[a.status];
                   return (
                     <li key={el.clave} className="flex justify-center py-1.5">
-                      <div className="w-[85%] max-w-sm rounded-xl border-l-4 border-red-600 bg-white px-3 py-2 shadow-sm">
+                      <div
+                        className="w-[88%] max-w-sm rounded-2xl px-3 py-2"
+                        style={{
+                          background: "var(--superficie)",
+                          border: "2px solid var(--borde)",
+                          borderLeft: "6px solid var(--peligro)",
+                        }}
+                      >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-semibold text-slate-900">
+                          <span className="text-sm font-bold uppercase" style={{ color: "var(--texto)" }}>
                             <span aria-hidden>{a.tipo.emoji}</span> {a.tipo.etiqueta}
                           </span>
-                          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${estado.clase}`}>
+                          <span
+                            className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black uppercase"
+                            style={{ background: estado.fondo, color: estado.color }}
+                          >
                             {estado.texto}
                           </span>
                         </div>
-                        <p className="mt-0.5 text-xs text-slate-500">
+                        <p className="mt-0.5 text-[11px]" style={{ color: "var(--texto-tenue)" }}>
                           {origen(a)} · {hora(a.createdAt)}
                         </p>
                       </div>
@@ -269,19 +297,27 @@ export default function Conversacion({
                     className={`flex ${mio ? "justify-end" : "justify-start"} ${conNombre ? "pt-1.5" : ""}`}
                   >
                     <div
-                      className={`relative max-w-[82%] rounded-xl px-2.5 pb-1.5 pt-1 text-[15px] shadow-sm ${
-                        mio ? "bg-rose-100 text-slate-900" : "bg-white text-slate-900"
-                      } ${conNombre ? (mio ? "rounded-tr-none" : "rounded-tl-none") : ""}`}
+                      className={`relative max-w-[82%] rounded-2xl px-3 pb-1.5 pt-1.5 text-[15px] ${
+                        mio ? "burbuja-mia" : "burbuja-otro"
+                      } ${conNombre ? (mio ? "rounded-tr-md" : "rounded-tl-md") : ""}`}
+                      style={{ color: "var(--texto)" }}
                     >
                       {!mio && conNombre && (
-                        <p className={`text-[13px] font-semibold ${colorDe(m.autor.id)}`}>{m.autor.nombre}</p>
+                        <p className="text-[13px] font-bold" style={{ color: colorDe(m.autor.id) }}>
+                          {m.autor.nombre}
+                        </p>
                       )}
                       <p className="whitespace-pre-wrap break-words">
                         {m.content}
                         {/* Reserva el espacio de la hora para que no se encime con el texto. */}
                         <span className="invisible ml-2 text-[11px]">{hora(m.createdAt)}</span>
                       </p>
-                      <span className="absolute bottom-1 right-2 text-[11px] text-slate-500">{hora(m.createdAt)}</span>
+                      <span
+                        className="absolute bottom-1 right-2.5 text-[11px]"
+                        style={{ color: "var(--texto-tenue)" }}
+                      >
+                        {hora(m.createdAt)}
+                      </span>
                     </div>
                   </li>
                 );
@@ -291,7 +327,7 @@ export default function Conversacion({
         ))}
       </div>
 
-      <div className="border-t border-slate-200 bg-slate-100">
+      <div style={{ background: "var(--fondo)", borderTop: "2px solid var(--borde)" }}>
         {menuAbierto && puedoAlertar && (
           <div className="pt-2">
             <MenuAlertas
@@ -307,7 +343,11 @@ export default function Conversacion({
           </div>
         )}
 
-        {errorEnvio && <p className="px-3 pt-2 text-sm text-red-700">No se pudo enviar: {errorEnvio}</p>}
+        {errorEnvio && (
+          <p className="px-3 pt-2 text-sm font-bold" style={{ color: "var(--peligro)" }}>
+            No se pudo enviar: {errorEnvio}
+          </p>
+        )}
 
         <form onSubmit={mandar} className="flex items-end gap-2 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
           <textarea
@@ -323,7 +363,8 @@ export default function Conversacion({
             maxLength={1000}
             placeholder="Mensaje"
             aria-label="Mensaje"
-            className="max-h-32 min-h-12 flex-1 resize-none rounded-3xl border-0 bg-white px-4 py-3 text-[15px] leading-6 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+            className="max-h-32 min-h-12 flex-1 resize-none rounded-3xl border-2 px-4 py-3 text-[15px] leading-6 outline-none"
+            style={{ borderColor: "var(--borde)", background: "var(--fondo)", color: "var(--texto)" }}
           />
 
           {hayTexto || !puedoAlertar ? (
@@ -331,21 +372,28 @@ export default function Conversacion({
               type="submit"
               disabled={enviando || !hayTexto}
               aria-label="Enviar mensaje"
-              className="flex size-12 shrink-0 items-center justify-center rounded-full bg-slate-800 text-white shadow-md hover:bg-slate-900 disabled:opacity-40"
+              className="flex size-12 shrink-0 items-center justify-center rounded-full transition active:scale-95 disabled:opacity-40"
+              style={{ background: "var(--texto)", color: "var(--fondo)" }}
             >
               <svg viewBox="0 0 24 24" className="size-5 translate-x-px" fill="currentColor" aria-hidden>
                 <path d="M3.4 20.4 21 12 3.4 3.6l-.01 6.53L15 12 3.39 13.87z" />
               </svg>
             </button>
           ) : (
+            // Alertas por tipo. Cuadrado y amarillo: el SOS de la barra de
+            // abajo es un círculo oscuro, y son dos cosas distintas — aquí se
+            // elige QUÉ pasa, allá se pide ayuda sin pensar.
             <button
               type="button"
               onClick={() => setMenuAbierto((v) => !v)}
               aria-expanded={menuAbierto}
               aria-label={menuAbierto ? "Cerrar menú de alertas" : "Enviar una alerta de un tipo específico"}
-              className={`flex size-12 shrink-0 items-center justify-center rounded-full text-2xl font-black text-white shadow-md ${
-                menuAbierto ? "bg-slate-700" : "bg-red-600 hover:bg-red-700"
-              }`}
+              className="flex size-12 shrink-0 items-center justify-center rounded-2xl border-2 text-2xl font-black leading-none transition active:scale-95"
+              style={{
+                background: menuAbierto ? "var(--superficie)" : "var(--alerta)",
+                borderColor: "var(--borde)",
+                color: menuAbierto ? "var(--texto)" : "var(--alerta-texto)",
+              }}
             >
               {menuAbierto ? "×" : "!"}
             </button>

@@ -5,9 +5,6 @@ import { generarAlerta, listarTiposAlerta, type TipoAlerta } from "../services/a
 // pedir ayuda: queda al menos la alerta general.
 const RESPALDO: TipoAlerta[] = [{ id: "GENERAL", etiqueta: "Emergencia", emoji: "🚨" }];
 
-// Fondo de cada círculo, por posición en el catálogo.
-const FONDOS = ["bg-red-100", "bg-amber-100", "bg-violet-100", "bg-sky-100", "bg-orange-100", "bg-emerald-100"];
-
 interface Props {
   groupId: string;
   groupName: string;
@@ -16,7 +13,11 @@ interface Props {
 }
 
 // Panel "¿Qué está pasando?" que sale sobre la caja de mensaje al tocar el
-// botón "!". Al elegir una opción la alerta sale de inmediato.
+// botón amarillo "!". Al elegir una opción la alerta sale de inmediato.
+//
+// Va con el trazo y la superficie del resto de la app: los círculos de los
+// tipos son piezas con contorno, y el color lo pone el emoji, no un relleno
+// pastel distinto en cada uno.
 export default function MenuAlertas({ groupId, groupName, alCerrar, alEnviar }: Props) {
   const [tipos, setTipos] = useState<TipoAlerta[]>(RESPALDO);
   const [enviando, setEnviando] = useState<string | null>(null);
@@ -49,18 +50,29 @@ export default function MenuAlertas({ groupId, groupName, alCerrar, alEnviar }: 
   };
 
   return (
-    <div
-      role="dialog"
-      aria-label="Enviar una alerta"
-      className="mx-2 mb-2 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-slate-200"
-    >
-      <div className="flex items-baseline justify-between">
-        <h2 className="font-semibold text-slate-900">¿Qué está pasando?</h2>
-        <span className="text-xs text-slate-500">Se avisa al instante</span>
+    <div role="dialog" aria-label="Enviar una alerta" className="tarjeta mx-2 mb-2 p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-bold uppercase" style={{ color: "var(--texto)" }}>
+            ¿Qué está pasando?
+          </h2>
+          <p className="text-[11px]" style={{ color: "var(--texto-tenue)" }}>
+            Se avisa al instante, sin confirmar.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={alCerrar}
+          aria-label="Cerrar menú de alertas"
+          className="rounded-full border-2 px-2 py-0.5 text-sm font-black leading-none"
+          style={{ borderColor: "var(--borde)", color: "var(--texto)", background: "var(--fondo)" }}
+        >
+          ×
+        </button>
       </div>
 
-      <ul className="mt-3 grid grid-cols-3 gap-x-2 gap-y-4">
-        {tipos.map((tipo, i) => (
+      <ul className="mt-3 grid grid-cols-3 gap-x-2 gap-y-3">
+        {tipos.map((tipo) => (
           <li key={tipo.id}>
             <button
               onClick={() => enviar(tipo)}
@@ -68,23 +80,30 @@ export default function MenuAlertas({ groupId, groupName, alCerrar, alEnviar }: 
               className="flex w-full flex-col items-center gap-1.5 rounded-xl p-1 text-center disabled:opacity-50"
             >
               <span
-                className={`flex size-14 items-center justify-center rounded-full text-3xl ${FONDOS[i % FONDOS.length]} ${
+                className={`flex size-14 items-center justify-center rounded-full border-2 text-3xl ${
                   enviando === tipo.id ? "animate-pulse" : ""
                 }`}
+                style={{ background: "var(--fondo)", borderColor: "var(--borde)" }}
                 aria-hidden
               >
                 {tipo.emoji}
               </span>
-              <span className="text-xs font-medium leading-tight text-slate-700">{tipo.etiqueta}</span>
+              <span className="text-[11px] font-bold uppercase leading-tight" style={{ color: "var(--texto)" }}>
+                {tipo.etiqueta}
+              </span>
             </button>
           </li>
         ))}
       </ul>
 
       {error ? (
-        <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">No se pudo enviar: {error}</p>
+        <p className="mt-3 text-sm font-bold" style={{ color: "var(--peligro)" }}>
+          No se pudo enviar: {error}
+        </p>
       ) : (
-        <p className="mt-3 text-center text-xs text-slate-500">Le llega a todos los de {groupName}.</p>
+        <p className="mt-3 text-center text-[11px]" style={{ color: "var(--texto-tenue)" }}>
+          Le llega a todos los de {groupName}.
+        </p>
       )}
     </div>
   );
