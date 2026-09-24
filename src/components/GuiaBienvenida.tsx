@@ -3,9 +3,8 @@ import { useState } from "react";
 // Guía corta para quien acaba de crear su cuenta.
 //
 // Se abre sola la primera vez y se puede saltar; después vive en Ayuda, para
-// quien la quiera volver a ver. Son cuatro pasos y no cinco ni diez: lo que
-// hay que entender antes de usar la app es poco, y una guía larga se salta
-// entera.
+// quien la quiera volver a ver. Son cinco pasos y no diez: lo que hay que
+// entender antes de usar la app es poco, y una guía larga se salta entera.
 //
 // Lo que sí tiene que quedar claro desde el principio es la diferencia entre
 // las dos clases de cuenta, porque es la pregunta que llega después ("¿por

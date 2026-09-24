@@ -34,7 +34,7 @@ export interface BotonDeAcceso {
   deviceCode: string;
   // A qué grupo le avisa este botón, si ya se vinculó a uno.
   grupo: { id: string; name: string } | null;
-  // Las dos personas que comparten el botón.
+  // Las personas que comparten el botón (hasta tres).
   titulares: { userId: string; nombre: string }[];
   // Monitoreo. La dirección es la del establecimiento donde está vinculado:
   // el aparato no guarda una propia.
@@ -56,7 +56,7 @@ export function obtenerAcceso(): Promise<Acceso> {
 }
 
 // Vincula la cuenta a un botón con el código impreso en su caja. El mismo
-// código sirve para dos personas.
+// código sirve para tres personas.
 export function vincularCodigo(claimCode: string) {
   return llamarBackend("/api/acceso/vincular", {
     method: "POST",
@@ -331,10 +331,10 @@ export interface ClienteAdmin {
   grupo: string | null;
   // Quien registró el botón primero: el cliente de verdad.
   cliente: { userId: string; nombre: string; email: string; registradoEl: string };
-  // La segunda persona, si ya usaron las dos validaciones del código.
-  acompanante: string | null;
-  lugaresOcupados: number;
-  lugaresTotales: number;
+  // Con quién más comparte el botón: el código de la caja vale para tres.
+  acompanantes: string[];
+  titulares: number;
+  titularesTotales: number;
 }
 
 export function listarClientes(filtro: { q?: string } = {}): Promise<ClienteAdmin[]> {

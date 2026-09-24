@@ -80,8 +80,8 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         pregunta: "No me aparece el botón SOS en mi grupo",
         respuesta: [
           "Las alertas las envía quien tiene un botón vinculado a su cuenta. Los demás reciben todas las alertas y participan en el chat, pero no pueden dispararlas.",
-          'Si compraste un botón, captura el código de su caja en el apartado "Códigos". Ese mismo código sirve para dos personas: tú y quien viva contigo, porque el botón es de la casa.',
-          "Si no tienes botón propio (cubres un turno, vives ahí pero el código ya se usó dos veces), tu cuenta se queda como invitada: recibes todas las alertas y escribes en el chat, pero no puedes dispararlas.",
+          'Si compraste un botón, captura el código de su caja en el apartado "Códigos". Ese mismo código sirve para tres personas: quienes viven o trabajan donde está el aparato, porque el botón es del lugar.',
+          "Si no tienes botón propio (cubres un turno, vives ahí pero el código ya se usó tres veces), tu cuenta se queda como invitada: recibes todas las alertas y escribes en el chat, pero no puedes dispararlas.",
         ],
       },
       {
@@ -119,17 +119,17 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         id: "quien-puede-alertar",
         pregunta: "¿Quién puede enviar alertas en mi grupo?",
         respuesta: [
-          "Solo los titulares de un botón: las dos personas que capturaron el código impreso en su caja. Suele ser quien compró el aparato y quien vive con esa persona, porque el botón es de la casa.",
+          "Solo los titulares de un botón: las personas que capturaron el código impreso en su caja, hasta tres por botón. Suele ser quien compró el aparato y quienes viven o trabajan con esa persona, porque el botón es del lugar.",
           "Los demás miembros del grupo reciben todas las alertas y participan en el chat, pero no pueden dispararlas.",
-          "Ese número no se amplía de ninguna manera. Si en un mismo lugar hacen falta más personas que puedan alertar, la forma es que cada una tenga su propio botón: al vincularlo al grupo, sus titulares también pueden avisar.",
+          "Ese número no se amplía de ninguna manera: el permiso no se presta, no se regala y no se compra. Si en un mismo lugar hacen falta más personas que puedan alertar, la forma es que cada una tenga su propio botón.",
         ],
       },
       {
         id: "cupo-grupo",
         pregunta: "Ya no puedo meter a más gente a mi grupo",
         respuesta: [
-          "Cada botón da cupo para 10 personas en el grupo. Cuando se llenan, la forma de crecer es que alguien más con su propio botón se una: ese botón trae sus otros 10 lugares.",
-          "Ojo con no confundirlo: los lugares dicen cuánta gente cabe en el grupo, no quién puede enviar alertas. Eso último es de los titulares del botón, y son siempre dos.",
+          "El cupo es del grupo y lo decide su administrador: desde la información del grupo puede subirlo hasta 50 personas. Si te sale que está lleno, pídeselo a quien lo administra.",
+          "Ojo con no confundirlo: el cupo dice cuánta gente cabe en el grupo, no quién puede enviar alertas. Eso último es de los titulares del botón, y son tres como máximo.",
         ],
       },
       {

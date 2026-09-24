@@ -52,7 +52,7 @@ export default function Registro() {
     }
 
     // La cuenta ya existe y la sesión está abierta. Si el código falla (mal
-    // tecleado, ya usado dos veces), la cuenta NO se deshace: se manda a
+    // tecleado, ya usado tres veces), la cuenta NO se deshace: se manda a
     // Códigos con el motivo, para que lo intente ahí sin volver a
     // registrarse. Sin código, la cuenta entra como invitada.
     if (codigo.trim()) {
@@ -133,7 +133,7 @@ export default function Registro() {
             className={`${CLASE_CAMPO_SESION} font-mono uppercase tracking-wider`}
           />
           <p className="mt-1 text-[11px] text-white/70">
-            Viene impreso en la caja de tu botón y sirve para dos personas. Sin él puedes entrar a
+            Viene impreso en la caja de tu botón y sirve para tres personas. Sin él puedes entrar a
             grupos y escribir en el chat, pero no enviar alertas.
           </p>
         </CampoSesion>

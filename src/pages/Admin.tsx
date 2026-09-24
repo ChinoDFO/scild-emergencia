@@ -89,12 +89,12 @@ export default function Admin() {
                   </p>
                   <p className="text-xs text-slate-400">
                     Registrado el {fecha(c.cliente.registradoEl)}
-                    {c.acompanante ? ` · comparte con ${c.acompanante}` : " · código usado 1 de 2"}
+                    {c.acompanantes.length > 0 && ` · comparte con ${c.acompanantes.join(", ")}`}
                   </p>
                 </div>
 
                 <span className="shrink-0 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">
-                  {c.lugaresOcupados} de {c.lugaresTotales} lugares
+                  {c.titulares} de {c.titularesTotales} titulares
                 </span>
               </li>
             ))}

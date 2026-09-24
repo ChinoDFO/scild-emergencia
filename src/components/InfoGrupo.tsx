@@ -147,7 +147,8 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
   // Se guarda al salir del campo y no con un botón aparte: es un solo número,
   // y un "Guardar" más sería un paso de más para cambiar un 10 por un 20.
   const guardarCupo = async (valor: number) => {
-    if (!Number.isFinite(valor) || valor === grupo.cupos.total) return;
+    // El campo vacío da NaN y un 0 que el backend rechazaría: se deja como estaba.
+    if (!Number.isFinite(valor) || valor < 1 || valor === grupo.cupos.total) return;
     setErrorCupo(null);
     setGuardandoCupo(true);
     try {
@@ -419,7 +420,15 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
               max={grupo.cupos.tope}
               defaultValue={grupo.cupos.total}
               disabled={guardandoCupo}
-              onBlur={(e) => guardarCupo(Number(e.target.value))}
+              onBlur={(e) => {
+                const valor = Number(e.target.value);
+                // Vacío o fuera de rango: el campo vuelve a lo que ya había.
+                if (!Number.isFinite(valor) || valor < 1) {
+                  e.target.value = String(grupo.cupos.total);
+                  return;
+                }
+                guardarCupo(valor);
+              }}
               className="w-20 rounded-xl border-2 px-2 py-1.5 text-center text-sm font-bold outline-none disabled:opacity-50"
               style={{ borderColor: "var(--borde)", background: "var(--fondo)", color: "var(--texto)" }}
               aria-label="Cupo del grupo"
