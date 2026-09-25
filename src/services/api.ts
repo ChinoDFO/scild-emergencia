@@ -8,6 +8,14 @@ export interface Grupo {
   role: "ADMIN" | "MEMBER";
   // Mensajes del chat que esta persona no ha leído.
   sinLeer: number;
+  // Fijado arriba de la lista. Es de cada quien: no se lo mueve a los demás
+  // miembros del grupo.
+  fijado: boolean;
+  // Cuándo se fijó (null si no lo está): desempata entre varios fijados.
+  fijadoEl: string | null;
+  // Fecha del último mensaje del chat; si nunca ha tenido, la de entrada al
+  // grupo. Es lo que ordena la lista.
+  ultimoMensajeEl: string;
 }
 
 export interface Perfil {
@@ -43,6 +51,55 @@ export interface BotonDeAcceso {
   ultimaSenal: string | null;
   bateria: number | null;
   firmware: string | null;
+  // Telemetría del último aviso de vida del ESP32. Mientras el aparato no
+  // haya reportado van en null y la pantalla dibuja "Sin datos".
+  ip: string | null;
+  redActiva: string | null;
+  // dBm. -55 o mejor es excelente, -70 aceptable, por debajo es débil.
+  rssi: number | null;
+  // Veces seguidas que se quedó sin internet teniendo WiFi.
+  fallosInternet: number;
+  // Cada cuántos segundos promete reportarse: con eso se sabe si el silencio
+  // ya es raro o todavía no.
+  intervaloSenal: number;
+  ultimaAlerta: string | null;
+}
+
+// Ajustes del botón que se mandan desde la app y el aparato baja en su
+// siguiente aviso de vida. Lo que antes se capturaba en el portal WiFi.
+export interface ConfigBoton {
+  nombre: string | null;
+  heartbeatSegundos: number;
+  cooldownSegundos: number | null;
+  ssidRespaldo: string | null;
+  // La contraseña de la red de respaldo entra pero no sale: solo se sabe si
+  // está puesta.
+  passRespaldo: null;
+  passRespaldoPuesta: boolean;
+  // Cuánto puede tardar en aplicarse (el aparato pregunta cada tanto).
+  seAplicaEnSegundos: number;
+}
+
+export interface CambiosConfigBoton {
+  nombre?: string;
+  heartbeatSegundos?: number;
+  cooldownSegundos?: number;
+  ssidRespaldo?: string;
+  passRespaldo?: string;
+}
+
+export function obtenerConfigBoton(deviceId: string): Promise<ConfigBoton> {
+  return llamarBackend(`/api/acceso/botones/${encodeURIComponent(deviceId)}/config`);
+}
+
+export function guardarConfigBoton(
+  deviceId: string,
+  cambios: CambiosConfigBoton
+): Promise<ConfigBoton> {
+  return llamarBackend(`/api/acceso/botones/${encodeURIComponent(deviceId)}/config`, {
+    method: "PATCH",
+    body: JSON.stringify(cambios),
+  });
 }
 
 export interface Acceso {
@@ -286,6 +343,14 @@ export function marcarChatLeido(groupId: string) {
   return llamarBackend(`/api/groups/${encodeURIComponent(groupId)}/read`, { method: "POST" });
 }
 
+// Fija el grupo arriba de la lista, o lo suelta.
+export function fijarGrupo(groupId: string, fijado: boolean): Promise<{ fijado: boolean }> {
+  return llamarBackend(`/api/groups/${encodeURIComponent(groupId)}/pin`, {
+    method: "PATCH",
+    body: JSON.stringify({ fijado }),
+  });
+}
+
 export function salirDelGrupo(groupId: string): Promise<{ ok: boolean; grupoBorrado: boolean }> {
   return llamarBackend(`/api/groups/${encodeURIComponent(groupId)}/members/me`, { method: "DELETE" });
 }
@@ -342,4 +407,50 @@ export function listarClientes(filtro: { q?: string } = {}): Promise<ClienteAdmi
   if (filtro.q) parametros.set("q", filtro.q);
   const query = parametros.toString();
   return llamarBackend(`/api/admin/clientes${query ? `?${query}` : ""}`);
+}
+
+// --- Fábrica: dar de alta botones -------------------------------------------
+
+// Un botón dado de alta que todavía no tiene dueño: inventario.
+export interface BotonEnInventario {
+  id: string;
+  deviceCode: string;
+  nombre: string | null;
+  // Como va impreso en la caja, en bloques de tres.
+  codigoDeLaCaja: string;
+  creadoEl: string;
+  // Si ya se conectó alguna vez: el aparato existe y funciona, no es solo un
+  // registro en la base.
+  probado: boolean;
+  firmware: string | null;
+  grupo: string | null;
+}
+
+export interface InventarioBotones {
+  // En qué número se quedó la serie (BTN-004), para no ir a buscarlo.
+  siguienteCodigo: string;
+  dispositivos: BotonEnInventario[];
+}
+
+// Lo que devuelve el alta. El secreto llega UNA vez y no se puede volver a
+// consultar: en la base solo queda su hash.
+export interface BotonRecienCreado {
+  id: string;
+  deviceCode: string;
+  deviceSecret: string;
+  codigoDeLaCaja: string;
+}
+
+export function listarInventarioBotones(): Promise<InventarioBotones> {
+  return llamarBackend("/api/admin/dispositivos");
+}
+
+export function crearBoton(datos: {
+  deviceCode: string;
+  nombre?: string;
+}): Promise<BotonRecienCreado> {
+  return llamarBackend("/api/admin/dispositivos", {
+    method: "POST",
+    body: JSON.stringify(datos),
+  });
 }

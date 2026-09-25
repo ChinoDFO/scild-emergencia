@@ -6,10 +6,11 @@ import { obtenerAcceso, type BotonDeAcceso } from "../services/api";
 // La pantalla de un botón: dirección con su estado arriba, y debajo la
 // cuadrícula de seis datos del diseño.
 //
-// Cuatro de esos seis (red activa, IP, señal WiFi y fallos del firmware) solo
-// los puede reportar el ESP32, que todavía no existe. Se dibujan igual, con
-// "Sin datos" en gris: la tarjeta vacía dice la verdad —que no ha llegado esa
-// información— mientras que esconderla haría pensar que no está planeada.
+// Todo eso lo reporta el ESP32 en su aviso de vida (POST /api/devices/heartbeat,
+// firmware v8): red a la que está conectado, IP, señal, fallos de internet.
+// Un botón que nunca ha reportado enseña "Sin datos" en gris: la casilla
+// vacía dice la verdad —que no ha llegado esa información— mientras que
+// esconderla haría pensar que no está planeada.
 
 const ETIQUETA_ESTADO: Record<string, string> = {
   ONLINE: "En línea",
@@ -18,6 +19,27 @@ const ETIQUETA_ESTADO: Record<string, string> = {
   EMERGENCY: "Emergencia",
   MAINTENANCE: "Mantenimiento",
 };
+
+// Los dBm no le dicen nada a nadie; el adjetivo sí. Los cortes son los de
+// siempre en WiFi: -55 o mejor es excelente, hasta -70 se aguanta, por
+// debajo la conexión se cae sola.
+function etiquetaSenal(rssi: number) {
+  if (rssi >= -55) return "Excelente";
+  if (rssi >= -70) return "Buena";
+  return "Débil";
+}
+
+// "hace 2m" se lee de un vistazo; una fecha completa hay que interpretarla.
+function tiempoRelativo(iso: string | null | undefined) {
+  if (!iso) return null;
+  const segundos = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (segundos < 60) return `hace ${Math.max(segundos, 0)}s`;
+  const minutos = Math.floor(segundos / 60);
+  if (minutos < 60) return `hace ${minutos}m`;
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24) return `hace ${horas}h`;
+  return `hace ${Math.floor(horas / 24)}d`;
+}
 
 function Dato({
   titulo,
@@ -71,6 +93,10 @@ export default function Dispositivo() {
   const cuando = (iso: string | null | undefined) =>
     iso ? new Date(iso).toLocaleString("es-MX") : null;
 
+  // Un botón que nunca mandó su estado: es la diferencia entre "está mal" y
+  // "todavía no lo conectas".
+  const sinReportar = Boolean(boton && !boton.ultimaSenal);
+
   return (
     <Pantalla titulo={boton?.nombre ?? "Botón"}>
       {error && (
@@ -106,19 +132,37 @@ export default function Dispositivo() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <Dato titulo="Última señal" valor={cuando(boton.ultimaSenal)} />
-              <Dato titulo="Red activa" />
-              <Dato titulo="Señal Wi-Fi" nota="(Buena, mala, excelente)" />
-              <Dato titulo="IP" />
+              <Dato
+                titulo="Última señal"
+                valor={tiempoRelativo(boton.ultimaSenal)}
+                nota={cuando(boton.ultimaSenal) ?? undefined}
+              />
+              <Dato titulo="Red activa" valor={boton.redActiva} />
+              <Dato
+                titulo="Señal Wi-Fi"
+                valor={boton.rssi != null ? `${boton.rssi} dBm` : null}
+                nota={boton.rssi != null ? etiquetaSenal(boton.rssi) : undefined}
+              />
+              <Dato titulo="IP" valor={boton.ip} />
               <Dato
                 titulo="Última alerta"
-                valor={boton.grupo ? null : "Sin grupo"}
+                valor={
+                  boton.grupo
+                    ? (tiempoRelativo(boton.ultimaAlerta) ?? "Ninguna todavía")
+                    : "Sin grupo"
+                }
                 nota={boton.grupo ? "En el chat del grupo" : undefined}
               />
               <Dato
                 titulo="Firmware"
                 valor={boton.firmware}
-                nota={boton.bateria != null ? `Batería ${boton.bateria}%` : undefined}
+                nota={
+                  boton.fallosInternet > 0
+                    ? `${boton.fallosInternet} fallos de internet`
+                    : boton.bateria != null
+                      ? `Batería ${boton.bateria}%`
+                      : undefined
+                }
               />
             </div>
           </div>
@@ -132,8 +176,9 @@ export default function Dispositivo() {
           </button>
 
           <p className="mt-3 text-center text-[11px]" style={{ color: "var(--texto-tenue)" }}>
-            Red, IP, señal y fallos los reporta el botón físico. Aparecerán en cuanto el aparato
-            empiece a mandar su estado.
+            {sinReportar
+              ? "Red, IP, señal y fallos los reporta el botón físico. Aparecerán en cuanto el aparato se conecte por primera vez."
+              : `El botón se reporta cada ${Math.round(boton.intervaloSenal / 60) || 1} min. Si deja de hacerlo, aquí sale "sin conexión".`}
           </p>
         </>
       )}

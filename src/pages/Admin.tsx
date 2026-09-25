@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import AltaDeBotones from "../components/AltaDeBotones";
 import { listarClientes, type ClienteAdmin } from "../services/api";
 
 // Panel de los administradores de la plataforma (nosotros).
@@ -9,10 +10,12 @@ import { listarClientes, type ClienteAdmin } from "../services/api";
 // isPlatformAdmin (se prende a mano en la base). Si alguien sin el permiso
 // entra a /admin, el backend responde 403 y aquí se ve el aviso.
 //
-// Por ahora solo la lista de clientes: un renglón por botón registrado. Antes
-// tenía las solicitudes de pago, pero se quitó ese sistema. Falta lo que era
-// la prioridad original del roadmap: estado de los botones, alertas recientes
-// con cuánto tardaron en atenderse, y entregas de push fallidas.
+// Dos apartados: la lista de clientes (un renglón por botón registrado) y la
+// fábrica, donde se dan de alta los botones antes de venderlos —lo que antes
+// solo se podía hacer por terminal—. Antes tenía las solicitudes de pago,
+// pero se quitó ese sistema. Falta lo que era la prioridad original del
+// roadmap: estado de los botones, alertas recientes con cuánto tardaron en
+// atenderse, y entregas de push fallidas.
 
 const fecha = (iso: string) =>
   new Date(iso).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" });
@@ -54,6 +57,7 @@ export default function Admin() {
           </div>
         </div>
 
+        <h2 className="mt-6 text-lg font-semibold text-slate-900">Clientes</h2>
         <p className="mt-1 text-sm text-slate-500">
           Un renglón por botón registrado, con quien lo dio de alta.
         </p>
@@ -100,6 +104,8 @@ export default function Admin() {
             ))}
           </ul>
         )}
+
+        <AltaDeBotones />
       </div>
     </div>
   );
