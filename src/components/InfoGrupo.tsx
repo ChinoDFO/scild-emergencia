@@ -1,17 +1,19 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   actualizarGrupo,
   cambiarRolMiembro,
   desvincularBoton,
   eliminarGrupo,
+  obtenerAcceso,
   regenerarCodigoInvitacion,
   salirDelGrupo,
   vincularBoton,
+  type Acceso,
   type DetalleGrupo,
   type EstadoBoton,
 } from "../services/api";
-import { GRUPOS_POR_BOTON } from "../services/gruposDelBoton";
+import { describirGrupos, GRUPOS_POR_BOTON } from "../services/gruposDelBoton";
 
 const ESTADO_BOTON: Record<EstadoBoton, { texto: string; clase: string }> = {
   ONLINE: { texto: "En línea", clase: "bg-emerald-100 text-emerald-800" },
@@ -49,8 +51,10 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
   const [errorSalida, setErrorSalida] = useState<string | null>(null);
   const [vinculando, setVinculando] = useState(false);
   const [formularioBoton, setFormularioBoton] = useState(false);
-  const [codigoBoton, setCodigoBoton] = useState("");
-  const [nombreBoton, setNombreBoton] = useState("");
+  // Los botones de la cuenta, para elegir cuál se vincula. Se piden al abrir el
+  // formulario y no antes: la mayoría de las veces nadie lo abre.
+  const [misBotones, setMisBotones] = useState<Acceso["botones"] | null>(null);
+  const [botonElegido, setBotonElegido] = useState("");
   const [errorBoton, setErrorBoton] = useState<string | null>(null);
   const [desvinculando, setDesvinculando] = useState<string | null>(null);
 
@@ -100,14 +104,29 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
     }
   };
 
+  // Abrir el formulario trae los botones de la cuenta: se elige entre ELLOS. Ya
+  // no se escribe el código de la caja aquí: eso agregaba a la persona como
+  // titular de un botón que nadie le había compartido.
+  const abrirVinculacion = async () => {
+    setErrorBoton(null);
+    setBotonElegido("");
+    setFormularioBoton(true);
+    try {
+      setMisBotones((await obtenerAcceso()).botones);
+    } catch (err) {
+      setMisBotones([]);
+      setErrorBoton(err instanceof Error ? err.message : "No se pudieron cargar tus botones");
+    }
+  };
+
   const vincular = async (e: FormEvent) => {
     e.preventDefault();
+    if (!botonElegido) return;
     setVinculando(true);
     setErrorBoton(null);
     try {
-      await vincularBoton(grupo.id, codigoBoton, nombreBoton.trim() || undefined);
-      setCodigoBoton("");
-      setNombreBoton("");
+      await vincularBoton(grupo.id, botonElegido);
+      setBotonElegido("");
       setFormularioBoton(false);
       alCambiar();
     } catch (err) {
@@ -118,7 +137,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
   };
 
   const desvincular = async (deviceId: string, comoSeLlama: string) => {
-    const aviso = `${comoSeLlama} dejará de avisar a este grupo. Puedes volver a vincularlo con el código de su caja. ¿Continuar?`;
+    const aviso = `${comoSeLlama} dejará de avisar a este grupo (en los demás sigue avisando). Puedes volver a vincularlo desde aquí. ¿Continuar?`;
     if (!confirm(aviso)) return;
     setDesvinculando(deviceId);
     setErrorBoton(null);
@@ -331,34 +350,64 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
 
         {formularioBoton ? (
           <form onSubmit={vincular} className="mt-2 space-y-2 rounded-lg bg-slate-50 p-3 text-sm">
-            <label className="block text-slate-700">
-              Código de vinculación
-              <input
-                required
-                autoFocus
-                value={codigoBoton}
-                onChange={(e) => setCodigoBoton(e.target.value)}
-                placeholder="ABC-DEF-GHJ"
-                autoCapitalize="characters"
-                className={`${CLASE_INPUT} font-mono uppercase tracking-wider`}
-              />
-              <span className="mt-1 block text-xs text-slate-500">Viene impreso en la caja del botón.</span>
-            </label>
-            <label className="block text-slate-700">
-              ¿Cómo le llamamos? (opcional)
-              <input
-                maxLength={60}
-                value={nombreBoton}
-                onChange={(e) => setNombreBoton(e.target.value)}
-                placeholder="Caja 1, Recámara, Casa de Juan…"
-                className={CLASE_INPUT}
-              />
-            </label>
+            {misBotones === null ? (
+              <p className="text-slate-500">Cargando tus botones…</p>
+            ) : misBotones.length === 0 ? (
+              <p className="text-slate-600">
+                No tienes ningún botón en tu cuenta. Para agregar uno, captura el código de su caja
+                en{" "}
+                <Link to="/codigos" className="font-bold underline">
+                  Códigos
+                </Link>
+                ; después lo eliges aquí.
+              </p>
+            ) : (
+              <fieldset className="space-y-1">
+                <legend className="text-slate-700">¿Cuál de tus botones avisa a este grupo?</legend>
+                {misBotones.map((b) => {
+                  const yaEsta = b.grupos.some((g) => g.id === grupo.id);
+                  const lleno = b.grupos.length >= GRUPOS_POR_BOTON;
+                  const noSePuede = yaEsta || lleno;
+                  return (
+                    <label
+                      key={b.id}
+                      className={`flex items-start gap-2 rounded-lg bg-white p-2 ring-1 ring-slate-200 ${
+                        noSePuede ? "opacity-50" : "cursor-pointer"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="boton"
+                        value={b.id}
+                        disabled={noSePuede}
+                        checked={botonElegido === b.id}
+                        onChange={() => setBotonElegido(b.id)}
+                        className="mt-1"
+                      />
+                      <span className="min-w-0">
+                        <span className="block font-medium text-slate-900">
+                          {b.nombre} <span className="font-mono text-xs text-slate-500">{b.deviceCode}</span>
+                        </span>
+                        <span className="block text-xs text-slate-500">
+                          {yaEsta
+                            ? "Ya avisa a este grupo."
+                            : lleno
+                              ? `Ya avisa a ${GRUPOS_POR_BOTON} grupos, que es el máximo: desvincúlalo de alguno primero.`
+                              : b.grupos.length > 0
+                                ? `Ya avisa a: ${describirGrupos(b.grupos)}.`
+                                : "Todavía no avisa a ningún grupo."}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </fieldset>
+            )}
             {errorBoton && <p className="rounded-lg bg-red-50 px-3 py-2 text-red-700">{errorBoton}</p>}
             <div className="flex gap-2">
               <button
                 type="submit"
-                disabled={vinculando}
+                disabled={vinculando || !botonElegido}
                 className="flex-1 rounded-lg bg-slate-900 py-2 font-medium text-white hover:bg-slate-800 disabled:opacity-60"
               >
                 {vinculando ? "Vinculando…" : "Vincular"}
@@ -378,10 +427,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
               <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{errorBoton}</p>
             )}
             <button
-              onClick={() => {
-                setErrorBoton(null);
-                setFormularioBoton(true);
-              }}
+              onClick={() => void abrirVinculacion()}
               className="mt-2 w-full rounded-lg bg-white py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50"
             >
               Vincular un botón

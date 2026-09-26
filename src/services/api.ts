@@ -372,16 +372,19 @@ export function cambiarRolMiembro(groupId: string, userId: string, role: "ADMIN"
   );
 }
 
-// Vincula un botón al grupo con el código impreso en su caja.
-export function vincularBoton(groupId: string, claimCode: string, name?: string) {
+// Hace que un botón AVISE a este grupo. Solo se pueden meter botones que ya son
+// tuyos (de los que eres titular): agregar un botón a tu cuenta es otra cosa,
+// se hace capturando el código de su caja en Códigos, y vincular un grupo ya no
+// vuelve titular a nadie.
+export function vincularBoton(groupId: string, deviceId: string, name?: string) {
   return llamarBackend(`/api/groups/${encodeURIComponent(groupId)}/devices/claim`, {
     method: "POST",
-    body: JSON.stringify({ claimCode, ...(name ? { name } : {}) }),
+    body: JSON.stringify({ deviceId, ...(name ? { name } : {}) }),
   });
 }
 
-// Lo suelta del grupo. El código de la caja sigue sirviendo para volver a
-// vincularlo, aquí o en otro grupo.
+// Lo suelta de este grupo (en los demás sigue avisando). Se puede volver a
+// vincular desde aquí mientras siga siendo tuyo.
 export function desvincularBoton(groupId: string, deviceId: string) {
   return llamarBackend(
     `/api/groups/${encodeURIComponent(groupId)}/devices/${encodeURIComponent(deviceId)}`,
@@ -391,24 +394,26 @@ export function desvincularBoton(groupId: string, deviceId: string) {
 
 // --- Panel de administradores de la plataforma ------------------------------
 
-export interface ClienteAdmin {
+// Un botón con dueño. Personas y grupos son dos cosas distintas: las personas
+// son quienes lo comparten (capturaron el código de su caja) y los grupos son a
+// quienes les avisa cuando se presiona. Una persona puede compartir un botón
+// sin estar en ninguno de sus grupos.
+export interface BotonEnUso {
   deviceId: string;
-  nombre: string;
   deviceCode: string;
+  // El nombre que le puso su dueño, si lo hay.
+  nombre: string | null;
+  personas: { userId: string; nombre: string; email: string; desde: string }[];
+  personasTotales: number;
   grupos: string[];
-  // Quien registró el botón primero: el cliente de verdad.
-  cliente: { userId: string; nombre: string; email: string; registradoEl: string };
-  // Con quién más comparte el botón: el código de la caja vale para tres.
-  acompanantes: string[];
-  titulares: number;
-  titularesTotales: number;
+  gruposTotales: number;
 }
 
-export function listarClientes(filtro: { q?: string } = {}): Promise<ClienteAdmin[]> {
+export function listarBotonesEnUso(filtro: { q?: string } = {}): Promise<BotonEnUso[]> {
   const parametros = new URLSearchParams();
   if (filtro.q) parametros.set("q", filtro.q);
   const query = parametros.toString();
-  return llamarBackend(`/api/admin/clientes${query ? `?${query}` : ""}`);
+  return llamarBackend(`/api/admin/botones${query ? `?${query}` : ""}`);
 }
 
 // --- Fábrica: dar de alta botones -------------------------------------------
