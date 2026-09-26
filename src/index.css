@@ -142,3 +142,29 @@ body {
   background-color: var(--fondo);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%235b6170' stroke-opacity='0.1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M30 14l14 5v10c0 9-6 15-14 18-8-3-14-9-14-18V19z'/%3E%3Cpath d='M112 22a9 9 0 0 1 18 0c0 10 5 13 5 13h-28s5-3 5-13M118 40a3 3 0 0 0 6 0'/%3E%3Cpath d='M22 112l14-12 14 12v16H22zM32 128v-9h8v9'/%3E%3Cpath d='M116 128s-14-8-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 10-14 18-14 18z'/%3E%3Ccircle cx='80' cy='80' r='3'/%3E%3Cpath d='M70 40h8M74 36v8M86 124h8M90 120v8'/%3E%3C/g%3E%3C/svg%3E");
 }
+
+/* Sin barra de scroll visible, pero sigue siendo desplazable. La del chat
+   parpadeaba: no se veía al entrar, aparecía al escribir (el teclado
+   cambiaba el alto del contenedor) y se quedaba fija después de mandar un
+   mensaje. Es ruido visual en una lista que ya se desplaza sola hacia el
+   mensaje nuevo; quitarla no quita la función, solo el rastro. */
+.sin-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* versiones viejas de Edge */
+}
+.sin-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, el WebView de la PWA instalada */
+}
+
+/* Resalta la fila mientras se mantiene presionada: es la única señal de que
+   el toque registró, sobre todo antes de que la pantalla cambie. Con
+   :active y no con :hover, porque en celular no hay hover y es ahí donde
+   más falta hace. brightness() funciona igual en los dos temas sin tener
+   que definir un color de "presionado" para cada uno. */
+button.pieza:not(:disabled):active,
+button.tarjeta:not(:disabled):active,
+a.pieza:active {
+  filter: brightness(0.92);
+  transform: scale(0.98);
+}
+
