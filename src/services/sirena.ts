@@ -25,6 +25,37 @@ const MAXIMO_MS = 60_000;
 const PATRON_VIBRACION = [400, 200, 400, 200, 400, 600];
 const CICLO_VIBRACION_MS = 2_200;
 
+// "Nunca suene, pura notificación": preferencia de ESTE aparato, guardada en
+// localStorage como el tema. Es del aparato y no de la cuenta a propósito: el
+// mismo usuario puede querer la sirena en el celular del negocio y ninguna en
+// la tablet de la recámara.
+//
+// Solo apaga lo que hace ruido y vibra (esta sirena). El aviso rojo en
+// pantalla y la notificación del sistema siguen llegando igual: silenciar no
+// es dejar de enterarse.
+const CLAVE_SILENCIADA = "scild:sirena-silenciada";
+
+export function sirenaPermitida(): boolean {
+  try {
+    return localStorage.getItem(CLAVE_SILENCIADA) !== "1";
+  } catch {
+    // Almacenamiento bloqueado: ante la duda, que suene. Una emergencia sin
+    // sirena por un fallo del navegador es peor que una con sirena de más.
+    return true;
+  }
+}
+
+export function permitirSirena(permitida: boolean) {
+  try {
+    if (permitida) localStorage.removeItem(CLAVE_SILENCIADA);
+    else localStorage.setItem(CLAVE_SILENCIADA, "1");
+  } catch {
+    /* que no se guarde no es motivo para romper la pantalla */
+  }
+  // Si se silencia con la sirena sonando, se calla en ese momento.
+  if (!permitida) callarSirena();
+}
+
 let audio: AudioContext | null = null;
 let sonando: { osc: OscillatorNode; lfo: OscillatorNode; volumen: GainNode } | null = null;
 let vibracion: ReturnType<typeof setInterval> | null = null;
@@ -54,7 +85,9 @@ export function sirenaSonando() {
 }
 
 export function sonarSirena() {
-  if (sonando) return;
+  // Único punto donde se respeta la preferencia: cualquiera que pida la
+  // sirena pasa por aquí, así que no hay ruta que se la salte.
+  if (sonando || !sirenaPermitida()) return;
 
   try {
     audio ??= new AudioContext();

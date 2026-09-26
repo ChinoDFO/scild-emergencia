@@ -10,6 +10,17 @@ interface Alarma {
   recibidaA: Date;
 }
 
+// Solo el SOS y el botón físico hacen sonar la sirena. Los dos mandan una
+// alerta GENERAL ("Emergencia"); los demás tipos del menú —carro sospechoso,
+// incendio, emergencia médica...— sí se avisan en pantalla y por notificación,
+// pero en silencio: una sirena a todo volumen por una persona sospechosa en la
+// esquina enseña a la gente a apagar la app, y entonces no suena cuando de
+// verdad hace falta. El botón físico se acepta también por su origen, por si
+// llega de un servidor que todavía no manda el tipo.
+function pideSirena(datos: Record<string, string> | undefined) {
+  return datos?.type === "GENERAL" || datos?.source === "DEVICE";
+}
+
 // Con la PWA abierta el navegador NO dibuja la notificación del sistema, así
 // que sin esto una alerta que llega mientras alguien usa la app pasaría
 // completamente desapercibida. Aquí es además el único lugar donde se puede
@@ -35,8 +46,9 @@ export default function AlarmaEnPantalla() {
         recibidaA: new Date(),
       });
       // Las repeticiones de la misma alerta no reinician nada: si ya está
-      // sonando, sonarSirena no hace nada.
-      sonarSirena();
+      // sonando, sonarSirena no hace nada. Y si la persona silenció la
+      // sirena en Configuración, tampoco: sonarSirena lo respeta.
+      if (pideSirena(payload.data)) sonarSirena();
     });
   }, []);
 

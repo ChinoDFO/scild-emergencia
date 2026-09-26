@@ -7,6 +7,7 @@ import Notificaciones from "../components/Notificaciones";
 import { useAuth } from "../context/AuthContext";
 import { useTema } from "../context/TemaContext";
 import { obtenerPerfil, type Perfil } from "../services/api";
+import { permitirSirena, sirenaPermitida } from "../services/sirena";
 
 // La lista de pills del diseño. El buscador de arriba filtra las opciones:
 // son varias y con el teclado abierto no caben en una pantalla de celular.
@@ -30,6 +31,7 @@ export default function Configuracion() {
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [panel, setPanel] = useState<"notificaciones" | "eliminar" | null>(null);
+  const [sirena, setSirena] = useState(sirenaPermitida);
 
   useEffect(() => {
     obtenerPerfil()
@@ -43,6 +45,17 @@ export default function Configuracion() {
         texto: "Modo claro/oscuro",
         detalle: tema === "oscuro" ? "Oscuro" : "Claro",
         alTocar: alternarTema,
+      },
+      {
+        // Solo el SOS y el botón físico hacen sonar la sirena. Aquí se puede
+        // apagar por completo en este aparato: la alerta sigue llegando como
+        // aviso en pantalla y notificación, sin ruido ni vibración.
+        texto: "Sirena de emergencia",
+        detalle: sirena ? "Con SOS y botón" : "Solo notificación",
+        alTocar: () => {
+          permitirSirena(!sirena);
+          setSirena(!sirena);
+        },
       },
       {
         texto: "Cambiar correo",
@@ -84,7 +97,7 @@ export default function Configuracion() {
         alTocar: () => setPanel((p) => (p === "eliminar" ? null : "eliminar")),
       },
     ],
-    [tema, alternarTema, navigate, cerrarSesion, perfil]
+    [tema, alternarTema, sirena, navigate, cerrarSesion, perfil]
   );
 
   const visibles = useMemo(() => {
