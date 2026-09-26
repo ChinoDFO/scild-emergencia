@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Pantalla from "../components/Pantalla";
 import BarraBusqueda from "../components/BarraBusqueda";
 import { obtenerAcceso, type Acceso } from "../services/api";
+import { describirGrupos } from "../services/gruposDelBoton";
 
 // "LISTA DE DISPOSITIVOS" del diseño. El "+" no da de alta un aparato —eso se
 // hace de fábrica— sino que lleva a Códigos a capturar el código de la caja,
@@ -131,7 +132,7 @@ export default function Dispositivos() {
                 </span>
                 <span className="text-[11px]" style={{ color: "var(--texto-tenue)" }}>
                   {ETIQUETA_ESTADO[b.estado] ?? b.estado} ·{" "}
-                  {b.grupo ? b.grupo.name : "Sin grupo"}
+                  {describirGrupos(b.grupos)}
                 </span>
               </span>
             </button>

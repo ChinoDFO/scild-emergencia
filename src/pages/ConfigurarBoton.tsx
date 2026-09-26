@@ -100,7 +100,7 @@ export default function ConfigurarBoton() {
       .then(([acceso, cfg]) => {
         const b = acceso.botones.find((x) => x.id === id) ?? null;
         setBoton(b);
-        setNombreGrupo(b?.grupo?.name ?? "");
+        setNombreGrupo(b?.grupos[0]?.name ?? "");
         setDireccion(b?.direccion ?? "");
         setConfig(cfg);
         setNombreBoton(cfg.nombre ?? "");
@@ -121,8 +121,8 @@ export default function ConfigurarBoton() {
     try {
       // El establecimiento vive en el grupo y ya tenía su propio endpoint:
       // se sigue guardando por ahí, sin tocar esa lógica.
-      if (boton.grupo) {
-        await actualizarGrupo(boton.grupo.id, {
+      if (principal) {
+        await actualizarGrupo(principal.id, {
           name: nombreGrupo.trim(),
           address: direccion.trim(),
         });
@@ -159,7 +159,12 @@ export default function ConfigurarBoton() {
     }
   }
 
-  const sinGrupo = boton && !boton.grupo;
+  // El bloque "Establecimiento" edita el grupo PRINCIPAL (el más antiguo, el
+  // que da nombre y dirección al aparato). Los demás grupos del botón se
+  // editan desde cada uno.
+  const principal = boton?.grupos[0];
+  const otrosGrupos = boton?.grupos.slice(1) ?? [];
+  const sinGrupo = boton && boton.grupos.length === 0;
 
   return (
     <Pantalla titulo="Configura tu botón">
@@ -169,16 +174,27 @@ export default function ConfigurarBoton() {
             etiqueta="Dirección del establecimiento"
             valor={direccion}
             alCambiar={setDireccion}
-            desactivado={!boton?.grupo}
+            desactivado={!principal}
             ayuda="Es a donde llega quien atiende la emergencia."
           />
           <Campo
             etiqueta="Nombre del establecimiento"
             valor={nombreGrupo}
             alCambiar={setNombreGrupo}
-            desactivado={!boton?.grupo}
-            ayuda="El del grupo al que este botón le avisa."
+            desactivado={!principal}
+            ayuda={
+              otrosGrupos.length > 0
+                ? "El del grupo principal de este botón."
+                : "El del grupo al que este botón le avisa."
+            }
           />
+          {otrosGrupos.length > 0 && (
+            <p className="text-[11px] normal-case" style={{ color: "var(--texto-tenue)" }}>
+              Este botón también les avisa a{" "}
+              <b>{otrosGrupos.map((g) => g.name).join(", ")}</b>. Su nombre y dirección se editan
+              desde cada grupo.
+            </p>
+          )}
         </Bloque>
 
         <Bloque titulo="El aparato">

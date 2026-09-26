@@ -35,9 +35,11 @@ export default function Perfil() {
       .catch((e) => setError(e.message));
   }, []);
 
-  const ubicaciones = (acceso?.botones ?? [])
-    .map((b) => b.grupo?.name)
-    .filter((v): v is string => Boolean(v));
+  // Donde están sus botones: los grupos a los que les avisan, sin repetir
+  // (dos botones del mismo grupo son una sola ubicación).
+  const ubicaciones = [
+    ...new Set((acceso?.botones ?? []).flatMap((b) => b.grupos.map((g) => g.name))),
+  ];
 
   const inicial = (perfil?.displayName || perfil?.email || "?").slice(0, 1).toUpperCase();
 

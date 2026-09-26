@@ -11,6 +11,7 @@ import {
   type DetalleGrupo,
   type EstadoBoton,
 } from "../services/api";
+import { GRUPOS_POR_BOTON } from "../services/gruposDelBoton";
 
 const ESTADO_BOTON: Record<EstadoBoton, { texto: string; clase: string }> = {
   ONLINE: { texto: "En línea", clase: "bg-emerald-100 text-emerald-800" },
@@ -280,7 +281,8 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
         </div>
         <p className="mt-0.5 text-xs" style={{ color: "var(--texto-tenue)" }}>
           Vincular un botón aquí no cambia quién puede alertar ni cuánta gente cabe: solo decide a
-          dónde llega la alerta cuando se presiona el aparato físico.
+          dónde llega la alerta cuando se presiona el aparato físico. Un mismo botón puede avisar
+          hasta a {GRUPOS_POR_BOTON} grupos.
         </p>
         {grupo.devices.length === 0 ? (
           <p className="mt-1 text-sm text-slate-400">Aún no hay botones vinculados a este grupo.</p>

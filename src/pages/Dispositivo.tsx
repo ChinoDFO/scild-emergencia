@@ -147,11 +147,17 @@ export default function Dispositivo() {
               <Dato
                 titulo="Última alerta"
                 valor={
-                  boton.grupo
+                  boton.grupos.length > 0
                     ? (tiempoRelativo(boton.ultimaAlerta) ?? "Ninguna todavía")
                     : "Sin grupo"
                 }
-                nota={boton.grupo ? "En el chat del grupo" : undefined}
+                nota={
+                  boton.grupos.length > 1
+                    ? "En el chat de sus grupos"
+                    : boton.grupos.length === 1
+                      ? "En el chat del grupo"
+                      : undefined
+                }
               />
               <Dato
                 titulo="Firmware"

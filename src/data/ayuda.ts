@@ -44,7 +44,16 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         respuesta: [
           "En la caja del botón viene un código de vinculación, tipo ABC-DEF-GHJ.",
           "Abre tu grupo, toca su nombre arriba para ver la información y, en la sección de Botones, usa “Vincular un botón”. Captura el código y ponle un nombre para reconocerlo.",
-          "Si te dice que ese botón ya está vinculado, es que sigue ligado a otro grupo: desvincúlalo primero desde ahí.",
+          "Un mismo botón puede avisar hasta a 3 grupos. Si te dice que ya avisa a 3, desvincúlalo de alguno primero desde ahí.",
+        ],
+      },
+      {
+        id: "varios-grupos",
+        pregunta: "¿Un botón puede avisar a más de un grupo?",
+        respuesta: [
+          "Sí, hasta a 3. Al presionarlo, la alerta llega a todos esos grupos a la vez: por ejemplo, tu grupo de la tienda y el de la asociación de comerciantes.",
+          "Si tú estás en varios de esos grupos recibes un solo aviso, no uno por grupo. La alerta sí aparece en el chat de cada uno.",
+          "Para sumar otro grupo, entra a él, ve a Botones y usa “Vincular un botón” con el código de tu caja. Para quitarlo de uno, desvincúlalo desde ese grupo: en los demás sigue avisando.",
         ],
       },
       {

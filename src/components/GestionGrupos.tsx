@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { crearGrupo, obtenerAcceso, unirseAGrupo, type Acceso } from "../services/api";
+import { describirGrupos, GRUPOS_POR_BOTON } from "../services/gruposDelBoton";
 
 // Crear un establecimiento (quien lo crea queda como ADMIN) o unirse a uno
 // existente con el código que comparte su ADMIN.
@@ -31,8 +32,13 @@ export default function GestionGrupos() {
   }, []);
 
   const puedeCrear = acceso?.completo ?? false;
-  // Solo se ofrece vincular si el botón no está ya avisando a otro grupo.
-  const botonLibre = acceso?.botones.find((b) => !b.grupo);
+  // Solo se ofrece vincular un botón al que todavía le quepa un grupo más
+  // (avisa a menos de GRUPOS_POR_BOTON). Si hay varios, el que menos grupos
+  // tiene: el primero suele ser el más usado, y al recién comprado le toca
+  // este.
+  const botonLibre = acceso?.botones
+    .filter((b) => b.grupos.length < GRUPOS_POR_BOTON)
+    .sort((a, b) => a.grupos.length - b.grupos.length)[0];
 
   async function manejarEnvio(e: FormEvent) {
     e.preventDefault();
@@ -152,7 +158,11 @@ export default function GestionGrupos() {
                   <span className="font-bold">Vincular «{botonLibre.nombre}» a este grupo</span>
                   <span className="mt-0.5 block" style={{ color: "var(--texto-tenue)" }}>
                     No cambia quién puede alertar ni cuánta gente cabe. Solo hace que, al presionar
-                    el botón físico, la alerta llegue aquí. Lo puedes desvincular cuando quieras.
+                    el botón físico, la alerta llegue aquí.
+                    {botonLibre.grupos.length > 0 &&
+                      ` Ya les avisa a: ${describirGrupos(botonLibre.grupos)}.`}{" "}
+                    Un botón puede avisar hasta a {GRUPOS_POR_BOTON} grupos y lo puedes desvincular
+                    cuando quieras.
                   </span>
                 </span>
               </label>

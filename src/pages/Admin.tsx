@@ -89,7 +89,7 @@ export default function Admin() {
                   <p className="truncate text-xs text-slate-500">{c.cliente.email}</p>
                   <p className="mt-1 text-xs text-slate-500">
                     {c.nombre} · {c.deviceCode}
-                    {c.grupo && ` · ${c.grupo}`}
+                    {c.grupos.length > 0 && ` · ${c.grupos.join(", ")}`}
                   </p>
                   <p className="text-xs text-slate-400">
                     Registrado el {fecha(c.cliente.registradoEl)}

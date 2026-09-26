@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { useLocation } from "react-router-dom";
 import Pantalla from "../components/Pantalla";
 import { obtenerAcceso, vincularCodigo, type Acceso } from "../services/api";
+import { describirGrupos } from "../services/gruposDelBoton";
 
 // Apartado de Códigos: es donde una cuenta pasa de invitada a poder alertar.
 //
@@ -121,7 +122,7 @@ export default function Codigos() {
               {b.nombre}
             </h2>
             <span className="text-xs" style={{ color: "var(--texto-tenue)" }}>
-              {b.grupo ? b.grupo.name : "Sin grupo"}
+              {describirGrupos(b.grupos)}
             </span>
           </div>
 

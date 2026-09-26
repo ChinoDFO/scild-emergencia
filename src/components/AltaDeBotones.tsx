@@ -227,7 +227,7 @@ export default function AltaDeBotones() {
                 <p className="mt-1 text-xs text-slate-500">
                   Caja: <span className="font-mono">{b.codigoDeLaCaja}</span>
                   {b.nombre && ` · ${b.nombre}`}
-                  {b.grupo && ` · ${b.grupo}`}
+                  {b.grupos.length > 0 && ` · ${b.grupos.join(", ")}`}
                 </p>
                 <p className="text-xs text-slate-400">
                   Dado de alta el {fecha(b.creadoEl)}

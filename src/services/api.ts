@@ -40,8 +40,10 @@ export interface BotonDeAcceso {
   id: string;
   nombre: string;
   deviceCode: string;
-  // A qué grupo le avisa este botón, si ya se vinculó a uno.
-  grupo: { id: string; name: string } | null;
+  // A qué grupos les avisa este botón (hasta GRUPOS_POR_BOTON). El primero es
+  // el principal: el más antiguo, el que da nombre y dirección al aparato.
+  // Vacío = todavía sin vincular.
+  grupos: { id: string; name: string }[];
   // Las personas que comparten el botón (hasta tres).
   titulares: { userId: string; nombre: string }[];
   // Monitoreo. La dirección es la del establecimiento donde está vinculado:
@@ -393,7 +395,7 @@ export interface ClienteAdmin {
   deviceId: string;
   nombre: string;
   deviceCode: string;
-  grupo: string | null;
+  grupos: string[];
   // Quien registró el botón primero: el cliente de verdad.
   cliente: { userId: string; nombre: string; email: string; registradoEl: string };
   // Con quién más comparte el botón: el código de la caja vale para tres.
@@ -423,7 +425,7 @@ export interface BotonEnInventario {
   // registro en la base.
   probado: boolean;
   firmware: string | null;
-  grupo: string | null;
+  grupos: string[];
 }
 
 export interface InventarioBotones {
