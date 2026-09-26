@@ -15,7 +15,11 @@ import {
 } from "firebase/auth";
 import { auth } from "../firebase/config";
 import { actualizarApodo } from "../services/api";
-import { desactivarNotificaciones } from "../services/notificaciones";
+import {
+  activarNotificaciones,
+  desactivarNotificaciones,
+  estadoNotificaciones,
+} from "../services/notificaciones";
 import { desconectarTiempoReal } from "../services/tiempoReal";
 
 interface AuthContextValue {
@@ -29,6 +33,25 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Registra este navegador para recibir avisos, si el permiso YA está dado.
+//
+// El permiso de notificaciones es del navegador y dura más que la cuenta:
+// sigue concedido después de eliminar una cuenta y registrar otra, o de
+// entrar con otra persona en el mismo equipo. Pero el registro en el servidor
+// (a dónde mandarle el aviso a ESTA cuenta) no viaja con el permiso. Antes
+// solo se hacía al abrir Configuración → Control de notificaciones, así que
+// una cuenta que nunca abría ese panel se quedaba sin avisos aunque el
+// navegador dijera "activadas".
+//
+// Como el permiso ya está dado no abre ningún diálogo, y repetirlo es
+// inofensivo (el servidor hace upsert). Si el permiso no está dado, no hace
+// nada: pedirlo sigue siendo decisión de la persona, desde el panel.
+function registrarNotificacionesSiYaHayPermiso() {
+  estadoNotificaciones()
+    .then((estado) => (estado === "activadas" ? activarNotificaciones() : undefined))
+    .catch((e) => console.warn("No se pudo registrar el dispositivo para avisos:", e));
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<User | null>(null);
   const [cargando, setCargando] = useState(true);
@@ -37,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return onAuthStateChanged(auth, (u) => {
       setUsuario(u);
       setCargando(false);
+      if (u) registrarNotificacionesSiYaHayPermiso();
     });
   }, []);
 
