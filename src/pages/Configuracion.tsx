@@ -69,10 +69,6 @@ export default function Configuracion() {
         alTocar: () => window.open("https://scild.mx", "_blank", "noopener"),
       },
       {
-        texto: "Tipo y tamaño de letra",
-        desactivada: "Pendiente de definir la escala tipográfica",
-      },
-      {
         texto: "Desvincular botón",
         detalle: "Desde Códigos",
         alTocar: () => navigate("/codigos"),

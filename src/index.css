@@ -12,6 +12,15 @@
    en <html> (ver src/context/TemaContext.tsx).
 --------------------------------------------------------------------------- */
 :root {
+  /* Sin esto, un <input> sin fondo propio toma el modo oscuro/claro del
+     SISTEMA OPERATIVO (el de Chrome, no el de la app) para pintar su fondo y
+     su texto nativos. Si alguien tiene Windows en oscuro pero eligió el tema
+     claro de SCILD (o al revés), el navegador le pone fondo oscuro a ese
+     campo mientras el texto que escribe sigue siendo el color del tema de la
+     app: texto oscuro sobre fondo oscuro, invisible hasta seleccionarlo.
+     Fijar color-scheme por tema hace que el navegador dibuje esos campos a
+     juego con el tema de la app, no con el del sistema. */
+  color-scheme: light;
   --fondo: #ffffff;
   --superficie: #c7d0d9;        /* tarjetas, filas, barra de búsqueda */
   --superficie-suave: #dde3e9;  /* tarjetas dentro de una superficie */
@@ -40,6 +49,7 @@
 }
 
 :root[data-tema="oscuro"] {
+  color-scheme: dark;
   --fondo: #14171c;
   --superficie: #252b34;
   --superficie-suave: #2f3742;

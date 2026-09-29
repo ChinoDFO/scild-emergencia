@@ -1,7 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { obtenerPerfil, type Grupo, type Perfil } from "../services/api";
-import { useEventoTiempoReal } from "../services/tiempoReal";
+import { useAlReconectar, useEventoTiempoReal } from "../services/tiempoReal";
 import { useAuth } from "./AuthContext";
+
+// Los mensajes y alertas suben el globito al instante por Socket.IO. Esto es
+// solo el respaldo por si esa conexión está caída sin que nadie lo note
+// (mismo mecanismo que useAlertas.ts / useMensajes.ts): sin él, un evento
+// perdido no se recupera hasta cerrar sesión y volver a entrar.
+const REFRESCO_MS = 60_000;
 
 // El perfil (cuenta + sus grupos) se pedía por separado en Grupos, en
 // Configuración, en Perfil Y en BarraInferior —que está en TODAS las
@@ -29,9 +35,11 @@ const PerfilContext = createContext<PerfilContextValue | null>(null);
 function SincronizadorPerfil({
   miId,
   actualizarLocal,
+  refrescar,
 }: {
   miId: string | undefined;
   actualizarLocal: (cambio: (p: Perfil) => Perfil) => void;
+  refrescar: () => Promise<void>;
 }) {
   const cambiarGrupo = useCallback(
     (id: string, cambio: (g: Grupo) => Grupo) =>
@@ -62,6 +70,22 @@ function SincronizadorPerfil({
       sinLeer: propia ? g.sinLeer : g.sinLeer + 1,
     }));
   });
+
+  // Lo que llegó mientras no había conexión no pasó por el socket.
+  useAlReconectar(refrescar);
+
+  // Respaldo lento: refresco cada minuto y al volver a la pestaña, por si el
+  // socket se quedó caído sin que nadie lo note (mismo mecanismo que
+  // useAlertas.ts / useMensajes.ts).
+  useEffect(() => {
+    const intervalo = setInterval(refrescar, REFRESCO_MS);
+    const alVolver = () => document.visibilityState === "visible" && refrescar();
+    document.addEventListener("visibilitychange", alVolver);
+    return () => {
+      clearInterval(intervalo);
+      document.removeEventListener("visibilitychange", alVolver);
+    };
+  }, [refrescar]);
 
   return null;
 }
@@ -110,7 +134,9 @@ export function PerfilProvider({ children }: { children: ReactNode }) {
 
   return (
     <PerfilContext.Provider value={{ perfil, cargando, error, refrescar, actualizarLocal, marcarGrupoLeido }}>
-      {usuario && <SincronizadorPerfil miId={perfil?.id} actualizarLocal={actualizarLocal} />}
+      {usuario && (
+        <SincronizadorPerfil miId={perfil?.id} actualizarLocal={actualizarLocal} refrescar={refrescar} />
+      )}
       {children}
     </PerfilContext.Provider>
   );

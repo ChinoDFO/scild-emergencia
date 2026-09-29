@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { escucharAlertasEnPrimerPlano } from "../services/notificaciones";
 import { callarSirena, sonarSirena } from "../services/sirena";
+
+type Tipo = "general" | "especifica" | "chat";
 
 interface Alarma {
   titulo: string;
   cuerpo: string;
   groupId: string | null;
   recibidaA: Date;
-  general: boolean;
+  tipo: Tipo;
 }
 
 // Cuánto se queda en pantalla una alerta de un tipo específico antes de
@@ -16,6 +18,20 @@ interface Alarma {
 // fijos hasta que alguien los atiende o los silencia, porque no se puede dar
 // por hecho que una emergencia real ya se vio.
 const AUTOCIERRE_MS = 10_000;
+
+// Un mensaje de chat es menos urgente que hasta la alerta más leve: basta con
+// que se note un instante.
+const AUTOCIERRE_CHAT_MS = 6_000;
+
+// De qué grupo es la conversación abierta ahora mismo, si la hay. Con la ruta
+// y no con un estado propio: así no hay que duplicar lo que ya sabe
+// Grupo.tsx (que es quien le avisa al BACKEND con avisarGrupoAbierto, para
+// que ni intente mandar el push). Aquí hace falta lo mismo pero del lado del
+// cliente: mientras esa pantalla siga abierta, el chat ya muestra el mensaje
+// solo por el socket, y este aviso encima sería redundante.
+function grupoDeLaRuta(pathname: string) {
+  return /^\/grupos\/([^/]+)/.exec(pathname)?.[1] ?? null;
+}
 
 // Solo el SOS y el botón físico hacen sonar la sirena y se quedan fijos en
 // rojo. Los dos mandan una alerta GENERAL ("Emergencia"); los demás tipos del
@@ -30,32 +46,61 @@ function esGeneral(datos: Record<string, string> | undefined) {
 }
 
 // Con la PWA abierta el navegador NO dibuja la notificación del sistema, así
-// que sin esto una alerta que llega mientras alguien usa la app pasaría
-// completamente desapercibida. Aquí es además el único lugar donde se puede
-// hacer ruido de verdad: una página abierta sí puede tocar una sirena, una
-// notificación del sistema no.
+// que sin esto una alerta —o un mensaje— que llega mientras alguien usa la
+// app pasaría completamente desapercibida. Aquí es además el único lugar
+// donde se puede hacer ruido de verdad: una página abierta sí puede tocar una
+// sirena, una notificación del sistema no.
 //
-// Va montado en toda la app (no en una pantalla), porque la alerta puede
-// llegar estando en cualquier parte.
+// Va montado en toda la app (no en una pantalla), porque puede llegar
+// estando en cualquier parte.
 export default function AlarmaEnPantalla() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [alarma, setAlarma] = useState<Alarma | null>(null);
   const autocierre = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // En un ref porque el efecto de abajo se suscribe una sola vez: sin esto,
+  // el aviso de mensaje se acordaría para siempre de qué grupo estaba abierto
+  // en el primer render, y dejaría de silenciarse al cambiar de chat. Se
+  // actualiza en un efecto y no durante el render porque escribir un ref ahí
+  // es un efecto secundario que React no espera en esa fase.
+  const grupoAbierto = useRef<string | null>(null);
+  useEffect(() => {
+    grupoAbierto.current = grupoDeLaRuta(pathname);
+  }, [pathname]);
+
   useEffect(() => {
     return escucharAlertasEnPrimerPlano((payload) => {
-      // Los mensajes del chat también llegan por aquí y no son una
-      // emergencia: el chat ya los muestra solo.
-      if (payload.data?.kind === "chat") return;
+      const groupId = payload.data?.groupId ?? null;
+
+      if (payload.data?.kind === "chat") {
+        // Si esa conversación ya está abierta, el chat muestra el mensaje
+        // solo por el socket: este aviso encima sería redundante. Si no,
+        // sin esto el mensaje no avisa de ninguna forma —ni aquí ni el
+        // sistema, que no dibuja nada mientras la PWA esté visible— y solo
+        // se entera quien vuelva a entrar al grupo.
+        if (groupId && groupId === grupoAbierto.current) return;
+
+        setAlarma({
+          titulo: payload.notification?.title ?? "Mensaje nuevo",
+          cuerpo: payload.notification?.body ?? "Tienes un mensaje nuevo",
+          groupId,
+          recibidaA: new Date(),
+          tipo: "chat",
+        });
+        if (autocierre.current) clearTimeout(autocierre.current);
+        autocierre.current = setTimeout(() => setAlarma(null), AUTOCIERRE_CHAT_MS);
+        return;
+      }
 
       const general = esGeneral(payload.data);
 
       setAlarma({
         titulo: payload.notification?.title ?? "🚨 Emergencia",
         cuerpo: payload.notification?.body ?? "Se activó una alerta en tu grupo",
-        groupId: payload.data?.groupId ?? null,
+        groupId,
         recibidaA: new Date(),
-        general,
+        tipo: general ? "general" : "especifica",
       });
 
       // El SOS y el botón físico se quedan fijos: no se puede dar por hecho
@@ -99,22 +144,33 @@ export default function AlarmaEnPantalla() {
 
   // El SOS/botón físico se ve como una emergencia de verdad (rojo, late sin
   // parar); una alerta de un tipo específico avisa igual de claro pero en
-  // amarillo, y sin el latido: ya sabemos que se va a cerrar sola.
-  const colores = alarma.general
-    ? {
-        caja: "bg-red-600 text-white ring-1 ring-red-900/20 motion-safe:animate-[latido_1.2s_ease-out_infinite]",
-        cuerpo: "text-red-50",
-        hora: "text-red-200",
-        ver: "bg-white text-red-700 hover:bg-red-50",
-        cerrar: "bg-red-800 text-white hover:bg-red-900",
-      }
-    : {
-        caja: "bg-amber-400 text-amber-950 ring-1 ring-amber-700/20",
-        cuerpo: "text-amber-900",
-        hora: "text-amber-800",
-        ver: "bg-white text-amber-800 hover:bg-amber-50",
-        cerrar: "bg-amber-600 text-amber-950 hover:bg-amber-700",
-      };
+  // amarillo, sin el latido, porque ya sabemos que se va a cerrar sola. Un
+  // mensaje de chat no es una alerta: gris oscuro, para que no se confunda
+  // con ninguna de las dos.
+  const PALETA: Record<Tipo, { caja: string; cuerpo: string; hora: string; ver: string; cerrar: string }> = {
+    general: {
+      caja: "bg-red-600 text-white ring-1 ring-red-900/20 motion-safe:animate-[latido_1.2s_ease-out_infinite]",
+      cuerpo: "text-red-50",
+      hora: "text-red-200",
+      ver: "bg-white text-red-700 hover:bg-red-50",
+      cerrar: "bg-red-800 text-white hover:bg-red-900",
+    },
+    especifica: {
+      caja: "bg-amber-400 text-amber-950 ring-1 ring-amber-700/20",
+      cuerpo: "text-amber-900",
+      hora: "text-amber-800",
+      ver: "bg-white text-amber-800 hover:bg-amber-50",
+      cerrar: "bg-amber-600 text-amber-950 hover:bg-amber-700",
+    },
+    chat: {
+      caja: "bg-slate-800 text-white ring-1 ring-slate-900/20",
+      cuerpo: "text-slate-200",
+      hora: "text-slate-400",
+      ver: "bg-white text-slate-800 hover:bg-slate-50",
+      cerrar: "bg-slate-700 text-white hover:bg-slate-600",
+    },
+  };
+  const colores = PALETA[alarma.tipo];
 
   return (
     <div
@@ -134,7 +190,7 @@ export default function AlarmaEnPantalla() {
             onClick={ver}
             className={`flex-1 rounded-xl py-2.5 text-sm font-bold ${colores.ver}`}
           >
-            Ver alerta
+            {alarma.tipo === "chat" ? "Ver mensaje" : "Ver alerta"}
           </button>
           <button
             onClick={cerrar}

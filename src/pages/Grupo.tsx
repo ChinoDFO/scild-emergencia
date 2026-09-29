@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Conversacion from "../components/Conversacion";
 import InfoGrupo from "../components/InfoGrupo";
+import { usePerfil } from "../context/PerfilContext";
 import { useAlertas } from "../hooks/useAlertas";
 import { obtenerGrupo, type DetalleGrupo } from "../services/api";
 import { origen } from "../services/formatoAlertas";
@@ -40,6 +41,7 @@ const hora = (iso: string) =>
 export default function Grupo() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
+  const { perfil } = usePerfil();
   const [grupo, setGrupo] = useState<DetalleGrupo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [infoAbierta, setInfoAbierta] = useState(false);
@@ -54,6 +56,19 @@ export default function Grupo() {
   }, [id]);
 
   useEffect(cargar, [cargar]);
+
+  // El perfil (y sus grupos) ya está en memoria desde que se entró a la app
+  // (ver PerfilContext): con nombre, id propio y si la cuenta puede alertar
+  // alcanza para abrir el chat DE UNA, sin esperar la respuesta de
+  // obtenerGrupo, que además trae miembros, botones y cupos —cosas que solo
+  // hacen falta si se abre "Info del grupo"— y antes se pedían todas antes de
+  // poder ver un solo mensaje. Mientras esa respuesta más pesada no llegue,
+  // el encabezado se completa con lo que ya se tenía y el resto se actualiza
+  // solo en cuanto llega.
+  const grupoEnLista = perfil?.groups.find((g) => g.id === id) ?? null;
+  const nombre = grupo?.name ?? grupoEnLista?.name;
+  const miId = grupo?.myUserId ?? perfil?.id;
+  const puedoAlertar = grupo?.puedoAlertar ?? perfil?.accesoCompleto ?? false;
 
   // Por si se unió al grupo después de abrir la conexión en tiempo real.
   useEffect(() => entrarASalaDeGrupo(id), [id]);
@@ -92,7 +107,12 @@ export default function Grupo() {
     return () => window.removeEventListener("keydown", conEscape);
   }, [infoAbierta]);
 
-  if (!grupo) {
+  // Solo bloquea la pantalla cuando ni el detalle completo NI el perfil en
+  // caché tienen nada que ofrecer todavía (primera visita a la app con este
+  // link, o el perfil apenas está cargando). Si ya había algo en caché, el
+  // error de obtenerGrupo (network hiccup, por ejemplo) no tira el chat: solo
+  // significa que "Info del grupo" tarda un poco más en tener con qué llenarse.
+  if (!nombre || !miId) {
     return (
       <div
         className="flex h-svh items-center justify-center px-6 text-center"
@@ -120,8 +140,8 @@ export default function Grupo() {
     );
   }
 
-  const nombresMiembros = grupo.members
-    .map((m) => (m.userId === grupo.myUserId ? "Tú" : m.displayName || m.email.split("@")[0]))
+  const nombresMiembros = grupo?.members
+    .map((m) => (m.userId === miId ? "Tú" : m.displayName || m.email.split("@")[0]))
     .join(", ");
   const abiertas = (alertas ?? []).filter((a) => a.status !== "RESOLVED");
 
@@ -152,15 +172,15 @@ export default function Grupo() {
               className="flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-black"
               style={{ background: "var(--avatar)", color: "var(--fondo)", border: "2px solid var(--borde)" }}
             >
-              {iniciales(grupo.name)}
+              {iniciales(nombre)}
             </span>
             <span className="min-w-0">
-              <span className="titulo-pantalla block truncate text-base leading-tight">{grupo.name}</span>
+              <span className="titulo-pantalla block truncate text-base leading-tight">{nombre}</span>
               <span
                 className="block truncate text-[11px]"
                 style={{ color: conectado ? "var(--texto-tenue)" : "var(--peligro)" }}
               >
-                {conectado ? nombresMiembros : "Conectando…"}
+                {conectado ? (nombresMiembros ?? "Cargando miembros…") : "Conectando…"}
               </span>
             </span>
           </button>
@@ -181,7 +201,7 @@ export default function Grupo() {
 
         {/* Quien no puede alertar tiene que saber por qué: si no, va a creer
             que la app le falla justo cuando más la necesita. */}
-        {!grupo.puedoAlertar && (
+        {!puedoAlertar && (
           <p
             className="px-4 py-2 text-[11px] leading-relaxed"
             style={{
@@ -257,10 +277,10 @@ export default function Grupo() {
 
         {/* --- Conversación --- */}
         <Conversacion
-          groupId={grupo.id}
-          groupName={grupo.name}
-          myUserId={grupo.myUserId}
-          puedoAlertar={grupo.puedoAlertar}
+          groupId={id}
+          groupName={nombre}
+          myUserId={miId}
+          puedoAlertar={puedoAlertar}
           alertas={alertas ?? []}
           alEnviarAlerta={recargarAlertas}
         />
@@ -290,7 +310,13 @@ export default function Grupo() {
               <h1 className="titulo-pantalla text-lg">Info del grupo</h1>
             </header>
             <div className="flex-1 overflow-y-auto p-4">
-              <InfoGrupo grupo={grupo} alCambiar={cargar} />
+              {grupo ? (
+                <InfoGrupo grupo={grupo} alCambiar={cargar} />
+              ) : (
+                <p className="text-sm" style={{ color: "var(--texto-tenue)" }}>
+                  {error ?? "Cargando información del grupo…"}
+                </p>
+              )}
             </div>
           </div>
         )}

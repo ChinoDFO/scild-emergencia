@@ -24,7 +24,7 @@ const ESTADO_BOTON: Record<EstadoBoton, { texto: string; clase: string }> = {
 };
 
 const CLASE_INPUT =
-  "mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500";
+  "mt-1 w-full rounded-lg border border-[var(--borde-tenue)] bg-[var(--fondo)] px-3 py-2 text-sm text-[var(--texto)] focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500";
 
 interface Props {
   grupo: DetalleGrupo;
@@ -220,7 +220,9 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
     <div className="space-y-6">
       <section>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-slate-700">Establecimiento</h2>
+          <h2 className="text-sm font-medium" style={{ color: "var(--texto)" }}>
+            Establecimiento
+          </h2>
           {esAdmin && !editando && (
             <button onClick={abrirEdicion} className="text-xs font-medium text-red-600 hover:underline">
               Editar
@@ -229,8 +231,12 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
         </div>
 
         {editando ? (
-          <form onSubmit={guardar} className="mt-2 space-y-3 rounded-lg bg-slate-50 p-3">
-            <label className="block text-sm text-slate-700">
+          <form
+            onSubmit={guardar}
+            className="mt-2 space-y-3 rounded-lg p-3"
+            style={{ background: "var(--superficie-suave)" }}
+          >
+            <label className="block text-sm" style={{ color: "var(--texto)" }}>
               Nombre
               <input
                 required
@@ -240,7 +246,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                 className={CLASE_INPUT}
               />
             </label>
-            <label className="block text-sm text-slate-700">
+            <label className="block text-sm" style={{ color: "var(--texto)" }}>
               Dirección
               <input
                 required
@@ -251,12 +257,20 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                 className={CLASE_INPUT}
               />
             </label>
-            {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            {error && (
+              <p
+                className="rounded-lg px-3 py-2 text-sm"
+                style={{ background: "var(--superficie)", color: "var(--peligro)" }}
+              >
+                {error}
+              </p>
+            )}
             <div className="flex gap-2">
               <button
                 type="submit"
                 disabled={guardando}
-                className="flex-1 rounded-lg bg-slate-900 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+                className="flex-1 rounded-lg py-2 text-sm font-medium disabled:opacity-60"
+                style={{ background: "var(--texto)", color: "var(--fondo)" }}
               >
                 {guardando ? "Guardando…" : "Guardar"}
               </button>
@@ -264,20 +278,31 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                 type="button"
                 onClick={() => setEditando(false)}
                 disabled={guardando}
-                className="flex-1 rounded-lg bg-white py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-300"
+                className="flex-1 rounded-lg py-2 text-sm font-medium"
+                style={{ background: "var(--fondo)", color: "var(--texto)", boxShadow: "inset 0 0 0 1px var(--borde-tenue)" }}
               >
                 Cancelar
               </button>
             </div>
           </form>
         ) : (
-          <div className="mt-1 rounded-lg bg-slate-50 px-3 py-2 text-sm">
-            <p className="font-medium text-slate-800">{grupo.name}</p>
+          <div className="mt-1 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--superficie-suave)" }}>
+            <p className="font-medium" style={{ color: "var(--texto)" }}>
+              {grupo.name}
+            </p>
             {grupo.address ? (
-              <p className="text-slate-600">{grupo.address}</p>
+              <p style={{ color: "var(--texto-tenue)" }}>{grupo.address}</p>
             ) : (
               // Grupos creados antes de que la dirección fuera obligatoria.
-              <p className="text-amber-700">
+              // --alerta/--alerta-texto van siempre juntos (son la pareja
+              // fondo+texto del "!" de alertas del chat): usar el texto solo
+              // sobre esta tarjeta se leería mal en oscuro, porque ese color
+              // se pensó para ir encima del amarillo, no del gris de la
+              // tarjeta.
+              <p
+                className="inline-block rounded px-2 py-0.5 text-xs font-medium"
+                style={{ background: "var(--alerta)", color: "var(--alerta-texto)" }}
+              >
                 Sin dirección registrada.{" "}
                 {esAdmin ? "Agrégala: es lo que se necesita para llegar en una emergencia." : "Pídele al administrador que la agregue."}
               </p>
@@ -293,8 +318,13 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
 
       <section>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-slate-700">Botones</h2>
-          <button onClick={alCambiar} className="text-xs font-medium text-slate-500 hover:text-red-600">
+          <h2 className="text-sm font-medium" style={{ color: "var(--texto)" }}>
+            Botones
+          </h2>
+          <button
+            onClick={alCambiar}
+            className="text-xs font-medium text-[var(--texto-tenue)] hover:text-red-600"
+          >
             Actualizar
           </button>
         </div>
@@ -304,19 +334,28 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
           hasta a {GRUPOS_POR_BOTON} grupos.
         </p>
         {grupo.devices.length === 0 ? (
-          <p className="mt-1 text-sm text-slate-400">Aún no hay botones vinculados a este grupo.</p>
+          <p className="mt-1 text-sm" style={{ color: "var(--texto-tenue)" }}>
+            Aún no hay botones vinculados a este grupo.
+          </p>
         ) : (
           <ul className="mt-1 space-y-1">
             {grupo.devices.map((d) => {
               const estado = ESTADO_BOTON[d.status];
               const comoSeLlama = d.name || d.deviceCode;
               return (
-                <li key={d.id} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
+                <li
+                  key={d.id}
+                  className="rounded-lg px-3 py-2 text-sm"
+                  style={{ background: "var(--superficie-suave)" }}
+                >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="min-w-0 font-medium text-slate-800">
+                    <span className="min-w-0 font-medium" style={{ color: "var(--texto)" }}>
                       <span className="block truncate">{comoSeLlama}</span>
                       {d.titulares.length > 0 && (
-                        <span className="block truncate text-xs font-normal text-slate-500">
+                        <span
+                          className="block truncate text-xs font-normal"
+                          style={{ color: "var(--texto-tenue)" }}
+                        >
                           de {d.titulares.map((t) => t.nombre).join(" y ")}
                         </span>
                       )}
@@ -325,7 +364,10 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                       {estado.texto}
                     </span>
                   </div>
-                  <p className="mt-0.5 flex items-center justify-between gap-2 text-xs text-slate-500">
+                  <p
+                    className="mt-0.5 flex items-center justify-between gap-2 text-xs"
+                    style={{ color: "var(--texto-tenue)" }}
+                  >
                     <span className="min-w-0 truncate">
                       {d.lastSeenAt
                         ? `Última señal: ${new Date(d.lastSeenAt).toLocaleString("es-MX")}`
@@ -336,7 +378,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                       <button
                         onClick={() => desvincular(d.id, comoSeLlama)}
                         disabled={desvinculando === d.id}
-                        className="shrink-0 font-medium text-slate-500 hover:text-red-600 disabled:opacity-60"
+                        className="shrink-0 font-medium text-[var(--texto-tenue)] hover:text-red-600 disabled:opacity-60"
                       >
                         {desvinculando === d.id ? "…" : "Desvincular"}
                       </button>
@@ -349,11 +391,15 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
         )}
 
         {formularioBoton ? (
-          <form onSubmit={vincular} className="mt-2 space-y-2 rounded-lg bg-slate-50 p-3 text-sm">
+          <form
+            onSubmit={vincular}
+            className="mt-2 space-y-2 rounded-lg p-3 text-sm"
+            style={{ background: "var(--superficie-suave)" }}
+          >
             {misBotones === null ? (
-              <p className="text-slate-500">Cargando tus botones…</p>
+              <p style={{ color: "var(--texto-tenue)" }}>Cargando tus botones…</p>
             ) : misBotones.length === 0 ? (
-              <p className="text-slate-600">
+              <p style={{ color: "var(--texto)" }}>
                 No tienes ningún botón en tu cuenta. Para agregar uno, captura el código de su caja
                 en{" "}
                 <Link to="/codigos" className="font-bold underline">
@@ -363,7 +409,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
               </p>
             ) : (
               <fieldset className="space-y-1">
-                <legend className="text-slate-700">¿Cuál de tus botones avisa a este grupo?</legend>
+                <legend style={{ color: "var(--texto)" }}>¿Cuál de tus botones avisa a este grupo?</legend>
                 {misBotones.map((b) => {
                   const yaEsta = b.grupos.some((g) => g.id === grupo.id);
                   const lleno = b.grupos.length >= GRUPOS_POR_BOTON;
@@ -371,9 +417,10 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                   return (
                     <label
                       key={b.id}
-                      className={`flex items-start gap-2 rounded-lg bg-white p-2 ring-1 ring-slate-200 ${
+                      className={`flex items-start gap-2 rounded-lg p-2 ring-1 ring-[var(--borde-tenue)] ${
                         noSePuede ? "opacity-50" : "cursor-pointer"
                       }`}
+                      style={{ background: "var(--fondo)" }}
                     >
                       <input
                         type="radio"
@@ -385,10 +432,13 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                         className="mt-1"
                       />
                       <span className="min-w-0">
-                        <span className="block font-medium text-slate-900">
-                          {b.nombre} <span className="font-mono text-xs text-slate-500">{b.deviceCode}</span>
+                        <span className="block font-medium" style={{ color: "var(--texto)" }}>
+                          {b.nombre}{" "}
+                          <span className="font-mono text-xs" style={{ color: "var(--texto-tenue)" }}>
+                            {b.deviceCode}
+                          </span>
                         </span>
-                        <span className="block text-xs text-slate-500">
+                        <span className="block text-xs" style={{ color: "var(--texto-tenue)" }}>
                           {yaEsta
                             ? "Ya avisa a este grupo."
                             : lleno
@@ -403,19 +453,28 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                 })}
               </fieldset>
             )}
-            {errorBoton && <p className="rounded-lg bg-red-50 px-3 py-2 text-red-700">{errorBoton}</p>}
+            {errorBoton && (
+              <p
+                className="rounded-lg px-3 py-2"
+                style={{ background: "var(--superficie)", color: "var(--peligro)" }}
+              >
+                {errorBoton}
+              </p>
+            )}
             <div className="flex gap-2">
               <button
                 type="submit"
                 disabled={vinculando || !botonElegido}
-                className="flex-1 rounded-lg bg-slate-900 py-2 font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+                className="flex-1 rounded-lg py-2 font-medium disabled:opacity-60"
+                style={{ background: "var(--texto)", color: "var(--fondo)" }}
               >
                 {vinculando ? "Vinculando…" : "Vincular"}
               </button>
               <button
                 type="button"
                 onClick={() => setFormularioBoton(false)}
-                className="flex-1 rounded-lg bg-white py-2 font-medium text-slate-700 ring-1 ring-slate-300"
+                className="flex-1 rounded-lg py-2 font-medium"
+                style={{ background: "var(--fondo)", color: "var(--texto)", boxShadow: "inset 0 0 0 1px var(--borde-tenue)" }}
               >
                 Cancelar
               </button>
@@ -424,11 +483,17 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
         ) : (
           <>
             {errorBoton && (
-              <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{errorBoton}</p>
+              <p
+                className="mt-2 rounded-lg px-3 py-2 text-sm"
+                style={{ background: "var(--superficie-suave)", color: "var(--peligro)" }}
+              >
+                {errorBoton}
+              </p>
             )}
             <button
               onClick={() => void abrirVinculacion()}
-              className="mt-2 w-full rounded-lg bg-white py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50"
+              className="mt-2 w-full rounded-lg py-2 text-sm font-medium"
+              style={{ background: "var(--fondo)", color: "var(--texto)", boxShadow: "inset 0 0 0 1px var(--borde-tenue)" }}
             >
               Vincular un botón
             </button>
@@ -494,12 +559,24 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
         )}
         <ul className="mt-1 space-y-1">
           {grupo.members.map((m) => (
-            <li key={m.userId} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
+            <li
+              key={m.userId}
+              className="rounded-lg px-3 py-2 text-sm"
+              style={{ background: "var(--superficie-suave)" }}
+            >
               <div className="flex items-center justify-between gap-2">
                 <span className="min-w-0">
-                  <span className="font-medium text-slate-800">{m.displayName || m.email}</span>
-                  {m.userId === grupo.myUserId && <span className="text-slate-400"> (tú)</span>}
-                  {m.displayName && <span className="block truncate text-xs text-slate-400">{m.email}</span>}
+                  <span className="font-medium" style={{ color: "var(--texto)" }}>
+                    {m.displayName || m.email}
+                  </span>
+                  {m.userId === grupo.myUserId && (
+                    <span style={{ color: "var(--texto-tenue)" }}> (tú)</span>
+                  )}
+                  {m.displayName && (
+                    <span className="block truncate text-xs" style={{ color: "var(--texto-tenue)" }}>
+                      {m.email}
+                    </span>
+                  )}
                   <span className="block truncate text-xs" style={{ color: "var(--texto-tenue)" }}>
                     {(() => {
                       const suyos = grupo.devices.filter((d) =>
@@ -522,7 +599,9 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                   >
                     {m.accesoCompleto ? "Puede alertar" : "Invitado"}
                   </span>
-                  <span className="text-xs uppercase text-slate-400">{m.role}</span>
+                  <span className="text-xs uppercase" style={{ color: "var(--texto-tenue)" }}>
+                    {m.role}
+                  </span>
                 </span>
               </div>
 
@@ -532,7 +611,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                     <button
                       onClick={() => hacerAdmin(m.userId, m.role === "ADMIN" ? "MEMBER" : "ADMIN")}
                       disabled={cambiandoRol === m.userId}
-                      className="text-xs font-medium text-slate-500 hover:text-red-600 disabled:opacity-60"
+                      className="text-xs font-medium text-[var(--texto-tenue)] hover:text-red-600 disabled:opacity-60"
                     >
                       {m.role === "ADMIN" ? "Quitar admin" : "Hacer admin"}
                     </button>
@@ -545,10 +624,12 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
 
 
         {grupo.inviteCode && (
-          <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-sm">
-            <p className="text-slate-500">Código para invitar a alguien:</p>
+          <div className="mt-3 rounded-lg px-3 py-2 text-sm" style={{ background: "var(--superficie-suave)" }}>
+            <p style={{ color: "var(--texto-tenue)" }}>Código para invitar a alguien:</p>
             <div className="mt-1 flex items-center justify-between gap-2">
-              <code className="font-mono text-base tracking-wider text-slate-900">{grupo.inviteCode}</code>
+              <code className="font-mono text-base tracking-wider" style={{ color: "var(--texto)" }}>
+                {grupo.inviteCode}
+              </code>
               <div className="flex gap-3">
                 <button onClick={copiarCodigo} className="text-xs font-medium text-red-600 hover:underline">
                   {copiado ? "¡Copiado!" : "Copiar"}
@@ -556,7 +637,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                 <button
                   onClick={regenerar}
                   disabled={regenerando}
-                  className="text-xs font-medium text-slate-500 hover:text-red-600 disabled:opacity-60"
+                  className="text-xs font-medium text-[var(--texto-tenue)] hover:text-red-600 disabled:opacity-60"
                 >
                   {regenerando ? "…" : "Nuevo código"}
                 </button>
@@ -566,34 +647,45 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
         )}
       </section>
 
-      <section className="border-t border-slate-200 pt-4">
+      <section className="border-t pt-4" style={{ borderColor: "var(--borde-tenue)" }}>
         {errorSalida && (
-          <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{errorSalida}</p>
+          <p
+            className="mb-3 rounded-lg px-3 py-2 text-sm"
+            style={{ background: "var(--superficie-suave)", color: "var(--peligro)" }}
+          >
+            {errorSalida}
+          </p>
         )}
 
         <button
           onClick={salir}
           disabled={saliendo}
-          className="w-full rounded-lg bg-white py-2 text-sm font-medium text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-60"
+          className="w-full rounded-lg py-2 text-sm font-medium disabled:opacity-60"
+          style={{ background: "var(--fondo)", color: "var(--peligro)", boxShadow: "inset 0 0 0 1px var(--peligro)" }}
         >
           {saliendo ? "Saliendo…" : "Salir del grupo"}
         </button>
 
         {esAdmin &&
           (confirmarEliminar ? (
-            <form onSubmit={eliminar} className="mt-3 rounded-lg bg-red-50 p-3 text-sm ring-1 ring-red-200">
-              <p className="text-red-900">
+            <form
+              onSubmit={eliminar}
+              className="mt-3 rounded-lg p-3 text-sm"
+              style={{ background: "var(--superficie-suave)", boxShadow: "inset 0 0 0 1px var(--peligro)" }}
+            >
+              <p style={{ color: "var(--texto)" }}>
                 Se borrarán el chat y el historial de alertas de <strong>{grupo.name}</strong>, y todos
                 quedarán fuera. No se puede deshacer.
               </p>
-              <label className="mt-2 block text-red-900">
+              <label className="mt-2 block" style={{ color: "var(--texto)" }}>
                 Escribe el nombre del grupo para confirmar:
                 <input
                   required
                   value={nombreEscrito}
                   onChange={(e) => setNombreEscrito(e.target.value)}
                   placeholder={grupo.name}
-                  className="mt-1 w-full rounded-lg border border-red-300 px-3 py-2 focus:border-red-500 focus:outline-none"
+                  className="mt-1 w-full rounded-lg border px-3 py-2 focus:outline-none"
+                  style={{ background: "var(--fondo)", color: "var(--texto)", borderColor: "var(--peligro)" }}
                 />
               </label>
               <div className="mt-2 flex gap-2">
@@ -607,7 +699,8 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                 <button
                   type="button"
                   onClick={() => setConfirmarEliminar(false)}
-                  className="flex-1 rounded-lg bg-white py-2 font-medium text-slate-700 ring-1 ring-slate-300"
+                  className="flex-1 rounded-lg py-2 font-medium"
+                  style={{ background: "var(--fondo)", color: "var(--texto)", boxShadow: "inset 0 0 0 1px var(--borde-tenue)" }}
                 >
                   Cancelar
                 </button>
@@ -620,7 +713,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                 setErrorSalida(null);
                 setConfirmarEliminar(true);
               }}
-              className="mt-2 w-full rounded-lg py-2 text-sm font-medium text-slate-500 hover:text-red-700"
+              className="mt-2 w-full rounded-lg py-2 text-sm font-medium text-[var(--texto-tenue)] hover:text-red-700"
             >
               Eliminar grupo
             </button>

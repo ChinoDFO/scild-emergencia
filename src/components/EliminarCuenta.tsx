@@ -34,10 +34,11 @@ export default function EliminarCuenta({ email }: { email: string }) {
 
   if (!abierto) {
     return (
-      <div className="border-t border-slate-100 pt-4">
+      <div className="border-t pt-4" style={{ borderColor: "var(--borde-tenue)" }}>
         <button
           onClick={() => setAbierto(true)}
-          className="text-sm font-medium text-slate-400 hover:text-red-600"
+          className="text-sm font-medium hover:opacity-80"
+          style={{ color: "var(--texto-tenue)" }}
         >
           Eliminar mi cuenta
         </button>
@@ -46,9 +47,14 @@ export default function EliminarCuenta({ email }: { email: string }) {
   }
 
   return (
-    <div className="border-t border-slate-100 pt-4">
-      <h2 className="text-sm font-medium text-red-700">Eliminar mi cuenta</h2>
-      <div className="mt-2 space-y-2 rounded-lg bg-red-50 px-3 py-3 text-sm text-red-900">
+    <div className="border-t pt-4" style={{ borderColor: "var(--borde-tenue)" }}>
+      <h2 className="text-sm font-medium" style={{ color: "var(--peligro)" }}>
+        Eliminar mi cuenta
+      </h2>
+      <div
+        className="mt-2 space-y-2 rounded-lg px-3 py-3 text-sm"
+        style={{ background: "var(--superficie-suave)", color: "var(--texto)" }}
+      >
         <p>Esto no se puede deshacer. Al borrarla:</p>
         <ul className="list-disc space-y-1 pl-5 text-xs">
           <li>
@@ -60,17 +66,25 @@ export default function EliminarCuenta({ email }: { email: string }) {
         </ul>
       </div>
 
-      <label className="mt-3 block text-sm text-slate-700">
+      <label className="mt-3 block text-sm" style={{ color: "var(--texto)" }}>
         Escribe <span className="font-mono font-medium">{email}</span> para confirmar:
         <input
           value={confirmacion}
           onChange={(e) => setConfirmacion(e.target.value)}
           autoComplete="off"
-          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          className="mt-1 w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1"
+          style={{ background: "var(--fondo)", color: "var(--texto)", borderColor: "var(--borde-tenue)" }}
         />
       </label>
 
-      {error && <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && (
+        <p
+          className="mt-2 rounded-lg px-3 py-2 text-sm"
+          style={{ background: "var(--superficie-suave)", color: "var(--peligro)" }}
+        >
+          {error}
+        </p>
+      )}
 
       <div className="mt-3 flex gap-2">
         <button
@@ -86,7 +100,8 @@ export default function EliminarCuenta({ email }: { email: string }) {
             setConfirmacion("");
             setError(null);
           }}
-          className="flex-1 rounded-lg bg-white py-2 text-sm font-medium text-slate-700 ring-1 ring-slate-300"
+          className="flex-1 rounded-lg py-2 text-sm font-medium"
+          style={{ background: "var(--fondo)", color: "var(--texto)", boxShadow: "inset 0 0 0 1px var(--borde-tenue)" }}
         >
           Cancelar
         </button>

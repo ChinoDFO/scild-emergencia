@@ -32,14 +32,18 @@ export default function Apodo({ apodo, alCambiar }: Props) {
 
   if (!editando) {
     return (
-      <p className="text-sm text-slate-500">
-        En tus grupos te ven como <span className="font-medium text-slate-800">{apodo}</span>{" "}
+      <p className="text-sm" style={{ color: "var(--texto-tenue)" }}>
+        En tus grupos te ven como{" "}
+        <span className="font-medium" style={{ color: "var(--texto)" }}>
+          {apodo}
+        </span>{" "}
         <button
           onClick={() => {
             setValor(apodo ?? "");
             setEditando(true);
           }}
-          className="font-medium text-red-600 hover:underline"
+          className="font-medium hover:underline"
+          style={{ color: "var(--peligro)" }}
         >
           Cambiar
         </button>
@@ -50,13 +54,20 @@ export default function Apodo({ apodo, alCambiar }: Props) {
   return (
     <form
       onSubmit={guardar}
-      className={`rounded-lg p-3 text-sm ${apodo ? "bg-slate-50" : "bg-amber-50 ring-1 ring-amber-200"}`}
+      className="rounded-lg p-3 text-sm"
+      style={
+        apodo
+          ? { background: "var(--superficie-suave)" }
+          : { background: "var(--superficie-suave)", boxShadow: "inset 0 0 0 1px var(--alerta)" }
+      }
     >
-      <label htmlFor="apodo" className="block font-medium text-slate-800">
+      <label htmlFor="apodo" className="block font-medium" style={{ color: "var(--texto)" }}>
         {apodo ? "Tu apodo" : "¿Cómo te llamamos en tus grupos?"}
       </label>
       {!apodo && (
-        <p className="mt-0.5 text-slate-600">Así sabrán quién escribe en el chat y quién envió una alerta.</p>
+        <p className="mt-0.5" style={{ color: "var(--texto-tenue)" }}>
+          Así sabrán quién escribe en el chat y quién envió una alerta.
+        </p>
       )}
       <div className="mt-2 flex gap-2">
         <input
@@ -66,22 +77,37 @@ export default function Apodo({ apodo, alCambiar }: Props) {
           placeholder="Ej. Mamá, Papá, Juan, Cajero"
           value={valor}
           onChange={(e) => setValor(e.target.value)}
-          className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          className="min-w-0 flex-1 rounded-lg border px-3 py-2 focus:outline-none focus:ring-1"
+          style={{
+            background: "var(--fondo)",
+            color: "var(--texto)",
+            borderColor: "var(--borde-tenue)",
+          }}
         />
         <button
           type="submit"
           disabled={guardando}
-          className="rounded-lg bg-slate-900 px-3 py-2 font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+          className="rounded-lg px-3 py-2 font-medium disabled:opacity-60"
+          style={{ background: "var(--texto)", color: "var(--fondo)" }}
         >
           {guardando ? "…" : "Guardar"}
         </button>
         {apodo && (
-          <button type="button" onClick={() => setEditando(false)} className="px-1 text-slate-500">
+          <button
+            type="button"
+            onClick={() => setEditando(false)}
+            className="px-1"
+            style={{ color: "var(--texto-tenue)" }}
+          >
             Cancelar
           </button>
         )}
       </div>
-      {error && <p className="mt-2 text-red-700">{error}</p>}
+      {error && (
+        <p className="mt-2" style={{ color: "var(--peligro)" }}>
+          {error}
+        </p>
+      )}
     </form>
   );
 }

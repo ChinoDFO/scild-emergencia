@@ -49,15 +49,19 @@ export default function Notificaciones() {
   };
 
   return (
-    <div className="mt-6 border-t border-slate-100 pt-4">
-      <h2 className="text-sm font-medium text-slate-700">Notificaciones de emergencia</h2>
+    <div className="mt-6 border-t pt-4" style={{ borderColor: "var(--borde-tenue)" }}>
+      <h2 className="text-sm font-medium" style={{ color: "var(--texto)" }}>
+        Notificaciones de emergencia
+      </h2>
 
       {estado === null && (
-        <p className="mt-1 text-sm text-slate-400">Revisando permisos…</p>
+        <p className="mt-1 text-sm" style={{ color: "var(--texto-tenue)" }}>
+          Revisando permisos…
+        </p>
       )}
 
       {estado === "activadas" && (
-        <p className="mt-1 text-sm text-emerald-700">
+        <p className="mt-1 text-sm font-medium" style={{ color: "#16a34a" }}>
           Activadas en este dispositivo. Recibirás un aviso cuando se presione
           el botón de tu grupo.
         </p>
@@ -65,7 +69,7 @@ export default function Notificaciones() {
 
       {estado === "desactivadas" && (
         <>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm" style={{ color: "var(--texto-tenue)" }}>
             Sin esto no te llega aviso cuando alguien presiona el botón.
           </p>
           <button
@@ -79,21 +83,26 @@ export default function Notificaciones() {
       )}
 
       {estado === "bloqueadas" && (
-        <p className="mt-1 text-sm text-amber-700">
+        <p className="mt-1 text-sm font-medium" style={{ color: "var(--alerta-texto)", background: "var(--alerta)", borderRadius: "0.5rem", padding: "0.5rem 0.75rem" }}>
           Bloqueaste las notificaciones para este sitio. Habilítalas desde el
           candado junto a la dirección del navegador y recarga la página.
         </p>
       )}
 
       {estado === "no-soportado" && (
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm" style={{ color: "var(--texto-tenue)" }}>
           Este navegador no soporta notificaciones push. En iPhone hay que
           instalar la app en la pantalla de inicio primero.
         </p>
       )}
 
       {error && (
-        <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+        <p
+          className="mt-2 rounded-lg px-3 py-2 text-sm"
+          style={{ background: "var(--superficie-suave)", color: "var(--peligro)" }}
+        >
+          {error}
+        </p>
       )}
     </div>
   );
