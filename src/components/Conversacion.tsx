@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useMensajes } from "../hooks/useMensajes";
+import { usePerfil } from "../context/PerfilContext";
 import { marcarChatLeido } from "../services/api";
 import type { Alerta, Mensaje } from "../services/api";
 import { ETIQUETA_ESTADO, origen } from "../services/formatoAlertas";
@@ -100,6 +101,7 @@ export default function Conversacion({
   alEnviarAlerta,
 }: Props) {
   const { mensajes, hayMas, cargandoAnteriores, cargarAnteriores, enviar, error } = useMensajes(groupId);
+  const { marcarGrupoLeido } = usePerfil();
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
@@ -145,12 +147,13 @@ export default function Conversacion({
   useEffect(() => {
     if (!mensajes) return;
     const id = setTimeout(() => {
+      marcarGrupoLeido(groupId);
       marcarChatLeido(groupId).catch(() => {
         // Si falla, el contador se corrige en la siguiente visita.
       });
     }, 800);
     return () => clearTimeout(id);
-  }, [groupId, mensajes]);
+  }, [groupId, mensajes, marcarGrupoLeido]);
 
   const alDesplazar = () => {
     const el = lista.current;

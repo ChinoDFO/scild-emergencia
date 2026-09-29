@@ -15,6 +15,7 @@ interface PerfilContextValue {
   error: string | null;
   refrescar: () => Promise<void>;
   actualizarLocal: (cambio: (p: Perfil) => Perfil) => void;
+  marcarGrupoLeido: (groupId: string) => void;
 }
 
 const PerfilContext = createContext<PerfilContextValue | null>(null);
@@ -97,8 +98,18 @@ export function PerfilProvider({ children }: { children: ReactNode }) {
     setPerfil((p) => (p ? cambio(p) : p));
   }, []);
 
+  // Se llama junto con marcarChatLeido (la API): sin esto, abrir el chat
+  // dejaba en 0 el contador en el backend, pero el globito de la lista —que
+  // ya no se vuelve a pedir en cada navegación— se quedaba con el número
+  // viejo hasta cerrar sesión y volver a entrar.
+  const marcarGrupoLeido = useCallback((groupId: string) => {
+    setPerfil((p) =>
+      p ? { ...p, groups: p.groups.map((g) => (g.id === groupId ? { ...g, sinLeer: 0 } : g)) } : p
+    );
+  }, []);
+
   return (
-    <PerfilContext.Provider value={{ perfil, cargando, error, refrescar, actualizarLocal }}>
+    <PerfilContext.Provider value={{ perfil, cargando, error, refrescar, actualizarLocal, marcarGrupoLeido }}>
       {usuario && <SincronizadorPerfil miId={perfil?.id} actualizarLocal={actualizarLocal} />}
       {children}
     </PerfilContext.Provider>

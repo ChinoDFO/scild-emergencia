@@ -156,10 +156,11 @@ export default function Grupos() {
                   >
                     {g.sinLeer > 99 ? "99+" : g.sinLeer}
                   </span>
-                  <span className="mt-0.5 block text-[9px] font-bold leading-tight" style={{ color: "var(--texto)" }}>
-                    Notificaciones
-                    <br />
-                    nuevas
+                  <span
+                    className="mt-0.5 block whitespace-nowrap text-[9px] font-bold leading-tight"
+                    style={{ color: "var(--texto)" }}
+                  >
+                    Notificaciones nuevas
                   </span>
                 </span>
               )}
