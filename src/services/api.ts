@@ -31,6 +31,9 @@ export interface Perfil {
   esAdminPlataforma: boolean;
   // Para el dato "fecha de creación de cuenta" del perfil.
   creadaEl: string;
+  // Null: todavía no acepta los Términos y Condiciones / Aviso de
+  // Privacidad vigentes. La app bloquea el uso hasta que acepta.
+  terminosAceptadosEl: string | null;
   groups: Grupo[];
 }
 
@@ -157,6 +160,12 @@ export function obtenerPerfil(): Promise<Perfil> {
 // Apodo con el que te ven los demás en tus grupos ("Mamá", "Cajero").
 export function actualizarApodo(displayName: string): Promise<{ displayName: string }> {
   return llamarBackend("/api/auth/me", { method: "PATCH", body: JSON.stringify({ displayName }) });
+}
+
+// Se llama una sola vez, al tocar "Acepto" en la pantalla de Términos y
+// Condiciones / Aviso de Privacidad.
+export function aceptarTerminos(): Promise<{ terminosAceptadosEl: string }> {
+  return llamarBackend("/api/auth/aceptar-terminos", { method: "POST" });
 }
 
 // Borra la cuenta. El backend libera el lugar que ocupaba en el código de la

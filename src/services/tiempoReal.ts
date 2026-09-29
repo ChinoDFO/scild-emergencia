@@ -12,7 +12,15 @@ import type { Mensaje } from "./api";
 
 export interface EventosTiempoReal {
   "mensaje:nuevo": Mensaje;
-  "alertas:cambio": { groupId: string; alertId: string };
+  "alertas:cambio": {
+    groupId: string;
+    alertId: string;
+    // "creada" cuenta como actividad nueva del grupo (como un mensaje);
+    // "atendida"/"resuelta" no deben subir el chat ni sumar al globito.
+    accion: "creada" | "atendida" | "resuelta";
+    createdAt: string;
+    createdById: string | null;
+  };
   "grupo:actualizado": { groupId: string };
   "grupo:eliminado": { groupId: string };
 }

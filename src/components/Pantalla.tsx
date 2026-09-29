@@ -32,10 +32,15 @@ export default function Pantalla({ titulo, subtitulo, accion, children }: Props)
             type="button"
             onClick={accion.alTocar}
             aria-label={accion.etiqueta}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-3xl leading-none"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
             style={{ background: "var(--texto)", color: "var(--fondo)" }}
           >
-            +
+            {/* SVG y no el carácter "+": el glifo de texto no queda centrado
+                de verdad en el círculo (su caja tiene más aire abajo que
+                arriba), así que se veía corrido hacia abajo. */}
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden>
+              <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+            </svg>
           </button>
         )}
       </header>

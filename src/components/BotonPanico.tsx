@@ -88,7 +88,7 @@ export default function BotonPanico({ alMantener, estado, bloqueado, alToqueBloq
   };
 
   const presionando = progreso > 0;
-  const glifo = estado === "enviada" ? "✓" : estado === "enviando" ? "···" : "SOS";
+  const glifo = estado === "enviada" ? "✓" : estado === "enviando" ? "···" : "!";
 
   return (
     <div className="relative -mt-6 h-16 w-16 shrink-0">
@@ -134,7 +134,7 @@ export default function BotonPanico({ alMantener, estado, bloqueado, alToqueBloq
           opacity: bloqueado ? 0.45 : 1,
           WebkitTouchCallout: "none",
         }}
-        className={`absolute inset-0 flex touch-none select-none items-center justify-center rounded-full text-sm font-black tracking-wider transition-transform duration-150 ${
+        className={`absolute inset-0 flex touch-none select-none items-center justify-center rounded-full text-2xl font-black leading-none transition-transform duration-150 ${
           presionando ? "scale-95" : ""
         }`}
       >

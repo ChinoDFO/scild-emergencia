@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pantalla from "../components/Pantalla";
 import BarraBusqueda from "../components/BarraBusqueda";
 import EliminarCuenta from "../components/EliminarCuenta";
 import Notificaciones from "../components/Notificaciones";
 import { useAuth } from "../context/AuthContext";
+import { usePerfil } from "../context/PerfilContext";
 import { useTema } from "../context/TemaContext";
-import { obtenerPerfil, type Perfil } from "../services/api";
 import { permitirSirena, sirenaPermitida } from "../services/sirena";
 
 // La lista de pills del diseño. El buscador de arriba filtra las opciones:
@@ -27,17 +27,11 @@ interface Opcion {
 export default function Configuracion() {
   const navigate = useNavigate();
   const { cerrarSesion, usuario } = useAuth();
+  const { perfil } = usePerfil();
   const { tema, alternarTema } = useTema();
-  const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [panel, setPanel] = useState<"notificaciones" | "eliminar" | null>(null);
   const [sirena, setSirena] = useState(sirenaPermitida);
-
-  useEffect(() => {
-    obtenerPerfil()
-      .then(setPerfil)
-      .catch(() => setPerfil(null));
-  }, []);
 
   const opciones: Opcion[] = useMemo(
     () => [
@@ -69,6 +63,7 @@ export default function Configuracion() {
         alTocar: () => navigate("/grupos"),
       },
       { texto: "Ayuda", alTocar: () => navigate("/ayuda") },
+      { texto: "Términos y privacidad", alTocar: () => navigate("/legal") },
       {
         texto: "Página web",
         alTocar: () => window.open("https://scild.mx", "_blank", "noopener"),

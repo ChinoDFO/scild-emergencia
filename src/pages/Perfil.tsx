@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import Pantalla from "../components/Pantalla";
 import ListaAlertas from "../components/ListaAlertas";
 import Apodo from "../components/Apodo";
-import { obtenerAcceso, obtenerPerfil, type Acceso, type Perfil as DatosPerfil } from "../services/api";
+import { usePerfil } from "../context/PerfilContext";
+import { obtenerAcceso, type Acceso } from "../services/api";
 
 // El perfil del diseño: avatar con "Editar", el apodo, un bloque punteado con
 // los cuatro datos de la cuenta y abajo el historial de alertas.
@@ -21,17 +22,14 @@ function fecha(iso: string | null | undefined) {
 }
 
 export default function Perfil() {
-  const [perfil, setPerfil] = useState<DatosPerfil | null>(null);
+  const { perfil, error: errorPerfil, actualizarLocal } = usePerfil();
   const [acceso, setAcceso] = useState<Acceso | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editando, setEditando] = useState(false);
 
   useEffect(() => {
-    Promise.all([obtenerPerfil(), obtenerAcceso()])
-      .then(([p, a]) => {
-        setPerfil(p);
-        setAcceso(a);
-      })
+    obtenerAcceso()
+      .then(setAcceso)
       .catch((e) => setError(e.message));
   }, []);
 
@@ -74,19 +72,19 @@ export default function Perfil() {
           <Apodo
             apodo={perfil?.displayName ?? null}
             alCambiar={(nuevo) => {
-              setPerfil((p) => (p ? { ...p, displayName: nuevo } : p));
+              actualizarLocal((p) => ({ ...p, displayName: nuevo }));
               setEditando(false);
             }}
           />
         </div>
       )}
 
-      {error && (
+      {(error || errorPerfil) && (
         <p
           className="mb-3 rounded-xl px-3 py-2 text-sm"
           style={{ background: "var(--superficie)", color: "var(--peligro)" }}
         >
-          No se pudo cargar tu perfil: {error}
+          No se pudo cargar tu perfil: {error ?? errorPerfil}
         </p>
       )}
 

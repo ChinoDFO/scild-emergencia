@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pantalla from "../components/Pantalla";
 import BarraBusqueda from "../components/BarraBusqueda";
 import GestionGrupos from "../components/GestionGrupos";
 import GuiaBienvenida, { guiaYaVista, marcarGuiaVista } from "../components/GuiaBienvenida";
+import TerminosPendientes from "../components/TerminosPendientes";
 import { useAuth } from "../context/AuthContext";
-import { fijarGrupo, obtenerPerfil, type Grupo, type Perfil } from "../services/api";
-import { useEventoTiempoReal } from "../services/tiempoReal";
+import { usePerfil } from "../context/PerfilContext";
+import { fijarGrupo, type Grupo } from "../services/api";
 
 // "SCILD CONTROL" del diseño: el buscador, la lista de grupos con su avatar y
 // el contador de notificaciones nuevas, y el "+" para crear o unirse.
@@ -50,16 +51,12 @@ export default function Grupos() {
   const { usuario } = useAuth();
   // La guía se abre sola la primera vez que esta cuenta entra.
   const [guia, setGuia] = useState(() => Boolean(usuario) && !guiaYaVista(usuario!.uid));
-  const [perfil, setPerfil] = useState<Perfil | null>(null);
+  // Compartido con BarraInferior, Configuración y Perfil: se pide una sola
+  // vez por sesión (ver context/PerfilContext.tsx).
+  const { perfil, error: errorPerfil, actualizarLocal } = usePerfil();
   const [busqueda, setBusqueda] = useState("");
   const [creando, setCreando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    obtenerPerfil()
-      .then(setPerfil)
-      .catch((e) => setError(e.message));
-  }, []);
 
   const grupos = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -69,13 +66,7 @@ export default function Grupos() {
 
   // Cambia un grupo de la lista sin volver a pedir el perfil entero.
   const cambiarGrupo = (id: string, cambio: (g: Grupo) => Grupo) =>
-    setPerfil((p) => (p ? { ...p, groups: p.groups.map((g) => (g.id === id ? cambio(g) : g)) } : p));
-
-  // El socket recibe los mensajes de TODOS sus grupos, no solo del abierto:
-  // así el grupo que acaba de escribir sube al momento, sin recargar.
-  useEventoTiempoReal("mensaje:nuevo", (m) => {
-    cambiarGrupo(m.groupId, (g) => ({ ...g, ultimoMensajeEl: m.createdAt }));
-  });
+    actualizarLocal((p) => ({ ...p, groups: p.groups.map((g) => (g.id === id ? cambio(g) : g)) }));
 
   // Optimista: la chincheta y el salto en la lista tienen que sentirse al
   // instante. Si el backend falla, el grupo vuelve a como estaba.
@@ -100,6 +91,17 @@ export default function Grupos() {
     setGuia(false);
   };
 
+  // Bloquea todo lo demás (incluida la guía) hasta que la cuenta acepta.
+  // Cubre tanto la cuenta recién creada como una de antes de que existiera
+  // esta pantalla: en ambas, terminosAceptadosEl llega null del backend.
+  if (perfil && perfil.terminosAceptadosEl === null) {
+    return (
+      <TerminosPendientes
+        alAceptar={() => actualizarLocal((p) => ({ ...p, terminosAceptadosEl: new Date().toISOString() }))}
+      />
+    );
+  }
+
   return (
     <>
     {guia && <GuiaBienvenida alCerrar={cerrarGuia} />}
@@ -115,12 +117,12 @@ export default function Grupos() {
         </div>
       )}
 
-      {error && (
+      {(error || errorPerfil) && (
         <p
           className="mb-3 rounded-xl px-3 py-2 text-sm"
           style={{ background: "var(--superficie)", color: "var(--peligro)" }}
         >
-          {error}
+          {error ?? errorPerfil}
         </p>
       )}
 

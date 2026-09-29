@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { enviarMensaje, listarMensajes, type Mensaje } from "../services/api";
+import { escucharAlertasEnPrimerPlano } from "../services/notificaciones";
 import { useAlReconectar, useEventoTiempoReal } from "../services/tiempoReal";
+
+// Los mensajes llegan al instante por Socket.IO. Esto es solo el respaldo por
+// si esa conexión está caída sin que nadie lo note (mismo mecanismo que
+// useAlertas.ts): sin él, un evento perdido no se recupera hasta salir del
+// chat y volver a entrar.
+const REFRESCO_MS = 60_000;
 
 // Junta mensajes sin duplicar (el que yo mando llega dos veces: en la
 // respuesta del POST y por el socket) y los deja en orden cronológico.
@@ -45,6 +52,23 @@ export function useMensajes(groupId: string) {
 
   // Lo que llegó mientras no había conexión no pasó por el socket.
   useAlReconectar(() => cargarRecientes());
+
+  // Respaldo lento: refresco cada minuto, al volver a la pestaña y al llegar
+  // un push en primer plano (por si ese mensaje se le escapó al socket).
+  useEffect(() => {
+    const intervalo = setInterval(() => cargarRecientes(), REFRESCO_MS);
+    const alVolver = () => document.visibilityState === "visible" && cargarRecientes();
+    document.addEventListener("visibilitychange", alVolver);
+    const dejarDeEscuchar = escucharAlertasEnPrimerPlano((payload) => {
+      if (payload.data?.kind === "chat" && payload.data?.groupId === groupId) cargarRecientes();
+    });
+
+    return () => {
+      clearInterval(intervalo);
+      document.removeEventListener("visibilitychange", alVolver);
+      dejarDeEscuchar();
+    };
+  }, [groupId, cargarRecientes]);
 
   const cargarAnteriores = async () => {
     if (!mensajes?.length) return;

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import BotonPanico, { type EstadoSOS } from "./BotonPanico";
-import { generarAlerta, obtenerPerfil, type Perfil } from "../services/api";
+import { generarAlerta } from "../services/api";
+import { usePerfil } from "../context/PerfilContext";
 
 // La barra de 5 pestañas del diseño. El centro no es una pestaña más: es el
 // botón de emergencia, el círculo oscuro que sobresale del resto.
@@ -72,19 +73,15 @@ interface Aviso {
 
 export default function BarraInferior() {
   const { pathname } = useLocation();
-  const [perfil, setPerfil] = useState<Perfil | null>(null);
+  // Compartido con el resto de la app (Grupos, Configuración, Perfil): antes
+  // esta barra —que está en TODAS las pantallas— pedía el perfil por su
+  // cuenta en cada navegación, duplicando la consulta que la pantalla misma
+  // ya estaba haciendo.
+  const { perfil, cargando, refrescar } = usePerfil();
   const [estado, setEstado] = useState<EstadoSOS>("listo");
   const [aviso, setAviso] = useState<Aviso | null>(null);
   const [eligiendo, setEligiendo] = useState(false);
   const reinicio = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Se pide una vez: de aquí salen si la cuenta puede alertar y a qué grupos
-  // pertenece, que es todo lo que el botón necesita para decidir.
-  useEffect(() => {
-    obtenerPerfil()
-      .then(setPerfil)
-      .catch(() => setPerfil(null));
-  }, []);
 
   useEffect(
     () => () => {
@@ -137,7 +134,7 @@ export default function BarraInferior() {
 
     if (!perfil) {
       setAviso({ tono: "info", texto: "Estamos leyendo tu cuenta. Intenta otra vez en un momento." });
-      obtenerPerfil().then(setPerfil).catch(() => {});
+      if (!cargando) refrescar();
       programarLimpieza();
       return;
     }

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { PerfilProvider } from "./context/PerfilContext";
 import { TemaProvider } from "./context/TemaContext";
 import AlarmaEnPantalla from "./components/AlarmaEnPantalla";
 import RutaProtegida from "./components/RutaProtegida";
@@ -14,6 +15,7 @@ import Dispositivo from "./pages/Dispositivo";
 import ConfigurarBoton from "./pages/ConfigurarBoton";
 import Grupo from "./pages/Grupo";
 import Ayuda from "./pages/Ayuda";
+import Legal from "./pages/Legal";
 import Codigos from "./pages/Codigos";
 import Admin from "./pages/Admin";
 
@@ -21,6 +23,7 @@ export default function App() {
   return (
     <TemaProvider>
       <AuthProvider>
+      <PerfilProvider>
       <BrowserRouter>
         {/* Fuera de las rutas: una alerta puede llegar en cualquier pantalla. */}
         <AlarmaEnPantalla />
@@ -86,6 +89,14 @@ export default function App() {
             }
           />
           <Route
+            path="/legal"
+            element={
+              <RutaProtegida>
+                <Legal />
+              </RutaProtegida>
+            }
+          />
+          <Route
             path="/codigos"
             element={
               <RutaProtegida>
@@ -111,6 +122,7 @@ export default function App() {
           />
         </Routes>
       </BrowserRouter>
+      </PerfilProvider>
       </AuthProvider>
     </TemaProvider>
   );
