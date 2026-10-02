@@ -6,6 +6,7 @@ import {
   guardarConfigBoton,
   obtenerAcceso,
   obtenerConfigBoton,
+  reconfigurarWifiBoton,
   type BotonDeAcceso,
   type CambiosConfigBoton,
   type ConfigBoton,
@@ -93,6 +94,7 @@ export default function ConfigurarBoton() {
   const [guardando, setGuardando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reconfigurando, setReconfigurando] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -156,6 +158,38 @@ export default function ConfigurarBoton() {
       setError(err instanceof Error ? err.message : "No se pudo guardar");
     } finally {
       setGuardando(false);
+    }
+  }
+
+  // Reemplaza lo de dejar el botón presionado al encenderlo: el aparato
+  // olvida su red principal y abre su portal (busca "SCILD-CONFIG" desde el
+  // celular) para capturar una nueva, sin perder su identidad ni su
+  // vinculación al grupo.
+  async function reconfigurarWifi() {
+    if (!id) return;
+    if (
+      !confirm(
+        "El botón olvidará su red Wi-Fi actual y abrirá su portal para capturar una nueva. " +
+          "Seguirá vinculado a este grupo. ¿Continuar?"
+      )
+    ) {
+      return;
+    }
+
+    setError(null);
+    setAviso(null);
+    setReconfigurando(true);
+    try {
+      const { seAplicaEnSegundos } = await reconfigurarWifiBoton(id);
+      const minutos = Math.max(Math.round(seAplicaEnSegundos / 60), 1);
+      setAviso(
+        `Listo. En su próximo aviso de vida (máximo ${minutos} min) el botón olvidará su red y ` +
+          'abrirá su portal: busca la red "SCILD-CONFIG" desde tu celular para darle la nueva.'
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo pedir la reconfiguración");
+    } finally {
+      setReconfigurando(false);
     }
   }
 
@@ -240,11 +274,23 @@ export default function ConfigurarBoton() {
                 : undefined
             }
           />
+        </Bloque>
+
+        <Bloque titulo="Red Wi-Fi principal">
           <p className="text-[11px] normal-case" style={{ color: "var(--texto-tenue)" }}>
-            La red <b>principal</b> no se puede cambiar desde aquí: para recibirla, el botón ya
-            tendría que estar conectado. Esa se captura una sola vez en el propio aparato, con el
-            botón presionado al encenderlo.
+            No se puede cambiar escribiéndola aquí: para recibirla, el botón ya tendría que estar
+            conectado a internet. Este botón le pide que la olvide y abra su portal, para
+            capturarle una nueva desde el celular sin ir a dejarlo presionado al encenderlo.
           </p>
+          <button
+            type="button"
+            onClick={() => void reconfigurarWifi()}
+            disabled={reconfigurando || !boton}
+            className="w-full rounded-2xl border-2 py-2.5 text-sm font-bold uppercase disabled:opacity-50"
+            style={{ borderColor: "var(--borde)", background: "var(--fondo)", color: "var(--texto)" }}
+          >
+            {reconfigurando ? "Enviando…" : "Reconfigurar red Wi-Fi"}
+          </button>
         </Bloque>
 
         {sinGrupo && (

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Pantalla from "../components/Pantalla";
 import BarraBusqueda from "../components/BarraBusqueda";
+import CambiarCorreo from "../components/CambiarCorreo";
 import EliminarCuenta from "../components/EliminarCuenta";
 import Notificaciones from "../components/Notificaciones";
 import { useAuth } from "../context/AuthContext";
@@ -30,7 +31,7 @@ export default function Configuracion() {
   const { perfil } = usePerfil();
   const { tema, alternarTema } = useTema();
   const [busqueda, setBusqueda] = useState("");
-  const [panel, setPanel] = useState<"notificaciones" | "eliminar" | null>(null);
+  const [panel, setPanel] = useState<"notificaciones" | "correo" | "eliminar" | null>(null);
   const [sirena, setSirena] = useState(sirenaPermitida);
 
   const opciones: Opcion[] = useMemo(
@@ -53,9 +54,7 @@ export default function Configuracion() {
       },
       {
         texto: "Cambiar correo",
-        // Cambiar el correo es de Firebase Auth y pide volver a autenticarse;
-        // además dejaría la fila de Postgres apuntando al correo viejo.
-        desactivada: "Todavía no: hay que reautenticar la sesión",
+        alTocar: () => setPanel((p) => (p === "correo" ? null : "correo")),
       },
       {
         texto: "Cambiar ubicación",
@@ -127,6 +126,12 @@ export default function Configuracion() {
       {panel === "notificaciones" && (
         <div className="tarjeta mt-4 p-4">
           <Notificaciones />
+        </div>
+      )}
+
+      {panel === "correo" && (
+        <div className="tarjeta mt-4 p-4">
+          <CambiarCorreo />
         </div>
       )}
 

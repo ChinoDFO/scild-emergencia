@@ -107,6 +107,16 @@ export function guardarConfigBoton(
   });
 }
 
+// Le pide al botón que olvide su red Wi-Fi principal y vuelva a abrir su
+// portal, sin tener que ir hasta el aparato y dejarlo presionado al
+// encenderlo. Se aplica en su próximo aviso de vida, igual que el resto de
+// la configuración.
+export function reconfigurarWifiBoton(deviceId: string): Promise<{ ok: true; seAplicaEnSegundos: number }> {
+  return llamarBackend(`/api/acceso/botones/${encodeURIComponent(deviceId)}/reconfigurar-wifi`, {
+    method: "POST",
+  });
+}
+
 export interface Acceso {
   completo: boolean;
   esTitular: boolean;
