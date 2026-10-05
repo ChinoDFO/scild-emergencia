@@ -118,7 +118,7 @@ export default function Login() {
         {/* El diseño manda a la tienda a quien todavía no compró el aparato. */}
         <p>
           ¿No tienes botón?{" "}
-          <a href="https://scild.mx" target="_blank" rel="noreferrer" className="font-bold hover:underline">
+          <a href={import.meta.env.VITE_WEB_URL} target="_blank" rel="noreferrer" className="font-bold hover:underline">
             Pide uno en nuestra web
           </a>
         </p>

@@ -65,7 +65,7 @@ export default function Configuracion() {
       { texto: "Términos y privacidad", alTocar: () => navigate("/legal") },
       {
         texto: "Página web",
-        alTocar: () => window.open("https://scild.mx", "_blank", "noopener"),
+        alTocar: () => window.open(import.meta.env.VITE_WEB_URL, "_blank", "noopener"),
       },
       {
         texto: "Desvincular botón",
