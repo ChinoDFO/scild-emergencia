@@ -83,6 +83,7 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
           "Si las bloqueaste por error, en el celular entra a los ajustes del navegador o de la app instalada y vuelve a permitir las notificaciones.",
           "En iPhone solo funcionan si instalaste la app en la pantalla de inicio.",
           "En Windows revisa que el sistema tenga permitidas las notificaciones y que no esté activado el modo “No molestar”.",
+          "En celulares Xiaomi, Huawei, Oppo o Vivo hay un administrador de batería propio, aparte del permiso de notificaciones de Android, que puede cerrar Chrome en segundo plano sin avisar y así cortar las alertas. Busca en Ajustes → Batería → administrador de apps (el nombre cambia según la marca) y pon Chrome como “sin restricciones” o en la lista de apps que pueden iniciarse solas.",
         ],
       },
       {
