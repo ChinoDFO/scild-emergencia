@@ -205,10 +205,10 @@ export function unirseAGrupo(inviteCode: string): Promise<{ groupId: string; gro
 
 // Token de FCM de este navegador, para que el backend sepa a dónde mandarle
 // las alertas de los grupos del usuario.
-export function registrarTokenPush(token: string, platform?: "WEB" | "ANDROID") {
+export function registrarTokenPush(token: string) {
   return llamarBackend("/api/notifications/token", {
     method: "POST",
-    body: JSON.stringify(platform ? { token, platform } : { token }),
+    body: JSON.stringify({ token }),
   });
 }
 
