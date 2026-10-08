@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "947570686420",
+    "project_id": "scild-emergencia",
+    "storage_bucket": "scild-emergencia.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:947570686420:android:6f952ead6d382617a1be41",
+        "android_client_info": {
+          "package_name": "com.scild.emergencia"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "947570686420-bce70lmuo28v3nd0ksb3320mjpc4bh3c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEFe3Ueua3LkXDAyDATG0op1DBmygUfJw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "947570686420-bce70lmuo28v3nd0ksb3320mjpc4bh3c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

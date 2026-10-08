@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Pantalla completa que despierta el celular para una alerta GENERAL (SOS o
+    botón físico). Se muestra con setFullScreenIntent, como una app de
+    alarmas o una llamada entrante. Ver AlertaMessagingService.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#DC2626"
+    android:padding="32dp">
+
+    <TextView
+        android:id="@+id/alarmaEmoji"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🚨"
+        android:textSize="72sp"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/alarmaTitulo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Emergencia"
+        android:textColor="#FFFFFF"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+    <TextView
+        android:id="@+id/alarmaCuerpo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFE4E4"
+        android:textSize="17sp"
+        android:gravity="center"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="48dp" />
+
+    <Button
+        android:id="@+id/alarmaVerBoton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Ya voy"
+        android:textColor="#B91C1C"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:backgroundTint="#FFFFFF"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/alarmaSilenciarBoton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Silenciar"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:backgroundTint="#991B1B" />
+
+</LinearLayout>

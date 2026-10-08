@@ -11,6 +11,51 @@ import { borrarTokenPush, registrarTokenPush } from "./api";
 
 const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
 
+// Chrome pone esto cuando la página se abrió desde una Trusted Web Activity
+// verificada — es la forma documentada de distinguir "la web normal" (o
+// incluso la PWA instalada a mano con "Agregar a inicio") de "la misma web,
+// pero dentro del APK de Android". Ahí el push nativo (ver
+// AlertaMessagingService, android/.../AlertaMessagingService.java) se
+// encarga de todo: pedir el token web aquí además duplicaría las alertas en
+// el mismo celular.
+export const esAppNativaAndroid =
+  typeof document !== "undefined" && document.referrer.startsWith("android-app://");
+
+// Se captura UNA vez al cargar el módulo (no en cada llamada): LauncherActivity
+// lo manda como ?tokenNativo=... en la URL de arranque (ver getLaunchingUrl),
+// pero si todavía no hay sesión iniciada la pantalla de Login puede navegar
+// y perder el query string antes de que haya cuenta a la cual registrarlo.
+const tokenNativoDeArranque =
+  typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("tokenNativo")
+    : null;
+
+if (tokenNativoDeArranque && typeof window !== "undefined") {
+  const params = new URLSearchParams(window.location.search);
+  params.delete("tokenNativo");
+  const nuevaQuery = params.toString();
+  window.history.replaceState(
+    {},
+    "",
+    window.location.pathname + (nuevaQuery ? `?${nuevaQuery}` : "") + window.location.hash
+  );
+}
+
+let tokenNativoRegistrado = false;
+
+// Lo llama AuthContext en cada cambio de sesión mientras esAppNativaAndroid:
+// repetirlo no hace daño (el backend hace upsert) y así no hay que
+// coordinar con el momento exacto en que el login termina.
+export function registrarTokenNativoSiHayUno() {
+  if (!tokenNativoDeArranque || tokenNativoRegistrado) return;
+  tokenNativoRegistrado = true;
+
+  registrarTokenPush(tokenNativoDeArranque, "ANDROID").catch((e) => {
+    tokenNativoRegistrado = false;
+    console.warn("No se pudo registrar el token nativo de Android:", e);
+  });
+}
+
 export type EstadoNotificaciones =
   | "no-soportado"
   | "desactivadas"

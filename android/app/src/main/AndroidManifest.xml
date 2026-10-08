@@ -22,9 +22,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.scild.emergencia">
 
-    
+
         <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    
+
+
+    <!-- Para el canal propio de las alertas SOS (ver AlertaMessagingService):
+         vibración y la alarma de pantalla completa que despierta el celular. -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+
 
     
 
@@ -159,6 +165,12 @@
             
         </activity>
 
+        <activity android:name=".AlarmaActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:showOnLockScreen="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
+
         <activity android:name="com.google.androidbrowserhelper.trusted.FocusActivity" />
 
         <activity android:name="com.google.androidbrowserhelper.trusted.WebViewFallbackActivity"
@@ -191,7 +203,16 @@
             </intent-filter>
         </service>
 
-        
+        <!-- Canal nativo de las alertas (ver AlertaMessagingService): recibe el
+             push de FCM directo, sin pasar por la delegación de arriba. -->
+        <service android:name=".AlertaMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
+
             <activity android:name="com.google.androidbrowserhelper.trusted.NotificationPermissionRequestActivity" />
         
 
