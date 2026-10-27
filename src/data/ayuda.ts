@@ -27,8 +27,10 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
       {
         id: "no-enciende",
         pregunta: "El botón no enciende",
-        respuesta: [],
-        pendiente: true,
+        respuesta: [
+          "Para solucionar la falla, le sugerimos realizar un reinicio rápido: desconecte el equipo durante 10 segundos y vuelva a conectarlo para verificar su funcionamiento. Puede repetir este sencillo procedimiento hasta 3 veces; si el inconveniente persiste, nuestro equipo de soporte estará encantado de atenderle directamente.",
+        ],
+        
       },
       {
         id: "sin-conexion",
@@ -57,17 +59,15 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
           "Ojo: vincular un grupo NO comparte el botón con nadie. Quienes lo comparten son las personas que capturaron el código de su caja (hasta tres), y eso es aparte de los grupos a los que avisa.",
         ],
       },
-      {
-        id: "instalar",
-        pregunta: "¿Cómo instalo o cambio de lugar el botón?",
-        respuesta: [],
-        pendiente: true,
-      },
+    
       {
         id: "bateria",
-        pregunta: "¿Cuánto dura la batería y cómo se cambia?",
-        respuesta: [],
-        pendiente: true,
+        pregunta: "¿Cuánto dura la batería?",
+        respuesta: [
+          "Diseñado para brindarle máxima tranquilidad, este botón cuenta con una potente batería integrada de 3000 mAh que le garantiza hasta 8 horas continuas de autonomía y respaldo.",
+          
+        ],
+        
       },
     ],
   },
@@ -164,8 +164,10 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
       {
         id: "contrasena",
         pregunta: "Olvidé mi contraseña",
-        respuesta: [],
-        pendiente: true,
+        respuesta: [
+          " Para restablecer su acceso, simplemente seleccione la opción 'Olvidé mi contraseña', ingrese su correo electrónico registrado y, de manera automática, recibirá un enlace seguro para generar una nueva clave.",
+        ],
+        
       },
     ],
   },
