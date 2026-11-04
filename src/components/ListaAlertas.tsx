@@ -1,15 +1,17 @@
 import { useAlertas } from "../hooks/useAlertas";
 import { ETIQUETA_ESTADO, origen } from "../services/formatoAlertas";
+import ProtocoloAlerta from "./ProtocoloAlerta";
 
 interface Props {
   groupId?: string;
   soloAbiertas?: boolean;
   mostrarGrupo?: boolean;
   vacio: string;
+  take?: number;
 }
 
-export default function ListaAlertas({ groupId, soloAbiertas, mostrarGrupo, vacio }: Props) {
-  const { alertas, error, cambiar, cambiando } = useAlertas({ groupId, soloAbiertas });
+export default function ListaAlertas({ groupId, soloAbiertas, mostrarGrupo, vacio, take }: Props) {
+  const { alertas, error, cambiar, cambiando } = useAlertas({ groupId, soloAbiertas, take });
 
   if (alertas === null) {
     return error ? (
@@ -62,6 +64,8 @@ export default function ListaAlertas({ groupId, soloAbiertas, mostrarGrupo, vaci
               {mostrarGrupo ? `${alerta.group.name} · ` : ""}
               {origen(alerta)} · {new Date(alerta.createdAt).toLocaleString("es-MX")}
             </p>
+
+            <ProtocoloAlerta tipo={alerta.tipo} />
 
             {alerta.status !== "RESOLVED" && (
               <div className="mt-2 flex gap-2">

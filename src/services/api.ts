@@ -231,6 +231,12 @@ export interface DetalleGrupo {
   myUserId: string;
   // Solo viene para el ADMIN del grupo.
   inviteCode: string | null;
+  // Null = sin mensajes temporales (se usa el borrado general). Lo edita el
+  // ADMIN desde "Info del grupo".
+  mensajesTemporalesSegundos: number | null;
+  // Ids (del catálogo fijo o de los personalizados de este grupo) que el
+  // ADMIN eligió para que salgan primero en "¿Qué está pasando?".
+  tiposFavoritos: string[];
   // Si puedes disparar alertas. Es propiedad de tu cuenta, no de este grupo:
   // sin esto solo se participa en el chat y el botón SOS ni aparece.
   puedoAlertar: boolean;
@@ -272,6 +278,16 @@ export interface TipoAlerta {
   id: string;
   etiqueta: string;
   emoji: string;
+  // Alarma propia del grupo (la creó su admin), no del catálogo fijo. Solo
+  // estas se pueden borrar desde "Info del grupo".
+  personalizado: boolean;
+  // A qué número marcar para esta emergencia (911 casi siempre; ver
+  // TELEFONO_DEFAULT en el backend).
+  telefono: string;
+  // Protocolo general: qué hacer y qué no hacer (ver protocolosAlerta.js en
+  // el backend). Son recomendaciones generales, no sustituyen la
+  // instrucción de una autoridad en el momento.
+  protocolo: { hacer: string[]; noHacer: string[] };
 }
 
 export interface Alerta {
@@ -288,59 +304,129 @@ export interface Alerta {
   group: { name: string };
   device: { name: string | null; deviceCode: string } | null;
   createdBy: { email: string; displayName: string | null } | null;
+  // Link listo para abrir en Google Maps (coordenadas o dirección del
+  // grupo), o null si el grupo todavía no tiene ninguna de las dos.
+  ubicacion: string | null;
 }
 
 export function obtenerGrupo(id: string): Promise<DetalleGrupo> {
   return llamarBackend(`/api/groups/${encodeURIComponent(id)}`);
 }
 
-export function listarAlertas(filtro: { groupId?: string; soloAbiertas?: boolean } = {}): Promise<Alerta[]> {
+export function listarAlertas(
+  filtro: { groupId?: string; soloAbiertas?: boolean; take?: number } = {}
+): Promise<Alerta[]> {
   const parametros = new URLSearchParams();
   if (filtro.groupId) parametros.set("groupId", filtro.groupId);
   if (filtro.soloAbiertas) parametros.set("soloAbiertas", "true");
+  if (filtro.take) parametros.set("take", String(filtro.take));
   const query = parametros.toString();
   return llamarBackend(`/api/alerts${query ? `?${query}` : ""}`);
 }
 
-// El catálogo vive en el backend (src/tiposAlerta.js). Se pide una vez por
-// sesión: cambia solo cuando se despliega una versión nueva del backend.
-let tiposEnCache: Promise<TipoAlerta[]> | null = null;
-export function listarTiposAlerta(): Promise<TipoAlerta[]> {
-  tiposEnCache ??= llamarBackend("/api/alerts/tipos").catch((e: unknown) => {
-    tiposEnCache = null;
-    throw e;
-  });
-  return tiposEnCache!;
+// El catálogo fijo vive en el backend (src/tiposAlerta.js); cada grupo le
+// suma sus propias alarmas personalizadas y sus favoritos (ver
+// tiposAlertaGrupo.js), así que se guarda en caché por grupo. Cambia solo al
+// desplegar una versión nueva del backend o al tocar los ajustes de alarmas
+// del grupo —lo segundo invalida esta caché a mano, ver invalidarTiposAlerta.
+const tiposEnCache = new Map<string, Promise<TipoAlerta[]>>();
+export function listarTiposAlerta(groupId: string): Promise<TipoAlerta[]> {
+  if (!tiposEnCache.has(groupId)) {
+    tiposEnCache.set(
+      groupId,
+      llamarBackend(`/api/alerts/tipos?groupId=${encodeURIComponent(groupId)}`).catch((e: unknown) => {
+        tiposEnCache.delete(groupId);
+        throw e;
+      })
+    );
+  }
+  return tiposEnCache.get(groupId)!;
+}
+
+export function invalidarTiposAlerta(groupId: string) {
+  tiposEnCache.delete(groupId);
 }
 
 export function generarAlerta(groupId: string, type: string): Promise<Alerta> {
   return llamarBackend("/api/alerts", { method: "POST", body: JSON.stringify({ groupId, type }) });
 }
 
+// El SOS sostenido de más (ver BotonPanico.tsx): una alerta GENERAL en CADA
+// grupo de la cuenta a la vez, para cuando no hay tiempo de elegir uno.
+export function difundirAlerta(): Promise<{ alertas: Alerta[]; gruposAvisados: number }> {
+  return llamarBackend("/api/alerts/difundir", { method: "POST" });
+}
+
 export function cambiarEstadoAlerta(id: string, accion: "atender" | "resolver"): Promise<Alerta> {
   return llamarBackend(`/api/alerts/${encodeURIComponent(id)}/${accion}`, { method: "POST" });
 }
 
-export function actualizarGrupo(
+export async function actualizarGrupo(
   id: string,
-  datos: { name?: string; address?: string; maxMembers?: number }
+  datos: {
+    name?: string;
+    address?: string;
+    maxMembers?: number;
+    mensajesTemporalesSegundos?: number | null;
+    tiposFavoritos?: string[];
+  }
 ): Promise<{ id: string; name: string; address: string; maxMembers: number }> {
-  return llamarBackend(`/api/groups/${encodeURIComponent(id)}`, {
+  const resultado = await llamarBackend(`/api/groups/${encodeURIComponent(id)}`, {
     method: "PATCH",
     body: JSON.stringify(datos),
   });
+  // El orden de favoritos que ve MenuAlertas depende de esto: si cambió, su
+  // caché (por grupo, ver arriba) queda vieja.
+  if (datos.tiposFavoritos !== undefined) invalidarTiposAlerta(id);
+  return resultado;
+}
+
+// Alarma propia del grupo (hasta TOPE_PERSONALIZADOS, ver tiposAlertaGrupo.js
+// en el backend). Solo el ADMIN.
+export async function crearTipoPersonalizado(
+  groupId: string,
+  datos: { etiqueta: string; emoji: string }
+): Promise<TipoAlerta> {
+  const tipo = await llamarBackend(`/api/groups/${encodeURIComponent(groupId)}/tipos-alerta`, {
+    method: "POST",
+    body: JSON.stringify(datos),
+  });
+  invalidarTiposAlerta(groupId);
+  return tipo;
+}
+
+export async function borrarTipoPersonalizado(groupId: string, tipoId: string): Promise<{ ok: true }> {
+  const resultado = await llamarBackend(
+    `/api/groups/${encodeURIComponent(groupId)}/tipos-alerta/${encodeURIComponent(tipoId)}`,
+    { method: "DELETE" }
+  );
+  invalidarTiposAlerta(groupId);
+  return resultado;
 }
 
 export function regenerarCodigoInvitacion(id: string): Promise<{ inviteCode: string }> {
   return llamarBackend(`/api/groups/${encodeURIComponent(id)}/invite-code`, { method: "POST" });
 }
 
+// Vista chica del mensaje al que se responde, como la barra de cita de
+// WhatsApp. `content` llega vacío si ya se borró (ver `eliminado`).
+export interface RespondeA {
+  id: string;
+  content: string;
+  eliminado: boolean;
+  autor: { id: string; nombre: string };
+}
+
 export interface Mensaje {
   id: string;
   groupId: string;
   content: string;
+  // Se borró (el propio autor, o el ADMIN del grupo). `content` ya llega
+  // vacío; la pantalla dibuja "Mensaje eliminado" con solo ver esto.
+  eliminado: boolean;
   createdAt: string;
   autor: { id: string; nombre: string };
+  respondeA: RespondeA | null;
 }
 
 export function listarMensajes(
@@ -351,11 +437,20 @@ export function listarMensajes(
   return llamarBackend(`/api/groups/${encodeURIComponent(groupId)}/messages${query}`);
 }
 
-export function enviarMensaje(groupId: string, content: string): Promise<Mensaje> {
+export function enviarMensaje(groupId: string, content: string, replyToId?: string): Promise<Mensaje> {
   return llamarBackend(`/api/groups/${encodeURIComponent(groupId)}/messages`, {
     method: "POST",
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, ...(replyToId ? { replyToId } : {}) }),
   });
+}
+
+// El autor borra el suyo; el ADMIN del grupo, el de cualquiera. Deja la fila
+// (tombstone) para que no se rompan las respuestas que lo citaban.
+export function borrarMensaje(groupId: string, messageId: string): Promise<{ ok: true }> {
+  return llamarBackend(
+    `/api/groups/${encodeURIComponent(groupId)}/messages/${encodeURIComponent(messageId)}`,
+    { method: "DELETE" }
+  );
 }
 
 // Marca el chat como leído hasta ahora: pone el contador en cero y hace que

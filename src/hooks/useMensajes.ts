@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { enviarMensaje, listarMensajes, type Mensaje } from "../services/api";
+import { borrarMensaje, enviarMensaje, listarMensajes, type Mensaje } from "../services/api";
 import { escucharAlertasEnPrimerPlano } from "../services/notificaciones";
 import { useAlReconectar, useEventoTiempoReal } from "../services/tiempoReal";
 
@@ -15,6 +15,17 @@ function combinar(actuales: Mensaje[], nuevos: Mensaje[]) {
   const porId = new Map(actuales.map((m) => [m.id, m]));
   for (const m of nuevos) porId.set(m.id, m);
   return [...porId.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}
+
+// El borrado solo llega como {groupId, messageId} (el backend no manda el
+// tombstone completo): se aplica a mano sobre lo que ya había, y también a
+// cualquier mensaje que citaba a este como respuesta.
+function marcarEliminado(actuales: Mensaje[], messageId: string): Mensaje[] {
+  return actuales.map((m) => {
+    if (m.id === messageId) return { ...m, content: "", eliminado: true };
+    if (m.respondeA?.id === messageId) return { ...m, respondeA: { ...m.respondeA, content: "", eliminado: true } };
+    return m;
+  });
 }
 
 // Mensajes del chat de un grupo: carga, tiempo real, paginación hacia atrás
@@ -48,6 +59,10 @@ export function useMensajes(groupId: string) {
 
   useEventoTiempoReal("mensaje:nuevo", (m) => {
     if (m.groupId === groupId) setMensajes((actuales) => combinar(actuales ?? [], [m]));
+  });
+
+  useEventoTiempoReal("mensaje:eliminado", (d) => {
+    if (d.groupId === groupId) setMensajes((actuales) => marcarEliminado(actuales ?? [], d.messageId));
   });
 
   // Lo que llegó mientras no había conexión no pasó por el socket.
@@ -85,10 +100,18 @@ export function useMensajes(groupId: string) {
   };
 
   // Lanza si falla, para que quien llama conserve el texto y deje reintentar.
-  const enviar = async (contenido: string) => {
-    const mensaje = await enviarMensaje(groupId, contenido);
+  const enviar = async (contenido: string, replyToId?: string) => {
+    const mensaje = await enviarMensaje(groupId, contenido, replyToId);
     setMensajes((actuales) => combinar(actuales ?? [], [mensaje]));
   };
 
-  return { mensajes, hayMas, cargandoAnteriores, cargarAnteriores, enviar, error };
+  // Lanza si falla (igual que enviar): quien llama decide cómo avisarlo. El
+  // local solo se marca eliminado tras la confirmación del servidor; el
+  // socket manda lo mismo a los demás miembros.
+  const borrar = async (messageId: string) => {
+    await borrarMensaje(groupId, messageId);
+    setMensajes((actuales) => marcarEliminado(actuales ?? [], messageId));
+  };
+
+  return { mensajes, hayMas, cargandoAnteriores, cargarAnteriores, enviar, borrar, error };
 }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import BotonPanico, { type EstadoSOS } from "./BotonPanico";
-import { generarAlerta } from "../services/api";
+import { difundirAlerta, generarAlerta } from "../services/api";
 import { usePerfil } from "../context/PerfilContext";
 
 // La barra de 5 pestañas del diseño. El centro no es una pestaña más: es el
@@ -127,6 +127,36 @@ export default function BarraInferior() {
     programarLimpieza();
   };
 
+  // Segunda fase del gesto (ver BotonPanico.tsx): solo hace algo si de
+  // verdad no se sabía a cuál grupo avisar (el picker "¿A qué grupo le
+  // aviso?" seguía abierto). Si la primera fase ya disparó a uno solo, no
+  // hay nada que escalar.
+  const enviarATodos = async () => {
+    if (!eligiendo) return;
+    setEligiendo(false);
+    setAviso(null);
+    setEstado("enviando");
+    try {
+      const resumen = await difundirAlerta();
+      navigator.vibrate?.([150, 80, 150, 80, 150]);
+      setEstado("enviada");
+      setAviso({
+        tono: "ok",
+        texto:
+          resumen.gruposAvisados === 1
+            ? "Alerta enviada."
+            : `Alerta enviada a tus ${resumen.gruposAvisados} grupos.`,
+      });
+    } catch (e) {
+      setEstado("listo");
+      setAviso({
+        tono: "error",
+        texto: e instanceof Error ? e.message : "No se pudo enviar la alerta",
+      });
+    }
+    programarLimpieza();
+  };
+
   const manejarSOS = () => {
     // Dentro de un grupo el destinatario es obvio: ese.
     const enUnGrupo = pathname.startsWith("/grupos/") ? pathname.split("/")[2] : null;
@@ -180,6 +210,9 @@ export default function BarraInferior() {
               <>
                 <p className="text-xs font-bold uppercase" style={{ color: "var(--texto)" }}>
                   ¿A qué grupo le aviso?
+                </p>
+                <p className="mt-0.5 text-[11px]" style={{ color: "var(--texto-tenue)" }}>
+                  O sigue sosteniendo el botón para avisarles a todos a la vez.
                 </p>
                 <ul className="mt-2 space-y-1.5">
                   {grupos.map((g) => (
@@ -236,6 +269,7 @@ export default function BarraInferior() {
       <BotonPanico
         estado={estado}
         alMantener={manejarSOS}
+        alMantenerTodo={enviarATodos}
         bloqueado={bloqueado}
         alToqueBloqueado={explicarBloqueo}
       />

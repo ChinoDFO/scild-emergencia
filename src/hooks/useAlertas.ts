@@ -10,19 +10,29 @@ const REFRESCO_MS = 60_000;
 // Alertas de un grupo (o de todos los del usuario) siempre al día: carga
 // inicial, tiempo real, reconexión, al volver a la pestaña, al llegar un push
 // en primer plano y un refresco lento de respaldo.
-export function useAlertas({ groupId, soloAbiertas }: { groupId?: string; soloAbiertas?: boolean }) {
+export function useAlertas({
+  groupId,
+  soloAbiertas,
+  take,
+}: {
+  groupId?: string;
+  soloAbiertas?: boolean;
+  // Tope de cuántas trae. Sin esto, el de siempre (ver TOPE_ALERTAS en el
+  // backend); el perfil pide menos para no enseñar un historial larguísimo.
+  take?: number;
+}) {
   const [alertas, setAlertas] = useState<Alerta[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cambiando, setCambiando] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     try {
-      setAlertas(await listarAlertas({ groupId, soloAbiertas }));
+      setAlertas(await listarAlertas({ groupId, soloAbiertas, take }));
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudieron cargar las alertas");
     }
-  }, [groupId, soloAbiertas]);
+  }, [groupId, soloAbiertas, take]);
 
   useEffect(() => {
     cargar();

@@ -49,6 +49,16 @@ self.addEventListener("notificationclick", (evento) => {
   // Lo que el backend mandó en "data": de qué grupo y qué alerta es.
   const datos: Record<string, string> = mensaje.data ?? {};
 
+  // "Ver ubicación" no entra a la app: abre el mapa directo en otra
+  // pestaña, igual que el botón de InfoGrupo.tsx. Si no hay a dónde
+  // mandar (grupo sin dirección ni coordenadas), el backend ni manda este
+  // action (ver mensajeDeAlerta en push.js), así que datos.mapUrl siempre
+  // viene lleno cuando se llega aquí.
+  if (evento.action === "ver-ubicacion") {
+    if (datos.mapUrl) evento.waitUntil(self.clients.openWindow(datos.mapUrl));
+    return;
+  }
+
   // A dónde llevar a la persona. Con el grupo se abre su pantalla directo;
   // el botón "Ya voy" agrega ?atender=<alerta> y de eso se encarga la app al
   // cargar (el service worker no puede llamar a la API: no tiene sesión).

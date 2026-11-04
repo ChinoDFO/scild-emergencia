@@ -144,13 +144,12 @@ body {
 }
 
 /* Fondo de la conversación: el mismo fondo de las demás pantallas con un
-   patrón muy tenue de íconos propios (escudo, campana, casa, corazón). Da la
-   sensación de app de mensajería sin copiar el fondo de ninguna, y el trazo
-   gris funciona igual en claro y en oscuro (antes era rojo y solo cuadraba
-   con el chat viejo). */
+   patrón muy tenue de íconos propios (pin de ubicación, llave, rayo,
+   estrella de vigilancia). Da la sensación de app de mensajería sin copiar
+   el fondo de ninguna, y el trazo gris funciona igual en claro y en oscuro. */
 .fondo-chat {
   background-color: var(--fondo);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%235b6170' stroke-opacity='0.1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M30 14l14 5v10c0 9-6 15-14 18-8-3-14-9-14-18V19z'/%3E%3Cpath d='M112 22a9 9 0 0 1 18 0c0 10 5 13 5 13h-28s5-3 5-13M118 40a3 3 0 0 0 6 0'/%3E%3Cpath d='M22 112l14-12 14 12v16H22zM32 128v-9h8v9'/%3E%3Cpath d='M116 128s-14-8-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3c0 10-14 18-14 18z'/%3E%3Ccircle cx='80' cy='80' r='3'/%3E%3Cpath d='M70 40h8M74 36v8M86 124h8M90 120v8'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%235b6170' stroke-opacity='0.1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='30' cy='20' r='11'/%3E%3Cpath d='M20 28L30 44L40 28'/%3E%3Ccircle cx='30' cy='20' r='3'/%3E%3Ccircle cx='114' cy='24' r='8'/%3E%3Cpath d='M122 24L138 24M132 24L132 30M138 24L138 29'/%3E%3Cpath d='M23 100L8 118L22 118L20 130L35 112L22 112Z'/%3E%3Cpath d='M124 108L128 121L140 124L128 128L124 140L120 128L108 124L120 121Z'/%3E%3Ccircle cx='80' cy='80' r='3'/%3E%3Cpath d='M70 40L78 40M74 36L74 44M86 124L94 124M90 120L90 128'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* Sin barra de scroll visible, pero sigue siendo desplazable. La del chat

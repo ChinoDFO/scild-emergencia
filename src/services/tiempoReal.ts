@@ -12,6 +12,7 @@ import type { Mensaje } from "./api";
 
 export interface EventosTiempoReal {
   "mensaje:nuevo": Mensaje;
+  "mensaje:eliminado": { groupId: string; messageId: string };
   "alertas:cambio": {
     groupId: string;
     alertId: string;

@@ -3,7 +3,19 @@ import { generarAlerta, listarTiposAlerta, type TipoAlerta } from "../services/a
 
 // Si el catálogo no carga (sin red, backend dormido) igual se debe poder
 // pedir ayuda: queda al menos la alerta general.
-const RESPALDO: TipoAlerta[] = [{ id: "GENERAL", etiqueta: "Emergencia", emoji: "🚨" }];
+const RESPALDO: TipoAlerta[] = [
+  {
+    id: "GENERAL",
+    etiqueta: "Emergencia",
+    emoji: "🚨",
+    personalizado: false,
+    telefono: "911",
+    protocolo: {
+      hacer: ["Mantén la calma.", "Aléjate del peligro si puedes.", "Marca al 911."],
+      noHacer: ["No te quedes a investigar si hay riesgo para ti."],
+    },
+  },
+];
 
 interface Props {
   groupId: string;
@@ -24,10 +36,10 @@ export default function MenuAlertas({ groupId, groupName, alCerrar, alEnviar }: 
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    listarTiposAlerta()
+    listarTiposAlerta(groupId)
       .then(setTipos)
       .catch(() => setTipos(RESPALDO));
-  }, []);
+  }, [groupId]);
 
   useEffect(() => {
     const conEscape = (e: KeyboardEvent) => e.key === "Escape" && alCerrar();
@@ -71,7 +83,10 @@ export default function MenuAlertas({ groupId, groupName, alCerrar, alEnviar }: 
         </button>
       </div>
 
-      <ul className="mt-3 grid grid-cols-3 gap-x-2 gap-y-3">
+      {/* Los primeros 6 son los favoritos del grupo (los eligió su admin) y
+          se ven sin tocar nada; el resto del catálogo está más abajo,
+          scrolleando — igual que lo pidió el admin. */}
+      <ul className="mt-3 grid max-h-[232px] grid-cols-3 gap-x-2 gap-y-3 overflow-y-auto overscroll-contain pb-1 pr-1">
         {tipos.map((tipo) => (
           <li key={tipo.id}>
             <button

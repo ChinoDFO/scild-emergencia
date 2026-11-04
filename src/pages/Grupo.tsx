@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Conversacion from "../components/Conversacion";
 import InfoGrupo from "../components/InfoGrupo";
+import ProtocoloAlerta from "../components/ProtocoloAlerta";
 import { usePerfil } from "../context/PerfilContext";
 import { useAlertas } from "../hooks/useAlertas";
-import { obtenerGrupo, type DetalleGrupo } from "../services/api";
+import { invalidarTiposAlerta, obtenerGrupo, type DetalleGrupo } from "../services/api";
 import { origen } from "../services/formatoAlertas";
 import {
   avisarGrupoAbierto,
@@ -69,6 +70,7 @@ export default function Grupo() {
   const nombre = grupo?.name ?? grupoEnLista?.name;
   const miId = grupo?.myUserId ?? perfil?.id;
   const puedoAlertar = grupo?.puedoAlertar ?? perfil?.accesoCompleto ?? false;
+  const esAdmin = (grupo?.role ?? grupoEnLista?.role) === "ADMIN";
 
   // Por si se unió al grupo después de abrir la conexión en tiempo real.
   useEffect(() => entrarASalaDeGrupo(id), [id]);
@@ -95,9 +97,15 @@ export default function Grupo() {
     if (groupId === id) navigate("/", { replace: true });
   });
 
-  // Otro miembro editó el grupo o alguien nuevo se unió.
+  // Otro miembro editó el grupo o alguien nuevo se unió. Se invalida la
+  // caché de tipos de alerta también aquí (no solo tras editarlos uno
+  // mismo): es la única forma de que a LOS DEMÁS miembros se les refresque
+  // si el admin cambió favoritos o alarmas personalizadas.
   useEventoTiempoReal("grupo:actualizado", ({ groupId }) => {
-    if (groupId === id) cargar();
+    if (groupId === id) {
+      invalidarTiposAlerta(id);
+      cargar();
+    }
   });
 
   useEffect(() => {
@@ -237,16 +245,45 @@ export default function Grupo() {
                       <p className="truncate text-[11px]" style={{ color: "var(--texto-tenue)" }}>
                         {origen(a)} · {hora(a.createdAt)}
                       </p>
+                      <p className="truncate text-[11px] font-bold" style={{ color: "var(--peligro)" }}>
+                        Marca al {a.tipo.telefono}
+                      </p>
                     </div>
-                    <span
-                      className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black uppercase"
-                      style={{
-                        background: activa ? "var(--peligro)" : "var(--alerta)",
-                        color: activa ? "var(--fondo)" : "var(--alerta-texto)",
-                      }}
-                    >
-                      {activa ? "Activa" : "Atendiendo"}
-                    </span>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {a.ubicacion && (
+                        <a
+                          href={a.ubicacion}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label="Ver ubicación en el mapa"
+                          className="flex size-6 items-center justify-center rounded-full border-2"
+                          style={{ borderColor: "var(--borde)", color: "var(--texto)" }}
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="size-3.5"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden
+                          >
+                            <path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z" />
+                            <circle cx="12" cy="10" r="2.5" />
+                          </svg>
+                        </a>
+                      )}
+                      <span
+                        className="rounded-full px-2 py-0.5 text-[10px] font-black uppercase"
+                        style={{
+                          background: activa ? "var(--peligro)" : "var(--alerta)",
+                          color: activa ? "var(--fondo)" : "var(--alerta-texto)",
+                        }}
+                      >
+                        {activa ? "Activa" : "Atendiendo"}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="mt-2.5 flex gap-2">
@@ -269,6 +306,8 @@ export default function Grupo() {
                       Resuelta
                     </button>
                   </div>
+
+                  <ProtocoloAlerta tipo={a.tipo} />
                 </li>
               );
             })}
@@ -281,6 +320,7 @@ export default function Grupo() {
           groupName={nombre}
           myUserId={miId}
           puedoAlertar={puedoAlertar}
+          esAdmin={esAdmin}
           alertas={alertas ?? []}
           alEnviarAlerta={recargarAlertas}
         />

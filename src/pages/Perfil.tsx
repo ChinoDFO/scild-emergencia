@@ -132,7 +132,7 @@ export default function Perfil() {
 
       <h2 className="titulo-pantalla mb-2 text-center text-lg">Historial de alertas</h2>
       <div className="punteado rounded-3xl p-3" style={{ background: "var(--superficie)" }}>
-        <ListaAlertas mostrarGrupo vacio="Todavía no hay alertas en tus grupos." />
+        <ListaAlertas mostrarGrupo take={10} vacio="Todavía no hay alertas en tus grupos." />
       </div>
     </Pantalla>
   );

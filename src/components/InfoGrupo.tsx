@@ -1,10 +1,13 @@
-import { useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   actualizarGrupo,
+  borrarTipoPersonalizado,
   cambiarRolMiembro,
+  crearTipoPersonalizado,
   desvincularBoton,
   eliminarGrupo,
+  listarTiposAlerta,
   obtenerAcceso,
   regenerarCodigoInvitacion,
   salirDelGrupo,
@@ -12,8 +15,17 @@ import {
   type Acceso,
   type DetalleGrupo,
   type EstadoBoton,
+  type TipoAlerta,
 } from "../services/api";
 import { describirGrupos, GRUPOS_POR_BOTON } from "../services/gruposDelBoton";
+
+// Mismos topes que el backend (ver TOPE_FAVORITOS/TOPE_PERSONALIZADOS en
+// src/tiposAlertaGrupo.js): no hay forma de compartirlos entre los dos
+// repos, así que si cambian allá hay que cambiarlos aquí también.
+const TOPE_FAVORITOS = 6;
+const TOPE_PERSONALIZADOS = 3;
+const SEGUNDOS_POR_DIA = 86400;
+const MIN_DIAS_TEMPORALES = 3;
 
 const ESTADO_BOTON: Record<EstadoBoton, { texto: string; clase: string }> = {
   ONLINE: { texto: "En línea", clase: "bg-emerald-100 text-emerald-800" },
@@ -57,6 +69,127 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
   const [botonElegido, setBotonElegido] = useState("");
   const [errorBoton, setErrorBoton] = useState<string | null>(null);
   const [desvinculando, setDesvinculando] = useState<string | null>(null);
+
+  // --- Mensajes temporales ---------------------------------------------
+  const [editandoTemporales, setEditandoTemporales] = useState(false);
+  const [diasTemporales, setDiasTemporales] = useState(String(MIN_DIAS_TEMPORALES));
+  const [guardandoTemporales, setGuardandoTemporales] = useState(false);
+  const [errorTemporales, setErrorTemporales] = useState<string | null>(null);
+
+  // --- Alarmas: favoritos y personalizadas -------------------------------
+  const [tipos, setTipos] = useState<TipoAlerta[] | null>(null);
+  const [errorTipos, setErrorTipos] = useState<string | null>(null);
+  const [guardandoFavoritos, setGuardandoFavoritos] = useState(false);
+  const [nuevaEtiqueta, setNuevaEtiqueta] = useState("");
+  const [nuevoEmoji, setNuevoEmoji] = useState("");
+  const [creandoTipo, setCreandoTipo] = useState(false);
+  const [borrandoTipo, setBorrandoTipo] = useState<string | null>(null);
+
+  const recargarTipos = useCallback(() => {
+    listarTiposAlerta(grupo.id)
+      .then(setTipos)
+      .catch((err) =>
+        setErrorTipos(err instanceof Error ? err.message : "No se pudieron cargar las alarmas")
+      );
+  }, [grupo.id]);
+
+  useEffect(() => {
+    if (esAdmin) recargarTipos();
+  }, [esAdmin, recargarTipos]);
+
+  const activarTemporales = () => {
+    setDiasTemporales(String(MIN_DIAS_TEMPORALES));
+    setErrorTemporales(null);
+    setEditandoTemporales(true);
+  };
+
+  const guardarTemporales = async (e: FormEvent) => {
+    e.preventDefault();
+    const dias = Number(diasTemporales);
+    if (!Number.isFinite(dias) || dias < MIN_DIAS_TEMPORALES) {
+      setErrorTemporales(`Mínimo ${MIN_DIAS_TEMPORALES} días`);
+      return;
+    }
+    setGuardandoTemporales(true);
+    setErrorTemporales(null);
+    try {
+      await actualizarGrupo(grupo.id, { mensajesTemporalesSegundos: Math.round(dias * SEGUNDOS_POR_DIA) });
+      setEditandoTemporales(false);
+      alCambiar();
+    } catch (err) {
+      setErrorTemporales(err instanceof Error ? err.message : "No se pudo guardar");
+    } finally {
+      setGuardandoTemporales(false);
+    }
+  };
+
+  const desactivarTemporales = async () => {
+    setGuardandoTemporales(true);
+    setErrorTemporales(null);
+    try {
+      await actualizarGrupo(grupo.id, { mensajesTemporalesSegundos: null });
+      alCambiar();
+    } catch (err) {
+      setErrorTemporales(err instanceof Error ? err.message : "No se pudo desactivar");
+    } finally {
+      setGuardandoTemporales(false);
+    }
+  };
+
+  const alternarFavorito = async (id: string) => {
+    const actuales = grupo.tiposFavoritos;
+    const yaEsta = actuales.includes(id);
+    if (!yaEsta && actuales.length >= TOPE_FAVORITOS) {
+      setErrorTipos(`Ya elegiste ${TOPE_FAVORITOS} favoritos, el máximo`);
+      return;
+    }
+    setGuardandoFavoritos(true);
+    setErrorTipos(null);
+    try {
+      await actualizarGrupo(grupo.id, {
+        tiposFavoritos: yaEsta ? actuales.filter((f) => f !== id) : [...actuales, id],
+      });
+      alCambiar();
+    } catch (err) {
+      setErrorTipos(err instanceof Error ? err.message : "No se pudo guardar");
+    } finally {
+      setGuardandoFavoritos(false);
+    }
+  };
+
+  const crearTipo = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!nuevaEtiqueta.trim() || !nuevoEmoji.trim()) return;
+    setCreandoTipo(true);
+    setErrorTipos(null);
+    try {
+      await crearTipoPersonalizado(grupo.id, { etiqueta: nuevaEtiqueta.trim(), emoji: nuevoEmoji.trim() });
+      setNuevaEtiqueta("");
+      setNuevoEmoji("");
+      recargarTipos();
+    } catch (err) {
+      setErrorTipos(err instanceof Error ? err.message : "No se pudo crear la alarma");
+    } finally {
+      setCreandoTipo(false);
+    }
+  };
+
+  const borrarTipo = async (tipo: TipoAlerta) => {
+    const aviso = `¿Eliminar la alarma "${tipo.etiqueta}"? Las alertas que ya se enviaron con ella se quedan; ya no se podrá volver a elegir.`;
+    if (!confirm(aviso)) return;
+    setBorrandoTipo(tipo.id);
+    setErrorTipos(null);
+    try {
+      await borrarTipoPersonalizado(grupo.id, tipo.id);
+      recargarTipos();
+      // Pudo haber salido de tiposFavoritos en el backend.
+      alCambiar();
+    } catch (err) {
+      setErrorTipos(err instanceof Error ? err.message : "No se pudo eliminar");
+    } finally {
+      setBorrandoTipo(null);
+    }
+  };
 
   const abrirEdicion = () => {
     setNombre(grupo.name);
@@ -500,6 +633,201 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
           </>
         )}
       </section>
+
+      <section>
+        <h2 className="text-sm font-bold uppercase" style={{ color: "var(--texto)" }}>
+          Mensajes temporales
+        </h2>
+        <p className="mt-0.5 text-xs" style={{ color: "var(--texto-tenue)" }}>
+          Si se activan, los mensajes del chat de este grupo se borran solos después de cierto
+          tiempo (mínimo {MIN_DIAS_TEMPORALES} días). Es opcional.
+        </p>
+
+        {!esAdmin ? (
+          <p className="mt-2 text-sm" style={{ color: "var(--texto)" }}>
+            {grupo.mensajesTemporalesSegundos
+              ? `Los mensajes de este grupo se borran a los ${Math.round(grupo.mensajesTemporalesSegundos / SEGUNDOS_POR_DIA)} días.`
+              : "Este grupo no tiene mensajes temporales."}
+          </p>
+        ) : editandoTemporales ? (
+          <form
+            onSubmit={guardarTemporales}
+            className="mt-2 flex items-end gap-2 rounded-lg p-3"
+            style={{ background: "var(--superficie-suave)" }}
+          >
+            <label className="flex-1 text-sm" style={{ color: "var(--texto)" }}>
+              Días antes de borrarse
+              <input
+                type="number"
+                min={MIN_DIAS_TEMPORALES}
+                required
+                value={diasTemporales}
+                onChange={(e) => setDiasTemporales(e.target.value)}
+                className={CLASE_INPUT}
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={guardandoTemporales}
+              className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-60"
+              style={{ background: "var(--texto)", color: "var(--fondo)" }}
+            >
+              {guardandoTemporales ? "…" : "Guardar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditandoTemporales(false)}
+              disabled={guardandoTemporales}
+              className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium"
+              style={{ background: "var(--fondo)", color: "var(--texto)", boxShadow: "inset 0 0 0 1px var(--borde-tenue)" }}
+            >
+              Cancelar
+            </button>
+          </form>
+        ) : (
+          <div
+            className="mt-2 flex items-center justify-between gap-2 rounded-lg p-3"
+            style={{ background: "var(--superficie-suave)" }}
+          >
+            <p className="text-sm" style={{ color: "var(--texto)" }}>
+              {grupo.mensajesTemporalesSegundos
+                ? `Se borran a los ${Math.round(grupo.mensajesTemporalesSegundos / SEGUNDOS_POR_DIA)} días`
+                : "Desactivados"}
+            </p>
+            <div className="flex shrink-0 gap-3 text-xs font-medium">
+              <button onClick={activarTemporales} className="text-red-600 hover:underline">
+                {grupo.mensajesTemporalesSegundos ? "Cambiar" : "Activar"}
+              </button>
+              {grupo.mensajesTemporalesSegundos != null && (
+                <button
+                  onClick={desactivarTemporales}
+                  disabled={guardandoTemporales}
+                  className="text-[var(--texto-tenue)] hover:text-red-600 disabled:opacity-60"
+                >
+                  Desactivar
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+        {errorTemporales && (
+          <p
+            className="mt-1 rounded-lg px-3 py-2 text-xs"
+            style={{ background: "var(--superficie-suave)", color: "var(--peligro)" }}
+          >
+            {errorTemporales}
+          </p>
+        )}
+      </section>
+
+      {esAdmin && (
+        <section>
+          <h2 className="text-sm font-bold uppercase" style={{ color: "var(--texto)" }}>
+            Alarmas del grupo
+          </h2>
+          <p className="mt-0.5 text-xs" style={{ color: "var(--texto-tenue)" }}>
+            Elige hasta {TOPE_FAVORITOS} favoritas para que salgan primero en "¿Qué está pasando?";
+            el resto se ve scrolleando ahí mismo. También puedes crear hasta {TOPE_PERSONALIZADOS}{" "}
+            alarmas propias de este grupo.
+          </p>
+
+          {tipos === null ? (
+            <p className="mt-2 text-sm" style={{ color: "var(--texto-tenue)" }}>
+              {errorTipos ?? "Cargando…"}
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-1">
+              {tipos.map((tipo) => {
+                const esFavorito = grupo.tiposFavoritos.includes(tipo.id);
+                return (
+                  <li
+                    key={tipo.id}
+                    className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm"
+                    style={{ background: "var(--superficie-suave)" }}
+                  >
+                    <label className="flex min-w-0 flex-1 items-center gap-2">
+                      <input
+                        type="checkbox"
+                        className="size-4"
+                        checked={esFavorito}
+                        disabled={guardandoFavoritos}
+                        onChange={() => alternarFavorito(tipo.id)}
+                      />
+                      <span aria-hidden>{tipo.emoji}</span>
+                      <span className="min-w-0 truncate" style={{ color: "var(--texto)" }}>
+                        {tipo.etiqueta}
+                      </span>
+                      {tipo.personalizado && (
+                        <span
+                          className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+                          style={{ background: "var(--superficie)", color: "var(--texto-tenue)" }}
+                        >
+                          propia
+                        </span>
+                      )}
+                    </label>
+                    {tipo.personalizado && (
+                      <button
+                        onClick={() => borrarTipo(tipo)}
+                        disabled={borrandoTipo === tipo.id}
+                        className="shrink-0 text-xs font-medium text-[var(--texto-tenue)] hover:text-red-600 disabled:opacity-60"
+                      >
+                        {borrandoTipo === tipo.id ? "…" : "Eliminar"}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          {errorTipos && (
+            <p
+              className="mt-1 rounded-lg px-3 py-2 text-xs"
+              style={{ background: "var(--superficie-suave)", color: "var(--peligro)" }}
+            >
+              {errorTipos}
+            </p>
+          )}
+
+          {(tipos?.filter((t) => t.personalizado).length ?? 0) < TOPE_PERSONALIZADOS && (
+            <form
+              onSubmit={crearTipo}
+              className="mt-2 flex items-end gap-2 rounded-lg p-3"
+              style={{ background: "var(--superficie-suave)" }}
+            >
+              <label className="w-16 text-sm" style={{ color: "var(--texto)" }}>
+                Emoji
+                <input
+                  maxLength={8}
+                  placeholder="🐍"
+                  value={nuevoEmoji}
+                  onChange={(e) => setNuevoEmoji(e.target.value)}
+                  className={CLASE_INPUT}
+                />
+              </label>
+              <label className="flex-1 text-sm" style={{ color: "var(--texto)" }}>
+                Nombre de la alarma
+                <input
+                  maxLength={40}
+                  placeholder="Serpiente en el jardín"
+                  value={nuevaEtiqueta}
+                  onChange={(e) => setNuevaEtiqueta(e.target.value)}
+                  className={CLASE_INPUT}
+                />
+              </label>
+              <button
+                type="submit"
+                disabled={creandoTipo || !nuevaEtiqueta.trim() || !nuevoEmoji.trim()}
+                className="shrink-0 rounded-lg px-3 py-2 text-sm font-medium disabled:opacity-60"
+                style={{ background: "var(--texto)", color: "var(--fondo)" }}
+              >
+                {creandoTipo ? "…" : "Crear"}
+              </button>
+            </form>
+          )}
+        </section>
+      )}
 
       <section>
         <div className="flex items-baseline justify-between gap-2">

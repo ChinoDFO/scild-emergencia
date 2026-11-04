@@ -5,6 +5,7 @@ import { marcarChatLeido } from "../services/api";
 import type { Alerta, Mensaje } from "../services/api";
 import { ETIQUETA_ESTADO, origen } from "../services/formatoAlertas";
 import MenuAlertas from "./MenuAlertas";
+import ProtocoloAlerta from "./ProtocoloAlerta";
 
 type Elemento =
   | { clase: "mensaje"; clave: string; m: Mensaje; conNombre: boolean }
@@ -88,6 +89,8 @@ interface Props {
   myUserId: string;
   // Sin esto no aparece el botón "!" de alertas: el chat funciona igual.
   puedoAlertar: boolean;
+  // El ADMIN puede borrar el mensaje de cualquiera; sin esto, solo el suyo.
+  esAdmin: boolean;
   alertas: Alerta[];
   alEnviarAlerta: () => void;
 }
@@ -97,15 +100,20 @@ export default function Conversacion({
   groupName,
   myUserId,
   puedoAlertar,
+  esAdmin,
   alertas,
   alEnviarAlerta,
 }: Props) {
-  const { mensajes, hayMas, cargandoAnteriores, cargarAnteriores, enviar, error } = useMensajes(groupId);
+  const { mensajes, hayMas, cargandoAnteriores, cargarAnteriores, enviar, borrar, error } = useMensajes(groupId);
   const { marcarGrupoLeido } = usePerfil();
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
   const [menuAbierto, setMenuAbierto] = useState(false);
+  // A qué mensaje se está respondiendo (como en WhatsApp): se dibuja arriba
+  // de la caja y viaja con el siguiente mensaje que se mande.
+  const [respondiendoA, setRespondiendoA] = useState<Mensaje | null>(null);
+  const [errorBorrar, setErrorBorrar] = useState<string | null>(null);
 
   const lista = useRef<HTMLDivElement>(null);
   const caja = useRef<HTMLTextAreaElement>(null);
@@ -180,16 +188,34 @@ export default function Conversacion({
     setEnviando(true);
     setErrorEnvio(null);
     try {
-      await enviar(contenido);
+      await enviar(contenido, respondiendoA?.id);
       pegadoAbajo.current = true;
       setTexto("");
+      setRespondiendoA(null);
       requestAnimationFrame(ajustarAltura);
     } catch (err) {
-      // El texto se queda en la caja para reintentar sin volver a escribirlo.
+      // El texto (y la respuesta elegida) se quedan para reintentar sin
+      // volver a escribirlo.
       setErrorEnvio(err instanceof Error ? err.message : "No se pudo enviar");
     } finally {
       setEnviando(false);
       caja.current?.focus();
+    }
+  };
+
+  const responder = (m: Mensaje) => {
+    setRespondiendoA(m);
+    caja.current?.focus();
+  };
+
+  const pedirBorrar = async (m: Mensaje) => {
+    if (!confirm("¿Eliminar este mensaje? No se puede deshacer.")) return;
+    setErrorBorrar(null);
+    try {
+      await borrar(m.id);
+      if (respondiendoA?.id === m.id) setRespondiendoA(null);
+    } catch (err) {
+      setErrorBorrar(err instanceof Error ? err.message : "No se pudo eliminar el mensaje");
     }
   };
 
@@ -277,16 +303,48 @@ export default function Conversacion({
                           <span className="text-sm font-bold uppercase" style={{ color: "var(--texto)" }}>
                             <span aria-hidden>{a.tipo.emoji}</span> {a.tipo.etiqueta}
                           </span>
-                          <span
-                            className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black uppercase"
-                            style={{ background: estado.fondo, color: estado.color }}
-                          >
-                            {estado.texto}
-                          </span>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            {a.ubicacion && (
+                              <a
+                                href={a.ubicacion}
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="Ver ubicación en el mapa"
+                                className="flex size-6 items-center justify-center rounded-full border-2"
+                                style={{ borderColor: "var(--borde)", color: "var(--texto)" }}
+                              >
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  className="size-3.5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2.2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden
+                                >
+                                  <path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z" />
+                                  <circle cx="12" cy="10" r="2.5" />
+                                </svg>
+                              </a>
+                            )}
+                            <span
+                              className="rounded-full px-2 py-0.5 text-[10px] font-black uppercase"
+                              style={{ background: estado.fondo, color: estado.color }}
+                            >
+                              {estado.texto}
+                            </span>
+                          </div>
                         </div>
                         <p className="mt-0.5 text-[11px]" style={{ color: "var(--texto-tenue)" }}>
                           {origen(a)} · {hora(a.createdAt)}
                         </p>
+                        {a.status !== "RESOLVED" && (
+                          <p className="mt-0.5 text-[11px] font-bold" style={{ color: "var(--peligro)" }}>
+                            Marca al {a.tipo.telefono}
+                          </p>
+                        )}
+                        <ProtocoloAlerta tipo={a.tipo} />
                       </div>
                     </li>
                   );
@@ -294,10 +352,11 @@ export default function Conversacion({
 
                 const { m, conNombre } = el;
                 const mio = m.autor.id === myUserId;
+                const puedoBorrar = !m.eliminado && (mio || esAdmin);
                 return (
                   <li
                     key={el.clave}
-                    className={`flex ${mio ? "justify-end" : "justify-start"} ${conNombre ? "pt-1.5" : ""}`}
+                    className={`flex flex-col ${mio ? "items-end" : "items-start"} ${conNombre ? "pt-1.5" : ""}`}
                   >
                     <div
                       className={`relative max-w-[82%] rounded-2xl px-3 pb-1.5 pt-1.5 text-[15px] ${
@@ -310,8 +369,29 @@ export default function Conversacion({
                           {m.autor.nombre}
                         </p>
                       )}
-                      <p className="whitespace-pre-wrap break-words">
-                        {m.content}
+
+                      {/* Cita del mensaje al que responde, como la barra de
+                          WhatsApp: autor + su texto (o "Mensaje eliminado"
+                          si ya no existe). */}
+                      {m.respondeA && (
+                        <div
+                          className="mb-1 max-w-full rounded-lg border-l-4 px-2 py-1 text-[12px]"
+                          style={{ background: "var(--superficie-suave)", borderColor: colorDe(m.respondeA.autor.id) }}
+                        >
+                          <p className="truncate font-bold" style={{ color: colorDe(m.respondeA.autor.id) }}>
+                            {m.respondeA.autor.id === myUserId ? "Tú" : m.respondeA.autor.nombre}
+                          </p>
+                          <p className="truncate" style={{ color: "var(--texto-tenue)" }}>
+                            {m.respondeA.eliminado ? "Mensaje eliminado" : m.respondeA.content}
+                          </p>
+                        </div>
+                      )}
+
+                      <p
+                        className="whitespace-pre-wrap break-words"
+                        style={m.eliminado ? { color: "var(--texto-tenue)", fontStyle: "italic" } : undefined}
+                      >
+                        {m.eliminado ? "Mensaje eliminado" : m.content}
                         {/* Reserva el espacio de la hora para que no se encime con el texto. */}
                         <span className="invisible ml-2 text-[11px]">{hora(m.createdAt)}</span>
                       </p>
@@ -322,6 +402,59 @@ export default function Conversacion({
                         {hora(m.createdAt)}
                       </span>
                     </div>
+
+                    {/* Responder/Eliminar: chicos y discretos a propósito,
+                        no hace falta un gesto de deslizar para llegar a
+                        ellos. Un mensaje ya eliminado no ofrece ninguno. */}
+                    {!m.eliminado && (
+                      <div className="flex gap-3 px-1.5 pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => responder(m)}
+                          aria-label="Responder este mensaje"
+                          className="opacity-60 transition active:scale-90 active:opacity-100"
+                          style={{ color: "var(--texto-tenue)" }}
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="size-3.5"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden
+                          >
+                            <path d="M9 17 4 12l5-5" />
+                            <path d="M4 12h11a5 5 0 0 1 5 5v2" />
+                          </svg>
+                        </button>
+                        {puedoBorrar && (
+                          <button
+                            type="button"
+                            onClick={() => pedirBorrar(m)}
+                            aria-label="Eliminar este mensaje"
+                            className="opacity-60 transition active:scale-90 active:opacity-100"
+                            style={{ color: "var(--texto-tenue)" }}
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              className="size-3.5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden
+                            >
+                              <path d="M5 7h14" />
+                              <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                              <path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </li>
                 );
               })}
@@ -350,6 +483,39 @@ export default function Conversacion({
           <p className="px-3 pt-2 text-sm font-bold" style={{ color: "var(--peligro)" }}>
             No se pudo enviar: {errorEnvio}
           </p>
+        )}
+
+        {errorBorrar && (
+          <p className="px-3 pt-2 text-sm font-bold" style={{ color: "var(--peligro)" }}>
+            {errorBorrar}
+          </p>
+        )}
+
+        {/* Respondiendo a un mensaje: la cita viaja con lo que se escriba a
+            continuación, y se puede cancelar sin perder el texto ya tecleado. */}
+        {respondiendoA && (
+          <div
+            className="mx-2 mt-2 flex items-start justify-between gap-2 rounded-xl border-l-4 px-3 py-2 text-xs"
+            style={{ background: "var(--superficie-suave)", borderColor: colorDe(respondiendoA.autor.id) }}
+          >
+            <div className="min-w-0">
+              <p className="font-bold" style={{ color: colorDe(respondiendoA.autor.id) }}>
+                Respondiendo a {respondiendoA.autor.id === myUserId ? "ti mismo" : respondiendoA.autor.nombre}
+              </p>
+              <p className="truncate" style={{ color: "var(--texto-tenue)" }}>
+                {respondiendoA.eliminado ? "Mensaje eliminado" : respondiendoA.content}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRespondiendoA(null)}
+              aria-label="Cancelar respuesta"
+              className="shrink-0 text-base font-black leading-none"
+              style={{ color: "var(--texto-tenue)" }}
+            >
+              ×
+            </button>
+          </div>
         )}
 
         <form onSubmit={mandar} className="flex items-end gap-2 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
