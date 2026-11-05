@@ -143,6 +143,21 @@ body {
   }
 }
 
+/* Respiración del logo en la pantalla de carga (ver Splash.tsx). A
+   diferencia de "latido" (que se desvanece, para el halo del SOS), aquí el
+   logo se queda visible durante todo el ciclo. */
+@keyframes pulso-logo {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.7;
+  }
+}
+
 /* Fondo de la conversación: el mismo fondo de las demás pantallas con un
    patrón muy tenue de íconos propios (pin de ubicación, llave, rayo,
    estrella de vigilancia). Da la sensación de app de mensajería sin copiar
