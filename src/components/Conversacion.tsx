@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useMensajes } from "../hooks/useMensajes";
 import { usePerfil } from "../context/PerfilContext";
 import { marcarChatLeido } from "../services/api";
@@ -123,7 +123,14 @@ export default function Conversacion({
   // Al cargar mensajes anteriores se conserva a la vista el mismo mensaje.
   const alturaAntesDeCargar = useRef<number | null>(null);
 
-  const dias = mensajes ? armarLineaDeTiempo(mensajes, alertas, hayMas) : [];
+  // Ordenar y agrupar por día es trabajo real sobre TODO lo cargado del
+  // chat; sin memo se repetía en cada letra que se escribe en la caja
+  // (cualquier setState de este componente, no solo cuando llegan mensajes
+  // o alertas de verdad nuevos).
+  const dias = useMemo(
+    () => (mensajes ? armarLineaDeTiempo(mensajes, alertas, hayMas) : []),
+    [mensajes, alertas, hayMas]
+  );
   const totalElementos = dias.reduce((n, d) => n + d.elementos.length, 0);
 
   useLayoutEffect(() => {

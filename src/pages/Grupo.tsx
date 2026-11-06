@@ -226,9 +226,15 @@ export default function Grupo() {
           </p>
         )}
 
-        {/* --- Alertas abiertas, fijas para poder atenderlas --- */}
+        {/* --- Alertas abiertas, fijas para poder atenderlas ---
+            45vh y no un alto fijo en px: desde que cada tarjeta trae botón
+            de ubicación, teléfono y el "Qué hacer" plegable, una sola ya
+            puede medir más que los 144px de antes (por eso se veía
+            cortada). Con el viewport como referencia, una tarjeta —incluso
+            con el protocolo abierto— cabe completa en casi cualquier
+            celular; con varias abiertas a la vez, sigue scrolleando. */}
         {abiertas.length > 0 && (
-          <ul className="max-h-36 space-y-2 overflow-y-auto p-3" aria-label="Alertas abiertas">
+          <ul className="max-h-[45vh] space-y-2 overflow-y-auto p-3" aria-label="Alertas abiertas">
             {abiertas.map((a) => {
               const activa = a.status === "ACTIVE";
               return (
