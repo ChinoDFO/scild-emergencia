@@ -1,0 +1,590 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<!--
+3    Copyright 2019 Google Inc. All Rights Reserved.
+4
+5     Licensed under the Apache License, Version 2.0 (the "License");
+6     you may not use this file except in compliance with the License.
+7     You may obtain a copy of the License at
+8
+9         http://www.apache.org/licenses/LICENSE-2.0
+10
+11     Unless required by applicable law or agreed to in writing, software
+12     distributed under the License is distributed on an "AS IS" BASIS,
+13     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+14     See the License for the specific language governing permissions and
+15     limitations under the License.
+16-->
+17<!--
+18 The "package" attribute is rewritten by the Gradle build with the value of applicationId.
+19     It is still required here, as it is used to derive paths, for instance when referring
+20     to an Activity by ".MyActivity" instead of the full name. If more Activities are added to the
+21     application, the package attribute will need to reflect the correct path in order to use
+22     the abbreviated format.
+23-->
+24<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+25    package="com.scild.emergencia"
+26    android:versionCode="1"
+27    android:versionName="1.0.0" >
+28
+29    <uses-sdk
+30        android:minSdkVersion="21"
+31        android:targetSdkVersion="36" />
+32
+33    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+33-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:26:9-80
+33-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:26:26-78
+34
+35    <!--
+36         Para el canal propio de las alertas SOS (ver AlertaMessagingService):
+37         vibración y la alarma de pantalla completa que despierta el celular.
+38    -->
+39    <uses-permission android:name="android.permission.VIBRATE" />
+39-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:31:5-65
+39-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:31:22-63
+40    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+40-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:32:5-80
+40-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:32:22-78
+41
+42    <queries>
+42-->[com.google.androidbrowserhelper:androidbrowserhelper:2.6.2] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\0ddf50f125fad7409b55270f4f9d5bd4\transformed\androidbrowserhelper-2.6.2\AndroidManifest.xml:22:5-30:15
+43        <intent>
+43-->[com.google.androidbrowserhelper:androidbrowserhelper:2.6.2] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\0ddf50f125fad7409b55270f4f9d5bd4\transformed\androidbrowserhelper-2.6.2\AndroidManifest.xml:23:9-29:18
+44            <action android:name="android.intent.action.VIEW" />
+44-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:154:17-68
+44-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:154:25-66
+45
+46            <category android:name="android.intent.category.BROWSABLE" />
+46-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:156:17-77
+46-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:156:27-75
+47
+48            <data android:scheme="https" />
+48-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:157:17-160:19
+48-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:157:23-45
+49        </intent>
+50    </queries>
+51
+52    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+52-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:22:5-79
+52-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:22:22-76
+53    <uses-permission android:name="android.permission.WAKE_LOCK" /> <!-- Required by older versions of Google Play services to create IID tokens -->
+53-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:24:5-68
+53-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:24:22-65
+54    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+54-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:26:5-82
+54-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:26:22-79
+55    <uses-permission android:name="android.permission.INTERNET" />
+55-->[com.google.android.datatransport:transport-backend-cct:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\12530d7285a98cdcc067641233e948c2\transformed\transport-backend-cct-3.1.9\AndroidManifest.xml:25:5-67
+55-->[com.google.android.datatransport:transport-backend-cct:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\12530d7285a98cdcc067641233e948c2\transformed\transport-backend-cct-3.1.9\AndroidManifest.xml:25:22-64
+56
+57    <permission
+57-->[androidx.core:core:1.13.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\180cd246976045cfafcffb9944e269cb\transformed\core-1.13.0\AndroidManifest.xml:22:5-24:47
+58        android:name="com.scild.emergencia.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+58-->[androidx.core:core:1.13.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\180cd246976045cfafcffb9944e269cb\transformed\core-1.13.0\AndroidManifest.xml:23:9-81
+59        android:protectionLevel="signature" />
+59-->[androidx.core:core:1.13.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\180cd246976045cfafcffb9944e269cb\transformed\core-1.13.0\AndroidManifest.xml:24:9-44
+60
+61    <uses-permission android:name="com.scild.emergencia.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+61-->[androidx.core:core:1.13.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\180cd246976045cfafcffb9944e269cb\transformed\core-1.13.0\AndroidManifest.xml:26:5-97
+61-->[androidx.core:core:1.13.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\180cd246976045cfafcffb9944e269cb\transformed\core-1.13.0\AndroidManifest.xml:26:22-94
+62
+63    <application
+63-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:41:5-220:19
+64        android:name="com.scild.emergencia.Application"
+64-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:42:9-35
+65        android:allowBackup="true"
+65-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:43:9-35
+66        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+66-->[androidx.core:core:1.13.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\180cd246976045cfafcffb9944e269cb\transformed\core-1.13.0\AndroidManifest.xml:28:18-86
+67        android:extractNativeLibs="true"
+68        android:icon="@mipmap/ic_launcher"
+68-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:44:9-43
+69        android:label="@string/appName"
+69-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:45:9-40
+70        android:manageSpaceActivity="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity"
+70-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:47:9-105
+71        android:supportsRtl="true"
+71-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:49:9-35
+72        android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+72-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:50:9-68
+73        <meta-data
+73-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:52:9-54:58
+74            android:name="asset_statements"
+74-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:53:13-44
+75            android:resource="@string/assetStatements" />
+75-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:54:13-55
+76        <meta-data
+76-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:57:13-59:58
+77            android:name="web_manifest_url"
+77-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:58:17-48
+78            android:value="@string/webManifestUrl" />
+78-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:59:17-55
+79        <meta-data
+79-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:62:9-64:52
+80            android:name="twa_generator"
+80-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:63:13-41
+81            android:value="@string/generatorApp" />
+81-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:64:13-49
+82
+83        <activity
+83-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:71:13-82:24
+84            android:name="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity"
+84-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:71:23-104
+85            android:enabled="true"
+85-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:73:17-39
+86            android:excludeFromRecents="true"
+86-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:74:17-50
+87            android:exported="false" >
+87-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:72:17-41
+88            <meta-data
+88-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:75:17-77:57
+89                android:name="android.support.customtabs.trusted.MANAGE_SPACE_URL"
+89-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:76:21-87
+90                android:value="@string/launchUrl" />
+90-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:77:21-54
+91
+92            <intent-filter>
+92-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:78:17-81:33
+93                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
+93-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:79:21-92
+93-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:79:29-89
+94
+95                <category android:name="android.intent.category.DEFAULT" />
+95-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:80:21-80
+95-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:80:31-77
+96            </intent-filter>
+97        </activity>
+98        <activity
+98-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:85:9-166:20
+99            android:name="com.scild.emergencia.LauncherActivity"
+99-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:85:19-50
+100            android:alwaysRetainTaskState="true"
+100-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:86:13-49
+101            android:exported="true"
+101-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:88:13-36
+102            android:label="@string/launcherName" >
+102-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:87:13-49
+103            <meta-data
+103-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:89:13-90:53
+104                android:name="android.support.customtabs.trusted.DEFAULT_URL"
+104-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:89:24-85
+105                android:value="@string/launchUrl" />
+105-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:90:17-50
+106            <meta-data
+106-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:92:13-94:58
+107                android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR"
+107-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:93:17-83
+108                android:resource="@color/colorPrimary" />
+108-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:94:17-55
+109            <meta-data
+109-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:98:13-100:62
+110                android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR_DARK"
+110-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:99:17-88
+111                android:resource="@color/colorPrimaryDark" />
+111-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:100:17-59
+112            <meta-data
+112-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:102:13-104:61
+113                android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR"
+113-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:103:17-87
+114                android:resource="@color/navigationColor" />
+114-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:104:17-58
+115            <meta-data
+115-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:106:13-108:65
+116                android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR_DARK"
+116-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:107:17-92
+117                android:resource="@color/navigationColorDark" />
+117-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:108:17-62
+118            <meta-data
+118-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:110:13-112:68
+119                android:name="androix.browser.trusted.NAVIGATION_BAR_DIVIDER_COLOR"
+119-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:111:17-84
+120                android:resource="@color/navigationDividerColor" />
+120-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:112:17-65
+121            <meta-data
+121-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:114:13-116:72
+122                android:name="androix.browser.trusted.NAVIGATION_BAR_DIVIDER_COLOR_DARK"
+122-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:115:17-89
+123                android:resource="@color/navigationDividerColorDark" />
+123-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:116:17-69
+124            <meta-data
+124-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:118:13-119:54
+125                android:name="android.support.customtabs.trusted.SPLASH_IMAGE_DRAWABLE"
+125-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:118:24-95
+126                android:resource="@drawable/splash" />
+126-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:119:17-52
+127            <meta-data
+127-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:121:13-122:60
+128                android:name="android.support.customtabs.trusted.SPLASH_SCREEN_BACKGROUND_COLOR"
+128-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:121:24-104
+129                android:resource="@color/backgroundColor" />
+129-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:122:17-58
+130            <meta-data
+130-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:124:13-125:71
+131                android:name="android.support.customtabs.trusted.SPLASH_SCREEN_FADE_OUT_DURATION"
+131-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:124:24-105
+132                android:value="@integer/splashScreenFadeOutDuration" />
+132-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:125:17-69
+133            <meta-data
+133-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:127:13-128:60
+134                android:name="android.support.customtabs.trusted.FILE_PROVIDER_AUTHORITY"
+134-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:127:24-97
+135                android:value="@string/providerAuthority" />
+135-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:128:17-58
+136            <meta-data
+136-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:130:13-97
+137                android:name="android.app.shortcuts"
+137-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:130:24-60
+138                android:resource="@xml/shortcuts" />
+138-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:130:61-94
+139            <meta-data
+139-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:132:13-133:56
+140                android:name="android.support.customtabs.trusted.FALLBACK_STRATEGY"
+140-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:132:24-91
+141                android:value="@string/fallbackType" />
+141-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:133:17-53
+142            <meta-data
+142-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:139:13-140:54
+143                android:name="android.support.customtabs.trusted.SCREEN_ORIENTATION"
+143-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:139:24-92
+144                android:value="@string/orientation" />
+144-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:140:17-52
+145
+146            <intent-filter>
+146-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:148:13-151:29
+147                <action android:name="android.intent.action.MAIN" />
+147-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:149:17-69
+147-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:149:25-66
+148
+149                <category android:name="android.intent.category.LAUNCHER" />
+149-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:150:17-77
+149-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:150:27-74
+150            </intent-filter>
+151            <intent-filter android:autoVerify="true" >
+151-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:153:13-161:29
+151-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:153:28-53
+152                <action android:name="android.intent.action.VIEW" />
+152-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:154:17-68
+152-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:154:25-66
+153
+154                <category android:name="android.intent.category.DEFAULT" />
+154-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:80:21-80
+154-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:80:31-77
+155                <category android:name="android.intent.category.BROWSABLE" />
+155-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:156:17-77
+155-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:156:27-75
+156
+157                <data
+157-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:157:17-160:19
+158                    android:host="@string/hostName"
+158-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:158:21-52
+159                    android:scheme="https" />
+159-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:157:23-45
+160            </intent-filter>
+161        </activity>
+162        <activity
+162-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:168:9-172:86
+163            android:name="com.scild.emergencia.AlarmaActivity"
+163-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:168:19-49
+164            android:excludeFromRecents="true"
+164-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:170:13-46
+165            android:exported="false"
+165-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:169:13-37
+166            android:showOnLockScreen="true"
+166-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:171:13-44
+167            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
+167-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:172:13-83
+168        <activity android:name="com.google.androidbrowserhelper.trusted.FocusActivity" />
+168-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:174:9-90
+168-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:174:19-87
+169        <activity
+169-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:176:9-177:62
+170            android:name="com.google.androidbrowserhelper.trusted.WebViewFallbackActivity"
+170-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:176:19-97
+171            android:configChanges="orientation|screenSize" />
+171-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:177:13-59
+172
+173        <provider
+173-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:179:9-187:20
+174            android:name="androidx.core.content.FileProvider"
+174-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:180:13-62
+175            android:authorities="@string/providerAuthority"
+175-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:181:13-60
+176            android:exported="false"
+176-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:183:13-37
+177            android:grantUriPermissions="true" >
+177-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:182:13-47
+178            <meta-data
+178-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:184:13-186:53
+179                android:name="android.support.FILE_PROVIDER_PATHS"
+179-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:185:17-67
+180                android:resource="@xml/filepaths" />
+180-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:186:17-50
+181        </provider>
+182
+183        <service
+183-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:189:9-204:19
+184            android:name="com.scild.emergencia.DelegationService"
+184-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:190:13-46
+185            android:enabled="@bool/enableNotification"
+185-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:191:13-55
+186            android:exported="@bool/enableNotification" >
+186-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:192:13-56
+187            <meta-data
+187-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:195:17-197:73
+188                android:name="android.support.customtabs.trusted.SMALL_ICON"
+188-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:196:21-81
+189                android:resource="@drawable/ic_notification_icon" />
+189-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:197:21-70
+190
+191            <intent-filter>
+191-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:200:13-203:29
+192                <action android:name="android.support.customtabs.trusted.TRUSTED_WEB_ACTIVITY_SERVICE" />
+192-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:201:17-105
+192-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:201:25-103
+193
+194                <category android:name="android.intent.category.DEFAULT" />
+194-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:80:21-80
+194-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:80:31-77
+195            </intent-filter>
+196        </service>
+197
+198        <!--
+199             Canal nativo de las alertas (ver AlertaMessagingService): recibe el
+200             push de FCM directo, sin pasar por la delegación de arriba.
+201        -->
+202        <service
+202-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:208:9-213:19
+203            android:name="com.scild.emergencia.AlertaMessagingService"
+203-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:208:18-56
+204            android:exported="false" >
+204-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:209:13-37
+205            <intent-filter>
+205-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:210:13-212:29
+206                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+206-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:211:17-77
+206-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:211:25-75
+207            </intent-filter>
+208        </service>
+209
+210        <activity android:name="com.google.androidbrowserhelper.trusted.NotificationPermissionRequestActivity" />
+210-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:216:13-118
+210-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:216:23-115
+211
+212        <receiver
+212-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:29:9-40:20
+213            android:name="com.google.firebase.iid.FirebaseInstanceIdReceiver"
+213-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:30:13-78
+214            android:exported="true"
+214-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:31:13-36
+215            android:permission="com.google.android.c2dm.permission.SEND" >
+215-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:32:13-73
+216            <intent-filter>
+216-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:33:13-35:29
+217                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+217-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:34:17-81
+217-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:34:25-78
+218            </intent-filter>
+219
+220            <meta-data
+220-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:37:13-39:40
+221                android:name="com.google.android.gms.cloudmessaging.FINISHED_AFTER_HANDLED"
+221-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:38:17-92
+222                android:value="true" />
+222-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:39:17-37
+223        </receiver>
+224        <!--
+225             FirebaseMessagingService performs security checks at runtime,
+226             but set to not exported to explicitly avoid allowing another app to call it.
+227        -->
+228        <service
+228-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:46:9-53:19
+229            android:name="com.google.firebase.messaging.FirebaseMessagingService"
+229-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:47:13-82
+230            android:directBootAware="true"
+230-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:48:13-43
+231            android:exported="false" >
+231-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:49:13-37
+232            <intent-filter android:priority="-500" >
+232-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:210:13-212:29
+233                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+233-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:211:17-77
+233-->C:\Users\dfofl\PP\scild-emergencia\android\app\src\main\AndroidManifest.xml:211:25-75
+234            </intent-filter>
+235        </service>
+236        <service
+236-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:54:9-63:19
+237            android:name="com.google.firebase.components.ComponentDiscoveryService"
+237-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:55:13-84
+238            android:directBootAware="true"
+238-->[com.google.firebase:firebase-common:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\d608abaa2485fbb1588f8ea99412886b\transformed\firebase-common-21.0.0\AndroidManifest.xml:32:13-43
+239            android:exported="false" >
+239-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:56:13-37
+240            <meta-data
+240-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:57:13-59:85
+241                android:name="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingKtxRegistrar"
+241-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:58:17-122
+242                android:value="com.google.firebase.components.ComponentRegistrar" />
+242-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:59:17-82
+243            <meta-data
+243-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:60:13-62:85
+244                android:name="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar"
+244-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:61:17-119
+245                android:value="com.google.firebase.components.ComponentRegistrar" />
+245-->[com.google.firebase:firebase-messaging:24.1.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\10ad2c64089959762bea3db316f010f2\transformed\firebase-messaging-24.1.0\AndroidManifest.xml:62:17-82
+246            <meta-data
+246-->[com.google.firebase:firebase-datatransport:18.2.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\a18ccf50a78151f097c24a8ba740c91f\transformed\firebase-datatransport-18.2.0\AndroidManifest.xml:25:13-27:85
+247                android:name="com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar"
+247-->[com.google.firebase:firebase-datatransport:18.2.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\a18ccf50a78151f097c24a8ba740c91f\transformed\firebase-datatransport-18.2.0\AndroidManifest.xml:26:17-115
+248                android:value="com.google.firebase.components.ComponentRegistrar" />
+248-->[com.google.firebase:firebase-datatransport:18.2.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\a18ccf50a78151f097c24a8ba740c91f\transformed\firebase-datatransport-18.2.0\AndroidManifest.xml:27:17-82
+249            <meta-data
+249-->[com.google.firebase:firebase-installations:18.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\ada200748a8e0907220c2c906eddc600\transformed\firebase-installations-18.0.0\AndroidManifest.xml:15:13-17:85
+250                android:name="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsKtxRegistrar"
+250-->[com.google.firebase:firebase-installations:18.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\ada200748a8e0907220c2c906eddc600\transformed\firebase-installations-18.0.0\AndroidManifest.xml:16:17-130
+251                android:value="com.google.firebase.components.ComponentRegistrar" />
+251-->[com.google.firebase:firebase-installations:18.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\ada200748a8e0907220c2c906eddc600\transformed\firebase-installations-18.0.0\AndroidManifest.xml:17:17-82
+252            <meta-data
+252-->[com.google.firebase:firebase-installations:18.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\ada200748a8e0907220c2c906eddc600\transformed\firebase-installations-18.0.0\AndroidManifest.xml:18:13-20:85
+253                android:name="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar"
+253-->[com.google.firebase:firebase-installations:18.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\ada200748a8e0907220c2c906eddc600\transformed\firebase-installations-18.0.0\AndroidManifest.xml:19:17-127
+254                android:value="com.google.firebase.components.ComponentRegistrar" />
+254-->[com.google.firebase:firebase-installations:18.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\ada200748a8e0907220c2c906eddc600\transformed\firebase-installations-18.0.0\AndroidManifest.xml:20:17-82
+255            <meta-data
+255-->[com.google.firebase:firebase-common-ktx:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\77f403a9e5fa5e08916c906fb842e58a\transformed\firebase-common-ktx-21.0.0\AndroidManifest.xml:12:13-14:85
+256                android:name="com.google.firebase.components:com.google.firebase.ktx.FirebaseCommonLegacyRegistrar"
+256-->[com.google.firebase:firebase-common-ktx:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\77f403a9e5fa5e08916c906fb842e58a\transformed\firebase-common-ktx-21.0.0\AndroidManifest.xml:13:17-116
+257                android:value="com.google.firebase.components.ComponentRegistrar" />
+257-->[com.google.firebase:firebase-common-ktx:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\77f403a9e5fa5e08916c906fb842e58a\transformed\firebase-common-ktx-21.0.0\AndroidManifest.xml:14:17-82
+258            <meta-data
+258-->[com.google.firebase:firebase-common:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\d608abaa2485fbb1588f8ea99412886b\transformed\firebase-common-21.0.0\AndroidManifest.xml:35:13-37:85
+259                android:name="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar"
+259-->[com.google.firebase:firebase-common:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\d608abaa2485fbb1588f8ea99412886b\transformed\firebase-common-21.0.0\AndroidManifest.xml:36:17-109
+260                android:value="com.google.firebase.components.ComponentRegistrar" />
+260-->[com.google.firebase:firebase-common:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\d608abaa2485fbb1588f8ea99412886b\transformed\firebase-common-21.0.0\AndroidManifest.xml:37:17-82
+261        </service>
+262        <service
+262-->[com.google.android.datatransport:transport-backend-cct:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\12530d7285a98cdcc067641233e948c2\transformed\transport-backend-cct-3.1.9\AndroidManifest.xml:28:9-34:19
+263            android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+263-->[com.google.android.datatransport:transport-backend-cct:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\12530d7285a98cdcc067641233e948c2\transformed\transport-backend-cct-3.1.9\AndroidManifest.xml:29:13-103
+264            android:exported="false" >
+264-->[com.google.android.datatransport:transport-backend-cct:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\12530d7285a98cdcc067641233e948c2\transformed\transport-backend-cct-3.1.9\AndroidManifest.xml:30:13-37
+265            <meta-data
+265-->[com.google.android.datatransport:transport-backend-cct:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\12530d7285a98cdcc067641233e948c2\transformed\transport-backend-cct-3.1.9\AndroidManifest.xml:31:13-33:39
+266                android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
+266-->[com.google.android.datatransport:transport-backend-cct:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\12530d7285a98cdcc067641233e948c2\transformed\transport-backend-cct-3.1.9\AndroidManifest.xml:32:17-94
+267                android:value="cct" />
+267-->[com.google.android.datatransport:transport-backend-cct:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\12530d7285a98cdcc067641233e948c2\transformed\transport-backend-cct-3.1.9\AndroidManifest.xml:33:17-36
+268        </service>
+269        <service
+269-->[com.google.android.datatransport:transport-runtime:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\8f08fc067c20ddc91210e41db184d951\transformed\transport-runtime-3.1.9\AndroidManifest.xml:26:9-30:19
+270            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+270-->[com.google.android.datatransport:transport-runtime:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\8f08fc067c20ddc91210e41db184d951\transformed\transport-runtime-3.1.9\AndroidManifest.xml:27:13-117
+271            android:exported="false"
+271-->[com.google.android.datatransport:transport-runtime:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\8f08fc067c20ddc91210e41db184d951\transformed\transport-runtime-3.1.9\AndroidManifest.xml:28:13-37
+272            android:permission="android.permission.BIND_JOB_SERVICE" >
+272-->[com.google.android.datatransport:transport-runtime:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\8f08fc067c20ddc91210e41db184d951\transformed\transport-runtime-3.1.9\AndroidManifest.xml:29:13-69
+273        </service>
+274
+275        <receiver
+275-->[com.google.android.datatransport:transport-runtime:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\8f08fc067c20ddc91210e41db184d951\transformed\transport-runtime-3.1.9\AndroidManifest.xml:32:9-34:40
+276            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+276-->[com.google.android.datatransport:transport-runtime:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\8f08fc067c20ddc91210e41db184d951\transformed\transport-runtime-3.1.9\AndroidManifest.xml:33:13-132
+277            android:exported="false" />
+277-->[com.google.android.datatransport:transport-runtime:3.1.9] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\8f08fc067c20ddc91210e41db184d951\transformed\transport-runtime-3.1.9\AndroidManifest.xml:34:13-37
+278
+279        <provider
+279-->[com.google.firebase:firebase-common:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\d608abaa2485fbb1588f8ea99412886b\transformed\firebase-common-21.0.0\AndroidManifest.xml:23:9-28:39
+280            android:name="com.google.firebase.provider.FirebaseInitProvider"
+280-->[com.google.firebase:firebase-common:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\d608abaa2485fbb1588f8ea99412886b\transformed\firebase-common-21.0.0\AndroidManifest.xml:24:13-77
+281            android:authorities="com.scild.emergencia.firebaseinitprovider"
+281-->[com.google.firebase:firebase-common:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\d608abaa2485fbb1588f8ea99412886b\transformed\firebase-common-21.0.0\AndroidManifest.xml:25:13-72
+282            android:directBootAware="true"
+282-->[com.google.firebase:firebase-common:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\d608abaa2485fbb1588f8ea99412886b\transformed\firebase-common-21.0.0\AndroidManifest.xml:26:13-43
+283            android:exported="false"
+283-->[com.google.firebase:firebase-common:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\d608abaa2485fbb1588f8ea99412886b\transformed\firebase-common-21.0.0\AndroidManifest.xml:27:13-37
+284            android:initOrder="100" />
+284-->[com.google.firebase:firebase-common:21.0.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\d608abaa2485fbb1588f8ea99412886b\transformed\firebase-common-21.0.0\AndroidManifest.xml:28:13-36
+285
+286        <activity
+286-->[com.google.android.gms:play-services-base:18.0.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\cb4e94525653865da48052136257ffaa\transformed\play-services-base-18.0.1\AndroidManifest.xml:20:9-22:45
+287            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+287-->[com.google.android.gms:play-services-base:18.0.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\cb4e94525653865da48052136257ffaa\transformed\play-services-base-18.0.1\AndroidManifest.xml:20:19-85
+288            android:exported="false"
+288-->[com.google.android.gms:play-services-base:18.0.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\cb4e94525653865da48052136257ffaa\transformed\play-services-base-18.0.1\AndroidManifest.xml:22:19-43
+289            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+289-->[com.google.android.gms:play-services-base:18.0.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\cb4e94525653865da48052136257ffaa\transformed\play-services-base-18.0.1\AndroidManifest.xml:21:19-78
+290
+291        <meta-data
+291-->[com.google.android.gms:play-services-basement:18.3.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\4442673be37c3953d8ef0152793e8620\transformed\play-services-basement-18.3.0\AndroidManifest.xml:21:9-23:69
+292            android:name="com.google.android.gms.version"
+292-->[com.google.android.gms:play-services-basement:18.3.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\4442673be37c3953d8ef0152793e8620\transformed\play-services-basement-18.3.0\AndroidManifest.xml:22:13-58
+293            android:value="@integer/google_play_services_version" />
+293-->[com.google.android.gms:play-services-basement:18.3.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\4442673be37c3953d8ef0152793e8620\transformed\play-services-basement-18.3.0\AndroidManifest.xml:23:13-66
+294
+295        <provider
+295-->[androidx.emoji2:emoji2:1.3.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\4c8e646ea73ae89ab8a95df5ac4d98a3\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
+296            android:name="androidx.startup.InitializationProvider"
+296-->[androidx.emoji2:emoji2:1.3.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\4c8e646ea73ae89ab8a95df5ac4d98a3\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
+297            android:authorities="com.scild.emergencia.androidx-startup"
+297-->[androidx.emoji2:emoji2:1.3.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\4c8e646ea73ae89ab8a95df5ac4d98a3\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
+298            android:exported="false" >
+298-->[androidx.emoji2:emoji2:1.3.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\4c8e646ea73ae89ab8a95df5ac4d98a3\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
+299            <meta-data
+299-->[androidx.emoji2:emoji2:1.3.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\4c8e646ea73ae89ab8a95df5ac4d98a3\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
+300                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+300-->[androidx.emoji2:emoji2:1.3.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\4c8e646ea73ae89ab8a95df5ac4d98a3\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+301                android:value="androidx.startup" />
+301-->[androidx.emoji2:emoji2:1.3.0] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\4c8e646ea73ae89ab8a95df5ac4d98a3\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
+302            <meta-data
+302-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\49130f537ef89ee38b7f7935d734d3a9\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:29:13-31:52
+303                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+303-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\49130f537ef89ee38b7f7935d734d3a9\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:30:17-78
+304                android:value="androidx.startup" />
+304-->[androidx.lifecycle:lifecycle-process:2.6.2] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\49130f537ef89ee38b7f7935d734d3a9\transformed\lifecycle-process-2.6.2\AndroidManifest.xml:31:17-49
+305            <meta-data
+305-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:29:13-31:52
+306                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+306-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:30:17-85
+307                android:value="androidx.startup" />
+307-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:31:17-49
+308        </provider>
+309
+310        <receiver
+310-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:34:9-52:20
+311            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+311-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:35:13-76
+312            android:directBootAware="false"
+312-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:36:13-44
+313            android:enabled="true"
+313-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:37:13-35
+314            android:exported="true"
+314-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:38:13-36
+315            android:permission="android.permission.DUMP" >
+315-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:39:13-57
+316            <intent-filter>
+316-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:40:13-42:29
+317                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+317-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:17-91
+317-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:41:25-88
+318            </intent-filter>
+319            <intent-filter>
+319-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:43:13-45:29
+320                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+320-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:17-85
+320-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:44:25-82
+321            </intent-filter>
+322            <intent-filter>
+322-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:46:13-48:29
+323                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+323-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:17-88
+323-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:47:25-85
+324            </intent-filter>
+325            <intent-filter>
+325-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:49:13-51:29
+326                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+326-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:17-95
+326-->[androidx.profileinstaller:profileinstaller:1.3.1] C:\Users\dfofl\.gradle\caches\8.11.1\transforms\668d2b89ceb39350cf3bccceca316d2a\transformed\profileinstaller-1.3.1\AndroidManifest.xml:50:25-92
+327            </intent-filter>
+328        </receiver>
+329    </application>
+330
+331</manifest>

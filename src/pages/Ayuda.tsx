@@ -117,7 +117,7 @@ export default function Ayuda() {
             </div>
           ) : (
             <p className="mt-2 text-sm" style={{ color: "var(--texto-tenue)" }}>
-              Aquí van el teléfono y el correo de soporte. Se configuran en{" "}
+              scild2154@gmail.com
               <code className="rounded px-1 text-xs" style={{ background: "var(--superficie-suave)" }}>
                 src/data/ayuda.ts
               </code>

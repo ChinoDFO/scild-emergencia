@@ -1,0 +1,106 @@
+[
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-xxhdpi_ic_maskable.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-xxhdpi/ic_maskable.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-xhdpi_ic_notification_icon.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-xhdpi/ic_notification_icon.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-hdpi_ic_maskable.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-hdpi/ic_maskable.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-xhdpi_splash.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-xhdpi/splash.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-mdpi_ic_notification_icon.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-mdpi/ic_notification_icon.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-hdpi_ic_notification_icon.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-hdpi/ic_notification_icon.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-mdpi_splash.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-mdpi/splash.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-xhdpi_ic_maskable.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-xhdpi/ic_maskable.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-anydpi_shortcut_legacy_background.xml.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-anydpi/shortcut_legacy_background.xml"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-hdpi_splash.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-hdpi/splash.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/xml_shortcuts.xml.flat",
+        "source": "com.scild.emergencia.app-main-32:/xml/shortcuts.xml"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-xxxhdpi_splash.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-xxxhdpi/splash.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-xxhdpi_ic_notification_icon.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-xxhdpi/ic_notification_icon.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/raw_web_app_manifest.json.flat",
+        "source": "com.scild.emergencia.app-main-32:/raw/web_app_manifest.json"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-xxxhdpi_ic_notification_icon.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-xxxhdpi/ic_notification_icon.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/xml_filepaths.xml.flat",
+        "source": "com.scild.emergencia.app-main-32:/xml/filepaths.xml"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/layout_activity_alarma.xml.flat",
+        "source": "com.scild.emergencia.app-main-32:/layout/activity_alarma.xml"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-xxxhdpi_ic_maskable.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-xxxhdpi/ic_maskable.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/drawable-xxhdpi_splash.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/drawable-xxhdpi/splash.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-mdpi_ic_maskable.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-mdpi/ic_maskable.png"
+    },
+    {
+        "merged": "com.scild.emergencia.app-debug-30:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.scild.emergencia.app-main-32:/mipmap-xxhdpi/ic_launcher.png"
+    }
+]
