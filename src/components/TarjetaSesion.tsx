@@ -26,8 +26,16 @@ export default function TarjetaSesion({
           boxShadow: "0 10px 30px var(--sombra)",
         }}
       >
-        <h1 className="text-2xl font-extrabold uppercase tracking-tight">{titulo}</h1>
-        {subtitulo && <p className="mt-1 text-sm text-white/80">{subtitulo}</p>}
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-extrabold uppercase tracking-tight">{titulo}</h1>
+            {subtitulo && <p className="mt-1 text-sm text-white/80">{subtitulo}</p>}
+          </div>
+          {/* Marca discreta de SCILD: la tarjeta de sesión siempre es oscura
+              (el degradado no cambia con el tema), así que siempre es el
+              logo pensado para fondo oscuro, sin importar el tema de la app. */}
+          <img src="/logo-oscuro.png" alt="" aria-hidden className="h-8 w-8 shrink-0 opacity-45" />
+        </div>
         <div className="mt-6 space-y-4">{children}</div>
       </div>
     </div>

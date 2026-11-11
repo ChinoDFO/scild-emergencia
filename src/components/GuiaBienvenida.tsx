@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTema } from "../context/TemaContext";
 
 // Guía corta para quien acaba de crear su cuenta.
 //
@@ -39,6 +40,8 @@ export const PASOS = [
 ];
 
 export default function GuiaBienvenida({ alCerrar }: { alCerrar: () => void }) {
+  const { tema } = useTema();
+  const logo = tema === "oscuro" ? "/logo-oscuro.png" : "/logo-claro.png";
   const [paso, setPaso] = useState(0);
   const actual = PASOS[paso];
   const ultimo = paso === PASOS.length - 1;
@@ -55,9 +58,13 @@ export default function GuiaBienvenida({ alCerrar }: { alCerrar: () => void }) {
         className="w-full max-w-sm rounded-3xl p-6"
         style={{ background: "var(--fondo)", border: "2px solid var(--borde)" }}
       >
-        <p className="text-xs font-bold uppercase" style={{ color: "var(--texto-tenue)" }}>
-          Paso {paso + 1} de {PASOS.length}
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-xs font-bold uppercase" style={{ color: "var(--texto-tenue)" }}>
+            Paso {paso + 1} de {PASOS.length}
+          </p>
+          {/* Marca discreta de SCILD, igual que en Pantalla.tsx. */}
+          <img src={logo} alt="" aria-hidden className="h-7 w-7 shrink-0 opacity-45" />
+        </div>
         <h2 className="titulo-pantalla mt-1 text-2xl">{actual.titulo}</h2>
         <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--texto)" }}>
           {actual.cuerpo}

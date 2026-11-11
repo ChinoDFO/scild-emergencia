@@ -2,6 +2,7 @@ import { useState } from "react";
 import ContenidoLegal from "./ContenidoLegal";
 import { aceptarTerminos } from "../services/api";
 import { PRIVACIDAD, TERMINOS } from "../data/legal";
+import { useTema } from "../context/TemaContext";
 
 type Pestana = "terminos" | "privacidad";
 
@@ -11,6 +12,8 @@ type Pestana = "terminos" | "privacidad";
 // llega null de cualquiera de las dos). No tiene botón de "cerrar" ni
 // "saltar" a propósito: aceptar no es opcional para usar el servicio.
 export default function TerminosPendientes({ alAceptar }: { alAceptar: () => void }) {
+  const { tema } = useTema();
+  const logo = tema === "oscuro" ? "/logo-oscuro.png" : "/logo-claro.png";
   const [pestana, setPestana] = useState<Pestana>("terminos");
   const [marcado, setMarcado] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -42,10 +45,16 @@ export default function TerminosPendientes({ alAceptar }: { alAceptar: () => voi
       aria-label="Términos y condiciones"
     >
       <div className="px-5 pt-[max(1.25rem,env(safe-area-inset-top))]">
-        <h1 className="titulo-pantalla text-2xl">Antes de seguir</h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--texto-tenue)" }}>
-          Lee y acepta los Términos y Condiciones y el Aviso de Privacidad para usar SCILD.
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="titulo-pantalla text-2xl">Antes de seguir</h1>
+            <p className="mt-1 text-sm" style={{ color: "var(--texto-tenue)" }}>
+              Lee y acepta los Términos y Condiciones y el Aviso de Privacidad para usar SCILD.
+            </p>
+          </div>
+          {/* Marca discreta de SCILD, igual que en Pantalla.tsx. */}
+          <img src={logo} alt="" aria-hidden className="h-8 w-8 shrink-0 opacity-45" />
+        </div>
 
         <div className="tarjeta mt-4 flex p-1">
           {pestanas.map((p) => (

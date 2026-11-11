@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import BarraInferior from "./BarraInferior";
+import { useTema } from "../context/TemaContext";
 
 // El armazón que comparten las pantallas del diseño: título en mayúsculas
 // pegado a la izquierda, subtítulo opcional, una acción redonda a la derecha
-// (el "+" de los mockups) y la barra de pestañas abajo.
+// (el "+" de los mockups), el logo discreto, y la barra de pestañas abajo.
 //
 // El padding de abajo deja libre la altura de la barra para que el último
 // elemento de una lista no quede tapado por ella.
@@ -16,6 +17,9 @@ interface Props {
 }
 
 export default function Pantalla({ titulo, subtitulo, accion, children }: Props) {
+  const { tema } = useTema();
+  const logo = tema === "oscuro" ? "/logo-oscuro.png" : "/logo-claro.png";
+
   return (
     <div className="min-h-svh px-4 pb-28 pt-6" style={{ background: "var(--fondo)" }}>
       <header className="mb-3 flex items-start justify-between gap-3">
@@ -27,6 +31,10 @@ export default function Pantalla({ titulo, subtitulo, accion, children }: Props)
             </p>
           )}
         </div>
+        {/* Marca discreta de SCILD: en todas las pantallas que usan este
+            armazón, menos en el chat (Grupo.tsx no pasa por aquí, tiene su
+            propio encabezado). */}
+        <img src={logo} alt="" aria-hidden className="h-8 w-8 shrink-0 opacity-45" />
         {accion && (
           <button
             type="button"
