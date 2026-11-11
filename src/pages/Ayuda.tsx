@@ -118,10 +118,6 @@ export default function Ayuda() {
           ) : (
             <p className="mt-2 text-sm" style={{ color: "var(--texto-tenue)" }}>
               scild2154@gmail.com
-              <code className="rounded px-1 text-xs" style={{ background: "var(--superficie-suave)" }}>
-                src/data/ayuda.ts
-              </code>
-              .
             </p>
           )}
         </section>
