@@ -136,6 +136,15 @@ export function vincularCodigo(claimCode: string) {
   });
 }
 
+// Lo opuesto de vincularCodigo: sueltas tu lugar de titular de este botón (de
+// los hasta tres que tiene). No borra tu cuenta ni te saca de ningún grupo; si
+// eras el último titular, el código de la caja vuelve a estar libre.
+export function dejarDeSerTitular(deviceId: string): Promise<{ ok: true; quedanTitulares: number }> {
+  return llamarBackend(`/api/acceso/botones/${encodeURIComponent(deviceId)}`, {
+    method: "DELETE",
+  });
+}
+
 async function llamarBackend(ruta: string, opciones: RequestInit = {}) {
   const usuario = auth.currentUser;
   if (!usuario) {

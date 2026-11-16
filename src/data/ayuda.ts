@@ -158,6 +158,14 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         ],
       },
       {
+        id: "dejar-de-ser-titular",
+        pregunta: "¿Puedo desvincular un botón de mi cuenta?",
+        respuesta: [
+          'Sí. Ve a Perfil → Códigos, busca el botón en tu lista y toca "Dejar de ser titular de este botón". No borra tu cuenta ni te saca de ningún grupo: solo que ese botón en particular ya no lo puedes disparar tú.',
+          "Si quedan otros titulares, el botón sigue funcionando igual para ellos. Si eras el único, el código impreso en la caja vuelve a estar disponible para que alguien más lo capture.",
+        ],
+      },
+      {
         id: "vincular",
         pregunta: "¿Cómo vinculo mi botón a mi grupo?",
         respuesta: [

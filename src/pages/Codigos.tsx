@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { useLocation } from "react-router-dom";
 import Pantalla from "../components/Pantalla";
-import { obtenerAcceso, vincularCodigo, type Acceso } from "../services/api";
+import {
+  dejarDeSerTitular,
+  obtenerAcceso,
+  vincularCodigo,
+  type Acceso,
+  type BotonDeAcceso,
+} from "../services/api";
 import { describirGrupos } from "../services/gruposDelBoton";
 
 // Apartado de Códigos: es donde una cuenta pasa de invitada a poder alertar.
@@ -22,6 +28,10 @@ export default function Codigos() {
     (state as { error?: string } | null)?.error ?? null
   );
   const [listo, setListo] = useState<string | null>(null);
+  // Id del botón del que se está soltando la titularidad en este momento (a
+  // la vez solo puede haber uno en curso).
+  const [soltando, setSoltando] = useState<string | null>(null);
+  const [errorSoltar, setErrorSoltar] = useState<{ id: string; mensaje: string } | null>(null);
 
   const cargar = useCallback(() => {
     obtenerAcceso()
@@ -45,6 +55,28 @@ export default function Codigos() {
       setError(err instanceof Error ? err.message : "No se pudo vincular el código");
     } finally {
       setVinculando(false);
+    }
+  };
+
+  const soltar = async (b: BotonDeAcceso) => {
+    const esUltimo = b.titulares.length === 1;
+    const aviso = esUltimo
+      ? `Eres el único titular de "${b.nombre}". Si lo sueltas, el código de su caja vuelve a estar disponible y cualquier persona que lo tenga podrá vincularlo a su cuenta. ¿Seguro?`
+      : `Vas a dejar de ser titular de "${b.nombre}". Ya no podrás enviar alertas con este botón, pero sigue vinculado a sus grupos y a los demás titulares. ¿Seguro?`;
+    if (!confirm(aviso)) return;
+
+    setErrorSoltar(null);
+    setSoltando(b.id);
+    try {
+      await dejarDeSerTitular(b.id);
+      cargar();
+    } catch (err) {
+      setErrorSoltar({
+        id: b.id,
+        mensaje: err instanceof Error ? err.message : "No se pudo soltar el botón",
+      });
+    } finally {
+      setSoltando(null);
     }
   };
 
@@ -141,6 +173,29 @@ export default function Codigos() {
               botón.
             </p>
           )}
+
+          {errorSoltar?.id === b.id && (
+            <p
+              className="mt-2 rounded-xl px-3 py-2 text-xs"
+              style={{ background: "var(--fondo)", color: "var(--peligro)" }}
+            >
+              {errorSoltar.mensaje}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => soltar(b)}
+            disabled={soltando === b.id}
+            className="mt-3 w-full rounded-lg py-2 text-xs font-medium disabled:opacity-60"
+            style={{
+              background: "var(--fondo)",
+              color: "var(--peligro)",
+              boxShadow: "inset 0 0 0 1px var(--peligro)",
+            }}
+          >
+            {soltando === b.id ? "Soltando…" : "Dejar de ser titular de este botón"}
+          </button>
         </section>
       ))}
     </Pantalla>
