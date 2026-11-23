@@ -1,0 +1,19 @@
+# La llave de firma y sus contraseñas NUNCA se suben: perderlas es
+# irreversible (no se puede volver a actualizar la app en Play Store con la
+# misma identidad), y filtrarlas es tan grave como filtrar una contraseña
+# real. Respáldalas aparte (gestor de contraseñas), no en git.
+android.keystore
+keystore-secrets.txt
+
+# Artefactos de build de Gradle/Android Studio.
+.gradle/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
+app-release-signed.apk
+app-release-signed.apk.idsig
+app-release-bundle.aab
+app-release-unsigned-aligned.apk
+manifest-checksum.txt

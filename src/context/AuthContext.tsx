@@ -18,7 +18,9 @@ import { actualizarApodo } from "../services/api";
 import {
   activarNotificaciones,
   desactivarNotificaciones,
+  esAppNativaAndroid,
   estadoNotificaciones,
+  registrarTokenNativoSiHayUno,
 } from "../services/notificaciones";
 import { desconectarTiempoReal } from "../services/tiempoReal";
 
@@ -47,6 +49,14 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 // inofensivo (el servidor hace upsert). Si el permiso no está dado, no hace
 // nada: pedirlo sigue siendo decisión de la persona, desde el panel.
 function registrarNotificacionesSiYaHayPermiso() {
+  // Dentro de la app de Android empaquetada el push nativo no pasa por el
+  // permiso de notificaciones del navegador ni por getToken: ver
+  // registrarTokenNativoSiHayUno en notificaciones.ts.
+  if (esAppNativaAndroid) {
+    registrarTokenNativoSiHayUno();
+    return;
+  }
+
   estadoNotificaciones()
     .then((estado) => (estado === "activadas" ? activarNotificaciones() : undefined))
     .catch((e) => console.warn("No se pudo registrar el dispositivo para avisos:", e));
