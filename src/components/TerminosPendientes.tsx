@@ -53,7 +53,7 @@ export default function TerminosPendientes({ alAceptar }: { alAceptar: () => voi
             </p>
           </div>
           {/* Marca discreta de SCILD, igual que en Pantalla.tsx. */}
-          <img src={logo} alt="" aria-hidden className="h-8 w-8 shrink-0 opacity-45" />
+          <img src={logo} alt="" aria-hidden className="h-12 w-12 shrink-0 opacity-45" />
         </div>
 
         <div className="tarjeta mt-4 flex p-1">

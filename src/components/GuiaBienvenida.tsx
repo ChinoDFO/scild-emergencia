@@ -63,7 +63,7 @@ export default function GuiaBienvenida({ alCerrar }: { alCerrar: () => void }) {
             Paso {paso + 1} de {PASOS.length}
           </p>
           {/* Marca discreta de SCILD, igual que en Pantalla.tsx. */}
-          <img src={logo} alt="" aria-hidden className="h-7 w-7 shrink-0 opacity-45" />
+          <img src={logo} alt="" aria-hidden className="h-12 w-12 shrink-0 opacity-45" />
         </div>
         <h2 className="titulo-pantalla mt-1 text-2xl">{actual.titulo}</h2>
         <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--texto)" }}>

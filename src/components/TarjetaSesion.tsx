@@ -34,7 +34,7 @@ export default function TarjetaSesion({
           {/* Marca discreta de SCILD: la tarjeta de sesión siempre es oscura
               (el degradado no cambia con el tema), así que siempre es el
               logo pensado para fondo oscuro, sin importar el tema de la app. */}
-          <img src="/logo-oscuro.png" alt="" aria-hidden className="h-8 w-8 shrink-0 opacity-45" />
+          <img src="/logo-oscuro.png" alt="" aria-hidden className="h-12 w-12 shrink-0 opacity-45" />
         </div>
         <div className="mt-6 space-y-4">{children}</div>
       </div>

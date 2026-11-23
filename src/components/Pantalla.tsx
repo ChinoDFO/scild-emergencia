@@ -34,7 +34,7 @@ export default function Pantalla({ titulo, subtitulo, accion, children }: Props)
         {/* Marca discreta de SCILD: en todas las pantallas que usan este
             armazón, menos en el chat (Grupo.tsx no pasa por aquí, tiene su
             propio encabezado). */}
-        <img src={logo} alt="" aria-hidden className="h-8 w-8 shrink-0 opacity-45" />
+        <img src={logo} alt="" aria-hidden className="h-12 w-12 shrink-0 opacity-45" />
         {accion && (
           <button
             type="button"

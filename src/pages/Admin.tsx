@@ -61,7 +61,7 @@ export default function Admin() {
             {/* Marca discreta de SCILD. Este panel siempre es claro (no usa
                 el tema de la app), así que siempre es el logo para fondo
                 claro. */}
-            <img src="/logo-claro.png" alt="" aria-hidden className="h-7 w-7 shrink-0 opacity-45" />
+            <img src="/logo-claro.png" alt="" aria-hidden className="h-12 w-12 shrink-0 opacity-45" />
           </div>
         </div>
 
