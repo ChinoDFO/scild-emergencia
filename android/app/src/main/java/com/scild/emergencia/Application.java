@@ -45,18 +45,24 @@ public class Application extends android.app.Application {
     NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     if (nm == null) return;
 
+    // USAGE_ALARM es lo que hace que esto suene aunque el celular esté en
+    // silencio o en Modo No Molestar (son el volumen y el permiso de alarma,
+    // no el de notificaciones) — eso se queda igual a propósito. Lo único
+    // que cambia es EL SONIDO: antes era el de despertador de la persona
+    // (demasiado fuerte/alarmante), ahora es el tono de notificación de
+    // siempre del celular, nomás que sigue sonando en ese volumen de alarma.
     AudioAttributes atributosAlarma = new AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_ALARM)
         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
         .build();
-    Uri sonidoAlarma = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
+    Uri sonidoSOS = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
     NotificationChannel sos = new NotificationChannel(
         AlertaMessagingService.CANAL_SOS, "Alertas de emergencia (SOS)", NotificationManager.IMPORTANCE_HIGH);
-    sos.setDescription("El botón de pánico o el SOS de la app. Suena fuerte y despierta la pantalla a propósito.");
+    sos.setDescription("El botón de pánico o el SOS de la app. Suena y despierta la pantalla a propósito, incluso en silencio.");
     sos.enableVibration(true);
     sos.setVibrationPattern(new long[]{0, 500, 250, 500, 250, 500});
-    if (sonidoAlarma != null) sos.setSound(sonidoAlarma, atributosAlarma);
+    if (sonidoSOS != null) sos.setSound(sonidoSOS, atributosAlarma);
     sos.setBypassDnd(true);
     sos.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
     nm.createNotificationChannel(sos);

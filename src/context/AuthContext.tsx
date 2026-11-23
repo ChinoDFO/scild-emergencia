@@ -54,6 +54,13 @@ function registrarNotificacionesSiYaHayPermiso() {
   // registrarTokenNativoSiHayUno en notificaciones.ts.
   if (esAppNativaAndroid) {
     registrarTokenNativoSiHayUno();
+    // Si antes de instalar la app ya se habían activado los avisos web en
+    // este mismo navegador (mismo origen, mismo perfil de Chrome), ese
+    // token se queda huérfano: nadie lo borra solo, y el servidor le sigue
+    // mandando el aviso por los dos caminos a la vez (uno normal, uno
+    // nativo). Esto solo toca el token de ESTE navegador — nunca el de
+    // otro dispositivo de la misma cuenta.
+    desactivarNotificaciones();
     return;
   }
 

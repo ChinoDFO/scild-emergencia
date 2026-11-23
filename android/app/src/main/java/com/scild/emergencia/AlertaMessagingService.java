@@ -38,7 +38,11 @@ public class AlertaMessagingService extends FirebaseMessagingService {
     public static final String PREFS = "scild_push";
     public static final String KEY_TOKEN = "fcm_token_nativo";
 
-    static final String CANAL_SOS = "alertas_sos";
+    // v2: Android no deja cambiar el sonido/vibración de un canal ya creado
+    // en el celular de alguien, así que cuando cambia el sonido del SOS hay
+    // que correr el id — si no, quien ya lo tenía instalado se queda con el
+    // sonido viejo para siempre, sin importar qué diga el código.
+    static final String CANAL_SOS = "alertas_sos_v2";
     static final String CANAL_TIPO = "alertas_tipo";
     static final String CANAL_CHAT = "chat";
 
