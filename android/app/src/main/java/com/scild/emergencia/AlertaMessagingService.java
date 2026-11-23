@@ -14,7 +14,10 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Recibe el push de FCM DIRECTO, sin pasar por la delegación de Chrome
@@ -43,8 +46,34 @@ public class AlertaMessagingService extends FirebaseMessagingService {
     // que correr el id — si no, quien ya lo tenía instalado se queda con el
     // sonido viejo para siempre, sin importar qué diga el código.
     static final String CANAL_SOS = "alertas_sos_v2";
-    static final String CANAL_TIPO = "alertas_tipo";
-    static final String CANAL_CHAT = "chat";
+    // v2: iba en IMPORTANCE_LOW (nunca sonaba, solo aparecía en la barra) y
+    // ahora va en DEFAULT para que de verdad llegue pronto — mismo problema
+    // que ya resolvimos con el SOS, así que el id también tiene que cambiar
+    // para que un celular que ya tenía el canal viejo adopte el nuevo.
+    static final String CANAL_CHAT = "chat_v2";
+
+    // El servidor insiste con la misma alerta hasta 3 veces (cada 4s) si
+    // nadie la atiende — se corta solo cuando alguien toca "Enterado" en
+    // cualquier dispositivo, porque eso sí le avisa al servidor. "Silenciar"
+    // (ver AlarmaActivity) es local: no le avisa a nadie más, así que lo
+    // único que puede hacer es apuntar aquí qué alertId ya no debe volver a
+    // sonar fuerte EN ESTE celular, aunque el servidor siga insistiendo.
+    private static final String KEY_SILENCIADAS = "alertas_silenciadas";
+
+    static boolean estaSilenciada(Context ctx, String alertId) {
+        if (alertId == null) return false;
+        return ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .getStringSet(KEY_SILENCIADAS, Collections.emptySet())
+                .contains(alertId);
+    }
+
+    static void marcarSilenciada(Context ctx, String alertId) {
+        if (alertId == null) return;
+        SharedPreferences prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        Set<String> actuales = new HashSet<>(prefs.getStringSet(KEY_SILENCIADAS, Collections.emptySet()));
+        actuales.add(alertId);
+        prefs.edit().putStringSet(KEY_SILENCIADAS, actuales).apply();
+    }
 
     @Override
     public void onNewToken(String token) {
@@ -75,13 +104,11 @@ public class AlertaMessagingService extends FirebaseMessagingService {
         }
 
         if ("alerta".equals(kind)) {
-            boolean esGeneral = "GENERAL".equals(datos.get("type")) || "DEVICE".equals(datos.get("source"));
-            String alertId = datos.get("alertId");
-            if (esGeneral) {
-                mostrarSOS(titulo, cuerpo, groupId, alertId);
-            } else {
-                mostrarAlertaTipo(titulo, cuerpo, groupId, alertId);
-            }
+            // Toda alerta (SOS, botón físico, o un tipo como "Carro
+            // sospechoso") despierta la pantalla igual: en un coto o un
+            // negocio cualquier aviso es algo que alguien tiene que ver
+            // ahora, no solo el SOS general.
+            mostrarAlerta(titulo, cuerpo, groupId, datos.get("alertId"), datos.get("mapUrl"));
         }
     }
 
@@ -95,12 +122,18 @@ public class AlertaMessagingService extends FirebaseMessagingService {
         return PendingIntent.getActivity(this, requestCode, intent, flags);
     }
 
-    private void mostrarSOS(String titulo, String cuerpo, String groupId, String alertId) {
+    private void mostrarAlerta(String titulo, String cuerpo, String groupId, String alertId, String mapUrl) {
+        // "Silenciar" en AlarmaActivity marcó este alertId: el servidor va a
+        // seguir insistiendo (hasta 3 veces en total), pero en este celular
+        // ya no debe volver a sonar fuerte ni abrir la pantalla completa.
+        if (estaSilenciada(this, alertId)) return;
+
         Intent full = new Intent(this, AlarmaActivity.class);
         full.putExtra("titulo", titulo);
         full.putExtra("cuerpo", cuerpo);
         full.putExtra("groupId", groupId);
         full.putExtra("alertId", alertId);
+        full.putExtra("mapUrl", mapUrl);
         full.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         int flags = PendingIntent.FLAG_UPDATE_CURRENT
@@ -116,25 +149,30 @@ public class AlertaMessagingService extends FirebaseMessagingService {
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setAutoCancel(true)
                 .setContentIntent(intentVerGrupo(groupId, alertId, 1))
-                .setFullScreenIntent(fullScreenPendingIntent, true);
+                .setFullScreenIntent(fullScreenPendingIntent, true)
+                // Mismo par de acciones que el push web (mensajeDeAlerta en
+                // push.js): "Enterado" marca la alerta como atendida en el
+                // servidor (por eso usa el mismo intent que tocar el aviso),
+                // y "Ver ubicación" solo aparece si el grupo tiene dónde
+                // mandar.
+                .addAction(0, "Enterado", intentVerGrupo(groupId, alertId, 1));
+
+        if (mapUrl != null && !mapUrl.isEmpty()) {
+            builder.addAction(0, "Ver ubicación", intentVerUbicacion(mapUrl, 4));
+        }
 
         NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // Un solo aviso por alerta: el mismo tag reemplaza al anterior (como el
         // renotify del push web) en vez de apilarse.
-        nm.notify(alertId != null ? alertId : "sos", 1, builder.build());
+        nm.notify(alertId != null ? alertId : "alerta", 1, builder.build());
     }
 
-    private void mostrarAlertaTipo(String titulo, String cuerpo, String groupId, String alertId) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CANAL_TIPO)
-                .setSmallIcon(R.drawable.ic_notification_icon)
-                .setContentTitle(titulo)
-                .setContentText(cuerpo)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true)
-                .setContentIntent(intentVerGrupo(groupId, alertId, 2));
-
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        nm.notify(alertId != null ? alertId : "alerta", 2, builder.build());
+    private PendingIntent intentVerUbicacion(String mapUrl, int requestCode) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mapUrl));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT
+                | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0);
+        return PendingIntent.getActivity(this, requestCode, intent, flags);
     }
 
     private void mostrarChat(String titulo, String cuerpo, String groupId) {
@@ -142,7 +180,7 @@ public class AlertaMessagingService extends FirebaseMessagingService {
                 .setSmallIcon(R.drawable.ic_notification_icon)
                 .setContentTitle(titulo)
                 .setContentText(cuerpo)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true)
                 .setContentIntent(intentVerGrupo(groupId, null, 3));
 

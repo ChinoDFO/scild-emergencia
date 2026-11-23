@@ -6,7 +6,7 @@ import ProtocoloAlerta from "../components/ProtocoloAlerta";
 import { usePerfil } from "../context/PerfilContext";
 import { useAlertas } from "../hooks/useAlertas";
 import { invalidarTiposAlerta, obtenerGrupo, type DetalleGrupo } from "../services/api";
-import { origen } from "../services/formatoAlertas";
+import { enteradoPor, origen } from "../services/formatoAlertas";
 import {
   avisarGrupoAbierto,
   entrarASalaDeGrupo,
@@ -79,7 +79,7 @@ export default function Grupo() {
   // mensajes de este grupo: ya se están viendo.
   useEffect(() => avisarGrupoAbierto(id), [id]);
 
-  // Llega del botón "Ya voy" de la notificación: el service worker no puede
+  // Llega del botón "Enterado" de la notificación: el service worker no puede
   // llamar a la API (no tiene la sesión de la persona), así que abre la app
   // con la alerta en la dirección y se atiende aquí. El parámetro se limpia
   // de inmediato para que recargar la página no vuelva a dispararlo.
@@ -251,6 +251,11 @@ export default function Grupo() {
                       <p className="truncate text-[11px]" style={{ color: "var(--texto-tenue)" }}>
                         {origen(a)} · {hora(a.createdAt)}
                       </p>
+                      {enteradoPor(a) && (
+                        <p className="truncate text-[11px] font-bold" style={{ color: "var(--texto)" }}>
+                          {enteradoPor(a)}
+                        </p>
+                      )}
                       <p className="truncate text-[11px] font-bold" style={{ color: "var(--peligro)" }}>
                         Marca al {a.tipo.telefono}
                       </p>
@@ -287,7 +292,7 @@ export default function Grupo() {
                           color: activa ? "var(--fondo)" : "var(--alerta-texto)",
                         }}
                       >
-                        {activa ? "Activa" : "Atendiendo"}
+                        {activa ? "Activa" : "Enterado"}
                       </span>
                     </div>
                   </div>
@@ -300,7 +305,7 @@ export default function Grupo() {
                         className="flex-1 rounded-full py-1.5 text-xs font-bold uppercase disabled:opacity-50"
                         style={{ background: "var(--texto)", color: "var(--fondo)" }}
                       >
-                        Ya voy
+                        Enterado
                       </button>
                     )}
                     <button

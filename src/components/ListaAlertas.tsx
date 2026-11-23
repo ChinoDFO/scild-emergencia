@@ -1,5 +1,5 @@
 import { useAlertas } from "../hooks/useAlertas";
-import { ETIQUETA_ESTADO, origen } from "../services/formatoAlertas";
+import { enteradoPor, ETIQUETA_ESTADO, origen } from "../services/formatoAlertas";
 import ProtocoloAlerta from "./ProtocoloAlerta";
 
 interface Props {
@@ -64,6 +64,11 @@ export default function ListaAlertas({ groupId, soloAbiertas, mostrarGrupo, vaci
               {mostrarGrupo ? `${alerta.group.name} · ` : ""}
               {origen(alerta)} · {new Date(alerta.createdAt).toLocaleString("es-MX")}
             </p>
+            {enteradoPor(alerta) && (
+              <p className="mt-0.5 text-xs font-bold" style={{ color: "var(--texto)" }}>
+                {enteradoPor(alerta)}
+              </p>
+            )}
 
             <ProtocoloAlerta tipo={alerta.tipo} />
 
@@ -76,7 +81,7 @@ export default function ListaAlertas({ groupId, soloAbiertas, mostrarGrupo, vaci
                     className="rounded-full px-3 py-1.5 text-xs font-bold uppercase disabled:opacity-50"
                     style={{ background: "var(--texto)", color: "var(--fondo)" }}
                   >
-                    Ya voy
+                    Enterado
                   </button>
                 )}
                 <button

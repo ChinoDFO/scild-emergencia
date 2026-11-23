@@ -274,7 +274,7 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         pregunta: "¿Por qué la alerta suena varias veces?",
         respuesta: [
           "A propósito: una emergencia se repite un par de veces para que no se pierda entre otros avisos. Un mensaje normal del chat suena una sola vez.",
-          'Deja de repetirse en cuanto alguien del grupo toca "Ya voy" o marca la alerta como resuelta.',
+          'Deja de repetirse en cuanto alguien del grupo toca "Enterado" o marca la alerta como resuelta.',
           "Si tienes la app abierta cuando llega, además suena una sirena en el celular hasta que la silencias (se puede apagar desde Configuración, ver la sección de Perfil).",
         ],
       },

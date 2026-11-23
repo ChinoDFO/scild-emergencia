@@ -35,10 +35,13 @@ public class Application extends android.app.Application {
       pedirTokenNativo();
   }
 
-  // Tres canales, para que el usuario pueda ajustar el volumen/vibración de
-  // cada uno por separado desde Ajustes de Android — y porque una vez creado
-  // un canal, Android ignora lo que mande cualquier notificación individual
-  // (sonido, importancia): el canal manda. Ver AlertaMessagingService.
+  // Dos canales (alertas y chat), para que el usuario pueda ajustar el
+  // volumen/vibración de cada uno por separado desde Ajustes de Android —
+  // y porque una vez creado un canal, Android ignora lo que mande cualquier
+  // notificación individual (sonido, importancia): el canal manda. Toda
+  // alerta (SOS, botón físico, o un tipo como "Carro sospechoso") usa el
+  // mismo canal: todas despiertan la pantalla igual. Ver
+  // AlertaMessagingService.
   private void crearCanalesDeNotificacion() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
@@ -67,14 +70,8 @@ public class Application extends android.app.Application {
     sos.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
     nm.createNotificationChannel(sos);
 
-    NotificationChannel tipo = new NotificationChannel(
-        AlertaMessagingService.CANAL_TIPO, "Alertas por tipo", NotificationManager.IMPORTANCE_DEFAULT);
-    tipo.setDescription("Carro sospechoso, incendio, etc. — se avisan, pero sin el ruido del SOS.");
-    tipo.enableVibration(true);
-    nm.createNotificationChannel(tipo);
-
     NotificationChannel chat = new NotificationChannel(
-        AlertaMessagingService.CANAL_CHAT, "Mensajes del chat", NotificationManager.IMPORTANCE_LOW);
+        AlertaMessagingService.CANAL_CHAT, "Mensajes del chat", NotificationManager.IMPORTANCE_DEFAULT);
     chat.setDescription("Mensajes nuevos del chat de tus grupos.");
     nm.createNotificationChannel(chat);
   }

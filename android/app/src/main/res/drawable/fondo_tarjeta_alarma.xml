@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Mismo degradado que la tarjeta de inicio de sesión de la web
+    (TarjetaSesion.tsx, variables de color del modo oscuro), de abajo
+    (negro) hacia arriba (gris oscuro): angle 90 en un shape de Android
+    va de abajo (startColor) hacia arriba (endColor).
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="90"
+        android:startColor="#000000"
+        android:endColor="#3A3A3A" />
+    <corners android:radius="40dp" />
+</shape>

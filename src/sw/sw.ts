@@ -60,7 +60,7 @@ self.addEventListener("notificationclick", (evento) => {
   }
 
   // A dónde llevar a la persona. Con el grupo se abre su pantalla directo;
-  // el botón "Ya voy" agrega ?atender=<alerta> y de eso se encarga la app al
+  // el botón "Enterado" agrega ?atender=<alerta> y de eso se encarga la app al
   // cargar (el service worker no puede llamar a la API: no tiene sesión).
   let destino = self.registration.scope;
   if (datos.groupId) {

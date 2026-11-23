@@ -313,6 +313,8 @@ export interface Alerta {
   group: { name: string };
   device: { name: string | null; deviceCode: string } | null;
   createdBy: { email: string; displayName: string | null } | null;
+  // Quién tocó "Enterado". Null mientras siga ACTIVE.
+  acknowledgedBy: { email: string; displayName: string | null } | null;
   // Link listo para abrir en Google Maps (coordenadas o dirección del
   // grupo), o null si el grupo todavía no tiene ninguna de las dos.
   ubicacion: string | null;
