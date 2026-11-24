@@ -419,12 +419,12 @@ export default function Conversacion({
                           type="button"
                           onClick={() => responder(m)}
                           aria-label="Responder este mensaje"
-                          className="opacity-60 transition active:scale-90 active:opacity-100"
+                          className="-m-1 p-1 opacity-60 transition active:scale-90 active:opacity-100"
                           style={{ color: "var(--texto-tenue)" }}
                         >
                           <svg
                             viewBox="0 0 24 24"
-                            className="size-3.5"
+                            className="size-5"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2.3"
@@ -441,12 +441,12 @@ export default function Conversacion({
                             type="button"
                             onClick={() => pedirBorrar(m)}
                             aria-label="Eliminar este mensaje"
-                            className="opacity-60 transition active:scale-90 active:opacity-100"
+                            className="-m-1 p-1 opacity-60 transition active:scale-90 active:opacity-100"
                             style={{ color: "var(--texto-tenue)" }}
                           >
                             <svg
                               viewBox="0 0 24 24"
-                              className="size-3.5"
+                              className="size-5"
                               fill="none"
                               stroke="currentColor"
                               strokeWidth="2.3"
