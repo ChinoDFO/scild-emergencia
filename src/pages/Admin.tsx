@@ -95,6 +95,9 @@ export default function Admin() {
                     <span className="ml-2 font-sans text-sm font-normal text-slate-500">{b.nombre}</span>
                   )}
                 </p>
+                <p className="font-mono text-xs text-slate-500">
+                  Caja: <span className="text-slate-700">{b.codigoDeLaCaja}</span>
+                </p>
 
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                   <div>

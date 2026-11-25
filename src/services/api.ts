@@ -528,6 +528,9 @@ export interface BotonEnUso {
   deviceCode: string;
   // El nombre que le puso su dueño, si lo hay.
   nombre: string | null;
+  // Como va impreso en la caja. Un botón ya vinculado también lo trae, por
+  // si hay que confirmar o recuperar qué código traía esa caja en concreto.
+  codigoDeLaCaja: string;
   personas: { userId: string; nombre: string; email: string; desde: string }[];
   personasTotales: number;
   grupos: string[];
