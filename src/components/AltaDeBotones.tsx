@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   crearBoton,
+  eliminarBoton,
   listarInventarioBotones,
   type BotonEnInventario,
   type BotonRecienCreado,
@@ -73,6 +74,7 @@ export default function AltaDeBotones() {
   const [creando, setCreando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [borrando, setBorrando] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -113,6 +115,22 @@ export default function AltaDeBotones() {
       setCreando(false);
     }
   }
+
+  const borrar = async (b: BotonEnInventario) => {
+    if (!confirm(`¿Borrar ${b.deviceCode}? Es para deshacer un alta por error. No se puede deshacer.`)) {
+      return;
+    }
+    setError(null);
+    setBorrando(b.id);
+    try {
+      await eliminarBoton(b.id);
+      await cargar();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo borrar el botón");
+    } finally {
+      setBorrando(null);
+    }
+  };
 
   return (
     <section className="mt-8">
@@ -235,13 +253,23 @@ export default function AltaDeBotones() {
                 </p>
               </div>
 
-              <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                  b.probado ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"
-                }`}
-              >
-                {b.probado ? "Ya se conectó" : "Sin conectar"}
-              </span>
+              <div className="flex shrink-0 items-center gap-2">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    b.probado ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  {b.probado ? "Ya se conectó" : "Sin conectar"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => borrar(b)}
+                  disabled={borrando === b.id}
+                  className="rounded-full px-2 py-0.5 text-xs font-medium text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-50"
+                >
+                  {borrando === b.id ? "Borrando…" : "Borrar"}
+                </button>
+              </div>
             </li>
           ))}
         </ul>

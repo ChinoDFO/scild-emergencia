@@ -589,3 +589,11 @@ export function crearBoton(datos: {
     body: JSON.stringify(datos),
   });
 }
+
+// Deshace un alta por error. El servidor lo rechaza si el botón ya tiene
+// dueño: esto es solo para los que siguen en inventario.
+export function eliminarBoton(id: string): Promise<{ ok: true }> {
+  return llamarBackend(`/api/admin/dispositivos/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
