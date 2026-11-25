@@ -19,7 +19,6 @@ export default function GestionGrupos() {
   const [modo, setModo] = useState<"unirse" | "crear">("unirse");
   const [codigo, setCodigo] = useState("");
   const [nombre, setNombre] = useState("");
-  const [direccion, setDireccion] = useState("");
   const [vincular, setVincular] = useState(true);
   const [acceso, setAcceso] = useState<Acceso | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -51,7 +50,6 @@ export default function GestionGrupos() {
           : (
               await crearGrupo({
                 name: nombre,
-                address: direccion,
                 vincularBoton: Boolean(botonLibre) && vincular,
                 ...(botonLibre ? { deviceId: botonLibre.id } : {}),
               })
@@ -126,21 +124,6 @@ export default function GestionGrupos() {
                 className={`${CLASE_CAMPO} mt-1 normal-case`}
                 style={{ borderColor: "var(--borde)", background: "var(--fondo)", color: "var(--texto)" }}
               />
-            </label>
-            <label className="block text-xs font-bold uppercase" style={{ color: "var(--texto)" }}>
-              Dirección
-              <input
-                value={direccion}
-                onChange={(e) => setDireccion(e.target.value)}
-                required
-                maxLength={200}
-                placeholder="Calle, número y colonia"
-                className={`${CLASE_CAMPO} mt-1 normal-case`}
-                style={{ borderColor: "var(--borde)", background: "var(--fondo)", color: "var(--texto)" }}
-              />
-              <span className="mt-1 block text-[11px] font-normal normal-case" style={{ color: "var(--texto-tenue)" }}>
-                Es lo que se necesita para llegar en una emergencia.
-              </span>
             </label>
 
             {botonLibre && (

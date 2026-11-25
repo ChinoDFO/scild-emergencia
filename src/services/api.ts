@@ -91,6 +91,8 @@ export interface CambiosConfigBoton {
   cooldownSegundos?: number;
   ssidRespaldo?: string;
   passRespaldo?: string;
+  // Dónde está el aparato. Vacío lo borra (queda sin ubicación).
+  address?: string;
 }
 
 export function obtenerConfigBoton(deviceId: string): Promise<ConfigBoton> {
@@ -198,7 +200,6 @@ export function eliminarCuenta(): Promise<{ ok: true; botonesLiberados: number }
 // la alerta cuando se presiona el aparato físico.
 export function crearGrupo(datos: {
   name: string;
-  address: string;
   vincularBoton?: boolean;
   deviceId?: string;
 }): Promise<{ id: string; name: string; maxMembers: number; botonesVinculados: number }> {
@@ -233,9 +234,6 @@ export type EstadoBoton = "ONLINE" | "IRREGULAR" | "OFFLINE" | "EMERGENCY" | "MA
 export interface DetalleGrupo {
   id: string;
   name: string;
-  address: string | null;
-  latitude: number | null;
-  longitude: number | null;
   role: "ADMIN" | "MEMBER";
   myUserId: string;
   // Solo viene para el ADMIN del grupo.
@@ -268,6 +266,11 @@ export interface DetalleGrupo {
     id: string;
     deviceCode: string;
     name: string | null;
+    // Dónde está este botón en concreto (ya no es del grupo: cada botón
+    // tiene la suya, se edita en "Configura tu botón").
+    address: string | null;
+    latitude: number | null;
+    longitude: number | null;
     // Ya calculado por el backend: OFFLINE/IRREGULAR salen del tiempo sin heartbeat.
     status: EstadoBoton;
     batteryLevel: number | null;
@@ -376,12 +379,11 @@ export async function actualizarGrupo(
   id: string,
   datos: {
     name?: string;
-    address?: string;
     maxMembers?: number;
     mensajesTemporalesSegundos?: number | null;
     tiposFavoritos?: string[];
   }
-): Promise<{ id: string; name: string; address: string; maxMembers: number }> {
+): Promise<{ id: string; name: string; maxMembers: number }> {
   const resultado = await llamarBackend(`/api/groups/${encodeURIComponent(id)}`, {
     method: "PATCH",
     body: JSON.stringify(datos),

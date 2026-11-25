@@ -76,8 +76,9 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         id: "crear-grupo",
         pregunta: "¿Cómo hago un grupo?",
         respuesta: [
-          "En la pantalla de Grupos, toca “Crear o unirse a un grupo” (arriba), elige la pestaña “Crear grupo”, y pon el nombre y la dirección del lugar — la dirección es la que usamos para ubicar una emergencia.",
+          "En la pantalla de Grupos, toca “Crear o unirse a un grupo” (arriba), elige la pestaña “Crear grupo”, y pon el nombre del lugar.",
           "Para crear un grupo necesitas tener un botón vinculado a tu cuenta. Si todavía no tienes uno, primero captura su código en Códigos.",
+          "La dirección ya no se captura aquí: es de cada botón (puede haber varios en un mismo grupo, cada uno en su lugar) y se pone en Dispositivos → Configura tu botón.",
         ],
       },
       {
@@ -297,7 +298,7 @@ export const SECCIONES_AYUDA: SeccionAyuda[] = [
         id: "ubicacion-alerta",
         pregunta: "¿Cómo veo la ubicación de una alerta?",
         respuesta: [
-          "Si el grupo tiene dirección o coordenadas guardadas, la alerta trae un botón con un pin de ubicación que abre el mapa directo. Sale tanto en la notificación del celular como en la tarjeta de la alerta dentro de la app.",
+          "Si el botón que la generó tiene su dirección registrada (se pone en Configura tu botón), la alerta trae un botón con un pin de ubicación que abre el mapa directo. Sale tanto en la notificación del celular como en la tarjeta de la alerta dentro de la app. Si la mandaste desde la app en vez del aparato físico, se usa la dirección de alguno de tus propios botones.",
         ],
       },
       {

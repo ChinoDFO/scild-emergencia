@@ -121,20 +121,20 @@ export default function ConfigurarBoton() {
     setGuardando(true);
 
     try {
-      // El establecimiento vive en el grupo y ya tenía su propio endpoint:
-      // se sigue guardando por ahí, sin tocar esa lógica.
+      // El nombre del establecimiento vive en el grupo y ya tenía su propio
+      // endpoint: se sigue guardando por ahí, sin tocar esa lógica.
       if (principal) {
-        await actualizarGrupo(principal.id, {
-          name: nombreGrupo.trim(),
-          address: direccion.trim(),
-        });
+        await actualizarGrupo(principal.id, { name: nombreGrupo.trim() });
       }
 
       // Solo se manda lo que tiene valor. Un campo vacío no es "ponlo en
       // cero": es "no lo toques", y mandarlo haría que el servidor lo
-      // rechazara por fuera de rango. La excepción es la red de respaldo,
-      // donde vaciar el campo SÍ significa quitarla.
-      const cambios: CambiosConfigBoton = { ssidRespaldo: ssidRespaldo.trim() };
+      // rechazara por fuera de rango. Las excepciones son la dirección y la
+      // red de respaldo, donde vaciar el campo SÍ significa quitarla.
+      const cambios: CambiosConfigBoton = {
+        ssidRespaldo: ssidRespaldo.trim(),
+        address: direccion.trim(),
+      };
 
       if (nombreBoton.trim().length > 0) cambios.nombre = nombreBoton.trim();
       if (minutosSenal.trim().length > 0) {
@@ -194,8 +194,10 @@ export default function ConfigurarBoton() {
   }
 
   // El bloque "Establecimiento" edita el grupo PRINCIPAL (el más antiguo, el
-  // que da nombre y dirección al aparato). Los demás grupos del botón se
-  // editan desde cada uno.
+  // que le da nombre al grupo de este botón). Los demás grupos del botón se
+  // editan desde cada uno. La dirección ya NO es de aquí: es del aparato (ver
+  // Device.address, bloque "El aparato"), porque un mismo botón puede avisar
+  // hasta a GRUPOS_POR_BOTON grupos y solo tiene un lugar físico.
   const principal = boton?.grupos[0];
   const otrosGrupos = boton?.grupos.slice(1) ?? [];
   const sinGrupo = boton && boton.grupos.length === 0;
@@ -204,13 +206,6 @@ export default function ConfigurarBoton() {
     <Pantalla titulo="Configura tu botón">
       <form onSubmit={guardar} className="tarjeta space-y-4 p-4">
         <Bloque titulo="Establecimiento">
-          <Campo
-            etiqueta="Dirección del establecimiento"
-            valor={direccion}
-            alCambiar={setDireccion}
-            desactivado={!principal}
-            ayuda="Es a donde llega quien atiende la emergencia."
-          />
           <Campo
             etiqueta="Nombre del establecimiento"
             valor={nombreGrupo}
@@ -225,13 +220,19 @@ export default function ConfigurarBoton() {
           {otrosGrupos.length > 0 && (
             <p className="text-[11px] normal-case" style={{ color: "var(--texto-tenue)" }}>
               Este botón también les avisa a{" "}
-              <b>{otrosGrupos.map((g) => g.name).join(", ")}</b>. Su nombre y dirección se editan
-              desde cada grupo.
+              <b>{otrosGrupos.map((g) => g.name).join(", ")}</b>. Su nombre se edita desde cada
+              grupo.
             </p>
           )}
         </Bloque>
 
         <Bloque titulo="El aparato">
+          <Campo
+            etiqueta="Dirección"
+            valor={direccion}
+            alCambiar={setDireccion}
+            ayuda="Es a donde llega quien atiende la emergencia."
+          />
           <Campo
             etiqueta="Nombre del botón"
             valor={nombreBoton}

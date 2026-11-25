@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   activarNotificaciones,
+  esAppNativaAndroid,
   estadoNotificaciones,
   type EstadoNotificaciones,
 } from "../services/notificaciones";
@@ -11,6 +12,12 @@ export default function Notificaciones() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Dentro de la app nativa el registro ya es automático (ver AuthContext
+    // + registrarTokenNativoSiHayUno): este panel es el camino WEB, y no
+    // debe ni acercarse a Notification/getToken aquí dentro — eso fue lo
+    // que generaba un token web de más, duplicando el aviso.
+    if (esAppNativaAndroid) return;
+
     (async () => {
       const actual = await estadoNotificaciones();
       setEstado(actual);
@@ -47,6 +54,22 @@ export default function Notificaciones() {
       setActivando(false);
     }
   };
+
+  // La app nativa no pasa por nada de esto: su token se registra solo, sin
+  // pedir permiso del navegador. Mostrar el panel web aquí solo confundiría
+  // (y el useEffect de arriba ya no hace nada mientras esAppNativaAndroid).
+  if (esAppNativaAndroid) {
+    return (
+      <div className="mt-6 border-t pt-4" style={{ borderColor: "var(--borde-tenue)" }}>
+        <h2 className="text-sm font-medium" style={{ color: "var(--texto)" }}>
+          Notificaciones de emergencia
+        </h2>
+        <p className="mt-1 text-sm font-medium" style={{ color: "#16a34a" }}>
+          Activadas automáticamente al instalar la app.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-6 border-t pt-4" style={{ borderColor: "var(--borde-tenue)" }}>

@@ -48,7 +48,6 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
   const esAdmin = grupo.role === "ADMIN";
   const [editando, setEditando] = useState(false);
   const [nombre, setNombre] = useState(grupo.name);
-  const [direccion, setDireccion] = useState(grupo.address ?? "");
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
@@ -193,7 +192,6 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
 
   const abrirEdicion = () => {
     setNombre(grupo.name);
-    setDireccion(grupo.address ?? "");
     setError(null);
     setEditando(true);
   };
@@ -203,7 +201,7 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
     setGuardando(true);
     setError(null);
     try {
-      await actualizarGrupo(grupo.id, { name: nombre, address: direccion });
+      await actualizarGrupo(grupo.id, { name: nombre });
       setEditando(false);
       alCambiar();
     } catch (err) {
@@ -342,13 +340,6 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
     }
   };
 
-  const mapa =
-    grupo.latitude != null && grupo.longitude != null
-      ? `https://www.google.com/maps/search/?api=1&query=${grupo.latitude},${grupo.longitude}`
-      : grupo.address
-        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(grupo.address)}`
-        : null;
-
   return (
     <div className="space-y-6">
       <section>
@@ -376,17 +367,6 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                 maxLength={80}
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                className={CLASE_INPUT}
-              />
-            </label>
-            <label className="block text-sm" style={{ color: "var(--texto)" }}>
-              Dirección
-              <input
-                required
-                maxLength={200}
-                placeholder="Calle, número, colonia, ciudad"
-                value={direccion}
-                onChange={(e) => setDireccion(e.target.value)}
                 className={CLASE_INPUT}
               />
             </label>
@@ -423,28 +403,6 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
             <p className="font-medium" style={{ color: "var(--texto)" }}>
               {grupo.name}
             </p>
-            {grupo.address ? (
-              <p style={{ color: "var(--texto-tenue)" }}>{grupo.address}</p>
-            ) : (
-              // Grupos creados antes de que la dirección fuera obligatoria.
-              // --alerta/--alerta-texto van siempre juntos (son la pareja
-              // fondo+texto del "!" de alertas del chat): usar el texto solo
-              // sobre esta tarjeta se leería mal en oscuro, porque ese color
-              // se pensó para ir encima del amarillo, no del gris de la
-              // tarjeta.
-              <p
-                className="inline-block rounded px-2 py-0.5 text-xs font-medium"
-                style={{ background: "var(--alerta)", color: "var(--alerta-texto)" }}
-              >
-                Sin dirección registrada.{" "}
-                {esAdmin ? "Agrégala: es lo que se necesita para llegar en una emergencia." : "Pídele al administrador que la agregue."}
-              </p>
-            )}
-            {mapa && (
-              <a href={mapa} target="_blank" rel="noreferrer" className="text-sm font-medium text-red-600 hover:underline">
-                Ver en Google Maps
-              </a>
-            )}
           </div>
         )}
       </section>
@@ -517,6 +475,31 @@ export default function InfoGrupo({ grupo, alCambiar }: Props) {
                       </button>
                     )}
                   </p>
+                  {/* La dirección es del botón, no del grupo (un mismo grupo
+                      puede tener varios, cada uno en su lugar): se edita
+                      desde "Configura tu botón", no desde aquí. */}
+                  {d.address ? (
+                    <p className="mt-0.5 truncate text-xs" style={{ color: "var(--texto-tenue)" }}>
+                      📍{" "}
+                      <a
+                        href={
+                          d.latitude != null && d.longitude != null
+                            ? `https://www.google.com/maps/search/?api=1&query=${d.latitude},${d.longitude}`
+                            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.address)}`
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-red-600 hover:underline"
+                      >
+                        {d.address}
+                      </a>
+                    </p>
+                  ) : (
+                    <p className="mt-0.5 text-xs" style={{ color: "var(--texto-tenue)" }}>
+                      Sin dirección registrada
+                      {d.puedoDesvincular && " — agrégala en Configura tu botón"}.
+                    </p>
+                  )}
                 </li>
               );
             })}
